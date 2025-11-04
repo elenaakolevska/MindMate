@@ -15,10 +15,28 @@ Local Development (without Docker)
 2) Install Python dependencies
    - pip install --upgrade pip
    - pip install -r requirements.txt
+
 3) Database migrations and initial run
+   - python manage.py makemigrations
    - python manage.py migrate
    - python manage.py createsuperuser
    - python manage.py runserver
+
+Step-by-step for first-time setup:
+1. Run migrations to create all database tables:
+   - python manage.py makemigrations
+   - python manage.py migrate
+2. Create a Django superuser account (for admin access):
+   - python manage.py createsuperuser
+   - Follow the prompts to set username, email, and password.
+3. Start the development server:
+   - python manage.py runserver
+4. Log in to the admin panel at http://localhost:8000/admin using your superuser credentials.
+
+If you use Docker Compose, run these commands inside the web container:
+   - docker compose exec web python manage.py makemigrations
+   - docker compose exec web python manage.py migrate
+   - docker compose exec web python manage.py createsuperuser
 
 Notes on heavy ML packages (Windows)
 - torch and faiss-cpu can be difficult on Windows. If pip install fails, use:

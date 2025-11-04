@@ -1,0 +1,42 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>MindMate Admin Dashboard</h1>
+<div style="display: flex; gap: 2em; flex-wrap: wrap;">
+  <div style="background: #f8f9fa; padding: 1em; border-radius: 8px; min-width: 200px;">
+    <h2>Students</h2>
+    <p>Total: <strong>{{ student_count }}</strong></p>
+    <ul>
+      {% for student in recent_students %}
+        <li>{{ student.full_name }} ({{ student.study_level }})</li>
+      {% empty %}
+        <li>No recent students.</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div style="background: #f8f9fa; padding: 1em; border-radius: 8px; min-width: 200px;">
+    <h2>Quizzes</h2>
+    <p>Total: <strong>{{ quiz_count }}</strong></p>
+    <ul>
+      {% for quiz in recent_quizzes %}
+        <li>{{ quiz.subject }} ({{ quiz.quiz_type }})</li>
+      {% empty %}
+        <li>No recent quizzes.</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div style="background: #f8f9fa; padding: 1em; border-radius: 8px; min-width: 200px;">
+    <h2>Study Materials</h2>
+    <p>Total: <strong>{{ material_count }}</strong></p>
+  </div>
+  <div style="background: #f8f9fa; padding: 1em; border-radius: 8px; min-width: 200px;">
+    <h2>Unread Notifications</h2>
+    <p><strong>{{ notification_count }}</strong> unread</p>
+  </div>
+</div>
+<hr>
+<p>
+  <a href="{% url 'custom_admin:MindMateAPP_student_changelist' %}">Manage Students</a> |
+  <a href="{% url 'custom_admin:MindMateAPP_quiz_changelist' %}">Manage Quizzes</a> |
+  <a href="{% url 'custom_admin:MindMateAPP_studymaterial_changelist' %}">Manage Materials</a>
+</p>
+{% endblock %}

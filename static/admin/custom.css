@@ -1,0 +1,67 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+/* Force sidebar links and app labels to #14345c even when not selected */
+#nav-sidebar a,
+#nav-sidebar .app-label,
+#nav-sidebar .model,
+#nav-sidebar .nav-item,
+#nav-sidebar .nav-item a,
+#nav-sidebar .nav-item .app-label {
+    color: #14345c !important;
+}
+/* Sidebar and app list font color */
+#nav-sidebar, #nav-sidebar a, #nav-sidebar .model, #nav-sidebar .app-label, .app-MindMateAPP {
+    color: #14345c !important;
+}
+
+body, .module, .dashboard, .admin-interface {
+    font-family: 'Poppins', Arial, sans-serif !important;
+}
+
+#header, .module caption, .breadcrumbs, .dashboard-module h2 {
+    background-color: #c5eaf0 !important;
+    color: #14345c !important;
+}
+
+#header {
+    border-bottom: 4px solid #0cc0df;
+}
+
+.login .submit-row input[type="submit"] {
+    background-color: #c5eaf0 !important;
+    color: #14345c !important;
+    border: 2px solid #0cc0df !important;
+    font-family: 'Poppins', Arial, sans-serif !important;
+}
+
+/* Custom admin logo */
+#site-name {
+    font-size: 0; /* Hide text */
+    padding-left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+.admin-logo {
+    height: 120px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+}
+/* Hide site name text in login page */
+.login #site-name {
+    font-size: 0;
+    padding-left: 0;
+}
+
+/* Highlight selected menu */
+#nav-sidebar .current-model {
+    background-color: #ffe34e !important;
+    color: #14345c !important;
+}
+
+/* Custom dashboard title */
+h1, h2 {
+    color: #14345c !important;
+    font-family: 'Poppins', Arial, sans-serif !important;
+}
