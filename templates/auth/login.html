@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Најавете се во MindMate</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --light-blue: #93c5fd;
+            --purple-gradient-start: #8b5cf6;
+            --purple-gradient-end: #a855f7;
+            --background-gray: #f8fafc;
+            --text-gray: #6b7280;
+            --border-gray: #e5e7eb;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--background-gray) 0%, #e0e7ff 100%);
+            min-height: 100vh;
+        }
+
+        .login-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .login-left {
+            flex: 1;
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+        }
+
+        .login-right {
+            flex: 1;
+            background: linear-gradient(135deg, var(--purple-gradient-start) 0%, var(--purple-gradient-end) 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .login-form-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .brand-section {
+            margin-bottom: 40px;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-blue);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .brand-icon i {
+            color: white;
+            font-size: 20px;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            color: var(--text-gray);
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: #9ca3af;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+        }
+
+        .remember-me input[type="checkbox"] {
+            margin-right: 8px;
+            accent-color: var(--primary-blue);
+        }
+
+        .remember-me label {
+            color: #374151;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .forgot-password {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+            color: var(--primary-blue);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: var(--primary-blue);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 14px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .login-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--border-gray);
+        }
+
+        .divider span {
+            background: var(--white);
+            color: var(--text-gray);
+            padding: 0 15px;
+            font-size: 0.9rem;
+        }
+
+        .google-btn {
+            width: 100%;
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            color: #374151;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .google-btn:hover {
+            background: #f9fafb;
+            border-color: var(--text-gray);
+        }
+
+        .google-btn img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .signup-link {
+            text-align: center;
+            color: var(--text-gray);
+        }
+
+        .signup-link a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Right side illustration */
+        .illustration-container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .illustration-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.3) 2px, transparent 2px),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.3) 1px, transparent 1px),
+                radial-gradient(circle at 40% 60%, rgba(255,255,255,0.2) 1px, transparent 1px);
+            background-size: 50px 50px, 30px 30px, 70px 70px;
+        }
+
+        .illustration-person {
+            position: relative;
+            z-index: 3;
+        }
+
+        .person-figure {
+            width: 300px;
+            height: 400px;
+            position: relative;
+        }
+
+        .person-body {
+            width: 180px;
+            height: 250px;
+            background: linear-gradient(145deg, #2d1b69, #1e1a3a);
+            border-radius: 50px 50px 20px 20px;
+            position: absolute;
+            top: 100px;
+            left: 60px;
+        }
+
+        .person-head {
+            width: 120px;
+            height: 140px;
+            background: #4a5568;
+            border-radius: 60px 60px 40px 40px;
+            position: absolute;
+            top: 20px;
+            left: 90px;
+        }
+
+        .person-hair {
+            width: 140px;
+            height: 100px;
+            background: #1a202c;
+            border-radius: 70px 70px 50px 50px;
+            position: absolute;
+            top: 10px;
+            left: 80px;
+        }
+
+        .floating-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .icon {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.6);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .icon-1 { top: 10%; left: 10%; animation-delay: 0s; }
+        .icon-2 { top: 20%; right: 15%; animation-delay: 1s; }
+        .icon-3 { top: 60%; left: 5%; animation-delay: 2s; }
+        .icon-4 { bottom: 20%; right: 10%; animation-delay: 3s; }
+        .icon-5 { top: 45%; right: 25%; animation-delay: 4s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(5deg); }
+            66% { transform: translateY(5px) rotate(-3deg); }
+        }
+
+        .alert {
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+            }
+            
+            .login-left {
+                padding: 30px 20px;
+            }
+            
+            .login-right {
+                min-height: 200px;
+            }
+            
+            .person-figure {
+                transform: scale(0.6);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- Left Side - Login Form -->
+        <div class="login-left">
+            <div class="login-form-container">
+                <!-- Brand Section -->
+                <div class="brand-section">
+                    <div class="brand-logo">
+                        <div class="brand-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <span class="brand-name">MindMate</span>
+                    </div>
+                </div>
+
+                <!-- Welcome Section -->
+                <div class="welcome-section">
+                    <h1 class="welcome-title">Добредојдовте назад</h1>
+                    <p class="welcome-subtitle">Ве молиме внесете ги вашите детали</p>
+                </div>
+
+                <!-- Display Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Login Form -->
+                <form method="post" id="loginForm">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="remember-forgot">
+                        <div class="remember-me">
+                            {{ form.remember_me }}
+                            <label for="{{ form.remember_me.id_for_label }}">{{ form.remember_me.label }}</label>
+                        </div>
+                        <a href="#" class="forgot-password">Заборавивте лозинка?</a>
+                    </div>
+
+                    <button type="submit" class="login-btn">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Најави се
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="divider">
+                    <span>или</span>
+                </div>
+
+                <!-- Google Sign In -->
+                <button type="button" class="google-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Најави се со Google
+                </button>
+
+                <!-- Sign Up Link -->
+                <div class="signup-link">
+                    Немате сметка? <a href="{% url 'mindmate:register' %}">Регистрирајте се</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Illustration -->
+        <div class="login-right">
+            <div class="illustration-bg"></div>
+            
+            <div class="illustration-container">
+                <div class="person-figure">
+                    <div class="person-hair"></div>
+                    <div class="person-head"></div>
+                    <div class="person-body"></div>
+                </div>
+
+                <!-- Floating Icons -->
+                <div class="floating-icons">
+                    <i class="fas fa-envelope icon icon-1" style="font-size: 24px;"></i>
+                    <i class="fas fa-calendar-alt icon icon-2" style="font-size: 28px;"></i>
+                    <i class="fas fa-brain icon icon-3" style="font-size: 32px;"></i>
+                    <i class="fas fa-graduation-cap icon icon-4" style="font-size: 26px;"></i>
+                    <i class="fas fa-chart-line icon icon-5" style="font-size: 30px;"></i>
+                </div>
+
+                <!-- Check Circle -->
+                <div style="position: absolute; bottom: 80px; left: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-check" style="color: white; font-size: 24px;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Form validation and enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('loginForm');
+            const emailField = document.getElementById('{{ form.email.id_for_label }}');
+            const passwordField = document.getElementById('{{ form.password.id_for_label }}');
+            const submitBtn = document.querySelector('.login-btn');
+
+            // Add loading state on form submit
+            form.addEventListener('submit', function() {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Се најавува...';
+            });
+
+            // Add focus effects
+            [emailField, passwordField].forEach(field => {
+                if (field) {
+                    field.addEventListener('focus', function() {
+                        this.parentElement.style.transform = 'translateY(-2px)';
+                    });
+                    
+                    field.addEventListener('blur', function() {
+                        this.parentElement.style.transform = 'translateY(0)';
+                    });
+                }
+            });
+        });
+
+        // Add floating animation to icons
+        const icons = document.querySelectorAll('.icon');
+        icons.forEach((icon, index) => {
+            icon.style.animationDelay = (index * 0.5) + 's';
+        });
+    </script>
+</body>
+</html>

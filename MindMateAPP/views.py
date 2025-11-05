@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from .forms import StudentRegistrationForm
 from .preference_forms import StudentPreferencesForm
+from .login_forms import StudentLoginForm
 from .models import Student, StudentPreferences
 
 
@@ -72,3 +73,32 @@ def student_preferences(request):
 
 def home(request):
     return render(request, 'home.html')
+
+
+def login(request):
+    if request.method == 'POST':
+        form = StudentLoginForm(request.POST)
+        if form.is_valid():
+            try:
+                student = form.cleaned_data['student']
+                # Store student info in session
+                request.session['logged_in_student_id'] = student.id
+                request.session['logged_in_student_name'] = student.full_name
+                
+                # Handle remember me
+                if form.cleaned_data.get('remember_me'):
+                    request.session.set_expiry(30 * 24 * 60 * 60)  # 30 days
+                else:
+                    request.session.set_expiry(0)  # Browser session
+                
+                messages.success(request, f'Добредојдовте, {student.full_name}!')
+                return redirect('mindmate:home')
+            except Exception as e:
+                messages.error(request, 'Се случи грешка при најава. Обидете се повторно.')
+        else:
+            for error in form.non_field_errors():
+                messages.error(request, error)
+    else:
+        form = StudentLoginForm()
+    
+    return render(request, 'auth/login.html', {'form': form})
