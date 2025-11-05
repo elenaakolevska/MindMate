@@ -1,10 +1,12 @@
 
 from django.db import models
+from django.contrib.auth.models import User
 
 class Student(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)  # Link to Django User
     full_name = models.CharField(max_length=128)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)  # For authentication
+    password = models.CharField(max_length=128)  # Keep for backward compatibility, but use Django auth
     study_level = models.CharField(max_length=32, choices=[('high_school', 'High School'), ('college', 'College')])
     study_direction = models.CharField(max_length=128)  # Major/field of study
     interests = models.TextField(blank=True)  # Personal interests for personalization

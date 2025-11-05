@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth import authenticate
 from .models import Student
 
 
@@ -33,12 +34,11 @@ class StudentLoginForm(forms.Form):
         password = cleaned_data.get('password')
         
         if email and password:
-            try:
-                student = Student.objects.get(email=email)
-                if student.password != password:  # In real app, use hashed passwords
-                    raise forms.ValidationError('Неточна лозинка.')
-                cleaned_data['student'] = student
-            except Student.DoesNotExist:
-                raise forms.ValidationError('Не постои корисник со таа е-пошта.')
+            # Use Django's authenticate function
+            user = authenticate(username=email, password=password)
+            if user is None:
+                raise forms.ValidationError('Неточна е-пошта или лозинка.')
+            
+            cleaned_data['user'] = user
         
         return cleaned_data

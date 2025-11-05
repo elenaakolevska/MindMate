@@ -1,19 +1,21 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="mk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Најавете се во MindMate</title>
+    <title>MindMate - Најава</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-blue: #3b82f6;
-            --light-blue: #93c5fd;
-            --purple-gradient-start: #8b5cf6;
-            --purple-gradient-end: #a855f7;
-            --background-gray: #f8fafc;
-            --text-gray: #6b7280;
+            --primary-purple: #8c5dff;
+            --light-purple: #a478ff;
+            --purple-gradient-start: #8c5dff;
+            --purple-gradient-end: #6d3cff;
+            --background-cream: #f6f6e9;
+            --text-purple: #6d3cff;
             --border-gray: #e5e7eb;
             --white: #ffffff;
         }
@@ -25,8 +27,8 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--background-gray) 0%, #e0e7ff 100%);
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--background-cream) 0%, #e9e6ff 100%);
             min-height: 100vh;
         }
 
@@ -49,9 +51,17 @@
             background: linear-gradient(135deg, var(--purple-gradient-start) 0%, var(--purple-gradient-end) 100%);
             position: relative;
             display: flex;
-            align-items: center;
+            align-items: stretch;
             justify-content: center;
             overflow: hidden;
+        }
+        .login-illustration-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border: none;
+            background: none;
         }
 
         .login-form-container {
@@ -72,7 +82,7 @@
         .brand-icon {
             width: 40px;
             height: 40px;
-            background: var(--primary-blue);
+            background: var(--primary-purple);
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -99,7 +109,7 @@
         }
 
         .welcome-subtitle {
-            color: var(--text-gray);
+            color: var(--text-purple);
             font-size: 1rem;
             margin-bottom: 30px;
         }
@@ -127,8 +137,8 @@
 
         .form-control:focus {
             outline: none;
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(140, 93, 255, 0.1);
         }
 
         .form-control::placeholder {
@@ -149,7 +159,7 @@
 
         .remember-me input[type="checkbox"] {
             margin-right: 8px;
-            accent-color: var(--primary-blue);
+            accent-color: var(--primary-purple);
         }
 
         .remember-me label {
@@ -159,19 +169,19 @@
         }
 
         .forgot-password {
-            color: var(--primary-blue);
+            color: var(--primary-purple);
             text-decoration: none;
             font-size: 0.9rem;
         }
 
         .forgot-password:hover {
             text-decoration: underline;
-            color: var(--primary-blue);
+            color: var(--primary-purple);
         }
 
         .login-btn {
             width: 100%;
-            background: var(--primary-blue);
+            background: var(--primary-purple);
             border: none;
             border-radius: 8px;
             color: white;
@@ -183,9 +193,9 @@
         }
 
         .login-btn:hover {
-            background: #2563eb;
+            background: var(--purple-gradient-end);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 12px rgba(140, 93, 255, 0.3);
         }
 
         .divider {
@@ -206,7 +216,7 @@
 
         .divider span {
             background: var(--white);
-            color: var(--text-gray);
+            color: var(--text-purple);
             padding: 0 15px;
             font-size: 0.9rem;
         }
@@ -229,7 +239,7 @@
 
         .google-btn:hover {
             background: #f9fafb;
-            border-color: var(--text-gray);
+            border-color: var(--text-purple);
         }
 
         .google-btn img {
@@ -240,11 +250,11 @@
 
         .signup-link {
             text-align: center;
-            color: var(--text-gray);
+            color: var(--text-purple);
         }
 
         .signup-link a {
-            color: var(--primary-blue);
+            color: var(--primary-purple);
             text-decoration: none;
             font-weight: 500;
         }
@@ -257,6 +267,18 @@
         .illustration-container {
             position: relative;
             z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-illustration {
+            width: 400px;
+            height: 400px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjIwMCIgY3k9IjIwMCIgcj0iMTgwIiBmaWxsPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMSkiLz4KPHJlY3QgeD0iMTIwIiB5PSI2MCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIyNDAiIHJ4PSIyMCIgZmlsbD0iIzhjNWRmZiIvPgo8cmVjdCB4PSIxNDAiIHk9IjEwMCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxNjAiIHJ4PSIxMCIgZmlsbD0id2hpdGUiLz4KPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTgwIiByPSI0MCIgZmlsbD0id2hpdGUiLz4KPGNpcmNsZSBjeD0iODAiIGN5PSIxNjAiIHI9IjE1IiBmaWxsPSIjZmY5NTAwIi8+CjxyZWN0IHg9IjE1MCIgeT0iMTIwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwIiByeD0iNSIgZmlsbD0iI2Y1ZjVmNSIvPgo8cmVjdCB4PSIxNTAiIHk9IjE0MCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjEwIiByeD0iNSIgZmlsbD0iIzhjNWRmZiIvPgo8cmVjdCB4PSIxNTAiIHk9IjE2MCIgd2lkdGg9IjkwIiBoZWlnaHQ9IjEwIiByeD0iNSIgZmlsbD0iI2Y1ZjVmNSIvPgo8Y2lyY2xlIGN4PSIzMDAiIGN5PSIyNDAiIHI9IjUwIiBmaWxsPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMikiLz4KPGNpcmNsZSBjeD0iMzAwIiBjeT0iMjQwIiByPSIzMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmY5NTAwIiBzdHJva2Utd2lkdGg9IjQiLz4KPHRleHQgeD0iMjkwIiB5PSIyNDUiIGZpbGw9IiM4YzVkZmYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiPjc1JTwvdGV4dD4KPC9zdmc+');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         .illustration-bg {
@@ -271,47 +293,6 @@
                 radial-gradient(circle at 80% 80%, rgba(255,255,255,0.3) 1px, transparent 1px),
                 radial-gradient(circle at 40% 60%, rgba(255,255,255,0.2) 1px, transparent 1px);
             background-size: 50px 50px, 30px 30px, 70px 70px;
-        }
-
-        .illustration-person {
-            position: relative;
-            z-index: 3;
-        }
-
-        .person-figure {
-            width: 300px;
-            height: 400px;
-            position: relative;
-        }
-
-        .person-body {
-            width: 180px;
-            height: 250px;
-            background: linear-gradient(145deg, #2d1b69, #1e1a3a);
-            border-radius: 50px 50px 20px 20px;
-            position: absolute;
-            top: 100px;
-            left: 60px;
-        }
-
-        .person-head {
-            width: 120px;
-            height: 140px;
-            background: #4a5568;
-            border-radius: 60px 60px 40px 40px;
-            position: absolute;
-            top: 20px;
-            left: 90px;
-        }
-
-        .person-hair {
-            width: 140px;
-            height: 100px;
-            background: #1a202c;
-            border-radius: 70px 70px 50px 50px;
-            position: absolute;
-            top: 10px;
-            left: 80px;
         }
 
         .floating-icons {
@@ -371,10 +352,9 @@
                 <!-- Brand Section -->
                 <div class="brand-section">
                     <div class="brand-logo">
-                        <div class="brand-icon">
-                            <i class="fas fa-brain"></i>
-                        </div>
-                        <span class="brand-name">MindMate</span>
+                        <a href="{% url 'mindmate:home' %}">
+                            <img src="{% static 'mindLogo.png' %}" alt="MindMate Logo" style="height: 56px; width: auto; display: block;">
+                        </a>
                     </div>
                 </div>
 
@@ -415,10 +395,6 @@
                     </div>
 
                     <div class="remember-forgot">
-                        <div class="remember-me">
-                            {{ form.remember_me }}
-                            <label for="{{ form.remember_me.id_for_label }}">{{ form.remember_me.label }}</label>
-                        </div>
                         <a href="#" class="forgot-password">Заборавивте лозинка?</a>
                     </div>
 
@@ -428,21 +404,7 @@
                     </button>
                 </form>
 
-                <!-- Divider -->
-                <div class="divider">
-                    <span>или</span>
-                </div>
 
-                <!-- Google Sign In -->
-                <button type="button" class="google-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Најави се со Google
-                </button>
 
                 <!-- Sign Up Link -->
                 <div class="signup-link">
@@ -453,29 +415,7 @@
 
         <!-- Right Side - Illustration -->
         <div class="login-right">
-            <div class="illustration-bg"></div>
-            
-            <div class="illustration-container">
-                <div class="person-figure">
-                    <div class="person-hair"></div>
-                    <div class="person-head"></div>
-                    <div class="person-body"></div>
-                </div>
-
-                <!-- Floating Icons -->
-                <div class="floating-icons">
-                    <i class="fas fa-envelope icon icon-1" style="font-size: 24px;"></i>
-                    <i class="fas fa-calendar-alt icon icon-2" style="font-size: 28px;"></i>
-                    <i class="fas fa-brain icon icon-3" style="font-size: 32px;"></i>
-                    <i class="fas fa-graduation-cap icon icon-4" style="font-size: 26px;"></i>
-                    <i class="fas fa-chart-line icon icon-5" style="font-size: 30px;"></i>
-                </div>
-
-                <!-- Check Circle -->
-                <div style="position: absolute; bottom: 80px; left: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-check" style="color: white; font-size: 24px;"></i>
-                </div>
-            </div>
+            <img src="{% static 'login_illustration.jpg' %}" alt="Login Illustration" class="login-illustration-img">
         </div>
     </div>
 

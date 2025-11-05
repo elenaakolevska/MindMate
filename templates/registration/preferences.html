@@ -6,10 +6,12 @@
     <title>Персонализирајте го вашето MindMate искуство</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-blue: #3b82f6;
-            --light-blue: #93c5fd;
+            --primary-purple: #6c47ff;
+            --primary-purple-dark: #4b2996;
+            --light-purple: #a78bfa;
             --background-gray: #f8fafc;
             --text-gray: #6b7280;
             --border-gray: #e5e7eb;
@@ -17,7 +19,7 @@
 
         body {
             background-color: var(--background-gray);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', Arial, sans-serif;
         }
 
         .preferences-container {
@@ -78,8 +80,8 @@
         }
 
         .form-control:focus, .form-select:focus {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 0.2rem rgba(108, 71, 255, 0.25);
         }
 
         .two-column {
@@ -90,56 +92,64 @@
         }
 
         .learning-style-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-top: 10px;
         }
 
-        .radio-option {
-            display: flex;
-            align-items: flex-start;
-            padding: 12px;
-            border: 1px solid var(--border-gray);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .radio-option:hover {
-            border-color: var(--primary-blue);
-            background-color: #f8fafc;
-        }
-
-        .radio-option input[type="radio"] {
-            margin-right: 10px;
-            margin-top: 3px;
-            accent-color: var(--primary-blue);
-        }
-
-        .radio-option input[type="radio"]:checked {
-            accent-color: var(--primary-blue);
-        }
-
-        .radio-option.checked {
-            border-color: var(--primary-blue);
-            background-color: #eff6ff;
-        }
-
-        .radio-label {
-            font-size: 0.9rem;
-            line-height: 1.4;
-            margin: 0;
-        }
-
-        .radio-title {
-            font-weight: 600;
+        .learning-btn {
+            background: #f3f4f6;
+            border: 2px solid var(--border-gray);
+            border-radius: 20px;
+            padding: 12px 18px;
+            font-size: 14px;
             color: #374151;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: inline-block;
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
         }
 
-        .radio-description {
-            color: var(--text-gray);
+        .learning-btn input[type="radio"] {
+            display: none;
+        }
+
+        .learning-btn input[type="radio"]:checked + .learning-label {
+            background: var(--primary-purple);
+            color: #fff;
+            border-color: var(--primary-purple);
+        }
+
+        .learning-label {
+            display: block;
+            background: inherit;
+            border: inherit;
+            border-radius: inherit;
+            color: inherit;
+            cursor: pointer;
+            margin: 0;
+            transition: all 0.2s ease;
+        }
+
+        .learning-btn:hover .learning-label {
+            border-color: var(--primary-purple);
+        }
+
+        .learning-title {
+            font-weight: 600;
+            color: inherit;
+            margin-bottom: 4px;
+        }
+
+        .learning-description {
             font-size: 0.85rem;
+            color: inherit;
+            opacity: 0.8;
         }
 
         .slider-container {
@@ -154,7 +164,7 @@
         }
 
         .slider-value {
-            color: var(--primary-blue);
+            color: var(--primary-purple);
             font-weight: 600;
         }
 
@@ -174,7 +184,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: var(--primary-blue);
+            background: var(--primary-purple);
             cursor: pointer;
         }
 
@@ -182,7 +192,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: var(--primary-blue);
+            background: var(--primary-purple);
             cursor: pointer;
             border: none;
         }
@@ -217,7 +227,7 @@
         }
 
         .btn-complete {
-            background: var(--primary-blue);
+            background: var(--primary-purple);
             border: none;
             border-radius: 10px;
             color: white;
@@ -228,9 +238,9 @@
         }
 
         .btn-complete:hover {
-            background: #2563eb;
+            background: var(--primary-purple-dark);
             transform: translateY(-1px);
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 5px 15px rgba(108, 71, 255, 0.4);
         }
 
         .alert {
@@ -250,7 +260,11 @@
             }
             
             .learning-style-options {
-                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+            
+            .learning-btn {
+                min-width: auto;
             }
             
             .action-buttons {
@@ -311,18 +325,18 @@
                         <label class="form-label">{{ form.preferred_learning_style.label }}</label>
                         <div class="learning-style-options">
                             {% for choice in form.preferred_learning_style %}
-                                <div class="radio-option">
+                                <div class="learning-btn">
                                     {{ choice.tag }}
-                                    <div class="radio-label">
-                                        <div class="radio-title">
+                                    <label class="learning-label" for="{{ choice.id_for_label }}">
+                                        <div class="learning-title">
                                             {% if choice.choice_value == 'visual' %}Визуелно
                                             {% elif choice.choice_value == 'auditory' %}Аудитивно
                                             {% elif choice.choice_value == 'kinesthetic' %}Кинестетичко
                                             {% elif choice.choice_value == 'reading_writing' %}Читање/Пишување
                                             {% endif %}
                                         </div>
-                                        <div class="radio-description">{{ choice.choice_label }}</div>
-                                    </div>
+                                        <div class="learning-description">{{ choice.choice_label }}</div>
+                                    </label>
                                 </div>
                             {% endfor %}
                         </div>
@@ -376,30 +390,49 @@
             });
         }
 
-        // Radio button styling - fixed version
+        // Radio button styling - updated for button style
         document.addEventListener('DOMContentLoaded', function() {
-            const radioOptions = document.querySelectorAll('.radio-option');
-            
-            radioOptions.forEach(option => {
-                const radioInput = option.querySelector('input[type="radio"]');
+            // Learning style buttons
+            document.querySelectorAll('.learning-btn input[type="radio"]').forEach(function(radio) {
+                const btn = radio.closest('.learning-btn');
+                const label = btn.querySelector('.learning-label');
                 
-                // Add click handler to the entire option div
-                option.addEventListener('click', function() {
-                    // Remove checked class from all options
-                    radioOptions.forEach(opt => opt.classList.remove('checked'));
+                radio.addEventListener('change', function() {
+                    // Reset all buttons
+                    document.querySelectorAll('.learning-btn').forEach(function(otherBtn) {
+                        otherBtn.style.background = '#f3f4f6';
+                        otherBtn.style.borderColor = '#e5e7eb';
+                        otherBtn.style.color = '#374151';
+                        const otherLabel = otherBtn.querySelector('.learning-label');
+                        if (otherLabel) {
+                            otherLabel.style.background = '#f3f4f6';
+                            otherLabel.style.color = '#374151';
+                        }
+                        const otherTitle = otherBtn.querySelector('.learning-title');
+                        const otherDesc = otherBtn.querySelector('.learning-description');
+                        if (otherTitle) otherTitle.style.color = '#374151';
+                        if (otherDesc) otherDesc.style.color = '#374151';
+                    });
                     
-                    // Check the radio button
-                    radioInput.checked = true;
-                    
-                    // Add checked class to current option
-                    option.classList.add('checked');
+                    if (this.checked) {
+                        btn.style.background = '#6c47ff';
+                        btn.style.borderColor = '#6c47ff';
+                        btn.style.color = '#fff';
+                        label.style.background = '#6c47ff';
+                        label.style.color = '#fff';
+                        
+                        const title = btn.querySelector('.learning-title');
+                        const desc = btn.querySelector('.learning-description');
+                        if (title) title.style.color = '#fff';
+                        if (desc) desc.style.color = '#fff';
+                    }
                 });
                 
-                // Also handle direct radio button changes
-                radioInput.addEventListener('change', function() {
-                    if (this.checked) {
-                        radioOptions.forEach(opt => opt.classList.remove('checked'));
-                        option.classList.add('checked');
+                // Make the entire button clickable
+                btn.addEventListener('click', function(e) {
+                    if (e.target !== radio) {
+                        radio.checked = true;
+                        radio.dispatchEvent(new Event('change'));
                     }
                 });
             });

@@ -1,188 +1,21 @@
+{% load static %}
 <!DOCTYPE html>
-<<<<<<< HEAD
-<html lang="mk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindMate - Вашиот партнер за учење</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-blue: #3b82f6;
-            --light-blue: #93c5fd;
-            --background-gray: #f8fafc;
-            --text-gray: #6b7280;
-        }
-
-        body {
-            background: linear-gradient(135deg, var(--background-gray) 0%, #e0e7ff 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .hero-section {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .hero-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-            width: 100%;
-            padding: 60px;
-            text-align: center;
-        }
-
-        .logo-title {
-            color: var(--primary-blue);
-            font-size: 4rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        .hero-subtitle {
-            color: var(--text-gray);
-            font-size: 1.5rem;
-            margin-bottom: 40px;
-            line-height: 1.6;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-bottom: 50px;
-        }
-
-        .btn-primary-custom {
-            background: var(--primary-blue);
-            border: none;
-            border-radius: 15px;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: 600;
-            padding: 18px 35px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary-custom:hover {
-            background: #2563eb;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
-        }
-
-        .btn-outline-custom {
-            background: transparent;
-            border: 2px solid var(--primary-blue);
-            border-radius: 15px;
-            color: var(--primary-blue);
-            font-size: 1.2rem;
-            font-weight: 600;
-            padding: 16px 35px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-custom:hover {
-            background: var(--primary-blue);
-            color: white;
-            transform: translateY(-3px);
-        }
-
-        .features-section {
-            margin-top: 50px;
-        }
-
-        .features-title {
-            color: #374151;
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 30px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
-        }
-
-        .feature-card {
-            background: #f8fafc;
-            border-radius: 15px;
-            padding: 30px 20px;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .feature-card:hover {
-            background: white;
-            border-color: var(--light-blue);
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .feature-icon {
-            color: var(--primary-blue);
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-
-        .feature-title {
-            color: #374151;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .feature-description {
-            color: var(--text-gray);
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-
-        @media (max-width: 768px) {
-            .hero-card {
-                padding: 40px 30px;
-                margin: 10px;
-            }
-            
-            .logo-title {
-                font-size: 3rem;
-            }
-            
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn-primary-custom,
-            .btn-outline-custom {
-                width: 100%;
-                max-width: 300px;
-=======
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindMate - Unleash Your Study Potential</title>
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Montserrat', Arial, sans-serif;
-            background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fb 100%);
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(135deg, #f6f6e9 0%, #e9e6ff 100%);
             margin: 0;
             padding: 0;
         }
         .navbar {
             background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(140,93,255,0.08);
             padding: 18px 0;
             display: flex;
             justify-content: space-between;
@@ -192,17 +25,19 @@
             z-index: 100;
         }
         .navbar-logo {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #2196f3;
             margin-left: 32px;
-            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+        }
+        .navbar-logo img {
+            height: 64px;
+            width: auto;
         }
         .navbar-links {
             margin-right: 32px;
         }
         .navbar-links a {
-            color: #2196f3;
+            color: #374151;
             text-decoration: none;
             font-weight: 600;
             margin-left: 24px;
@@ -210,7 +45,7 @@
             transition: color 0.2s;
         }
         .navbar-links a:hover {
-            color: #1769aa;
+            color: #8c5dff;
         }
         .container {
             max-width: 1200px;
@@ -221,357 +56,931 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 2px 16px rgba(33,150,243,0.08);
-            padding: 48px 32px;
-            margin-bottom: 48px;
-            animation: fadeIn 1.2s;
+            background: linear-gradient(135deg, #8c5dff 0%, #6d3cff 100%);
+            border-radius: 24px;
+            box-shadow: 0 4px 32px rgba(140,93,255,0.20);
+            padding: 56px 40px;
+            margin-bottom: 56px;
+            animation: fadeInUp 1.2s ease-out;
+            position: relative;
+            overflow: hidden;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(40px); }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(60px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(-20%, -20%) rotate(0deg); }
+            50% { transform: translate(-30%, -30%) rotate(180deg); }
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
         }
         .hero-text {
             max-width: 540px;
+            z-index: 2;
+            position: relative;
+            animation: slideInLeft 1s ease-out 0.3s both;
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-60px); }
+            to { opacity: 1; transform: translateX(0); }
         }
         .hero-title {
-            font-size: 2.8rem;
+            font-size: 3rem;
             font-weight: 700;
-            margin-bottom: 16px;
-            background: linear-gradient(90deg, #2196f3 40%, #1769aa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            margin-bottom: 18px;
+            color: #fff;
+            line-height: 1.1;
+            animation: typewriter 2s steps(40) 0.5s both;
+        }
+        @keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
         }
         .hero-desc {
-            font-size: 1.1rem;
-            color: #555;
-            margin-bottom: 32px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 36px;
+            line-height: 1.6;
+            animation: fadeIn 1s ease-out 1.5s both;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         .hero-btn {
-            background: linear-gradient(90deg, #2196f3 60%, #1769aa 100%);
-            color: #fff;
+            background: #fff;
+            color: #8c5dff;
             border: none;
-            border-radius: 8px;
-            padding: 12px 32px;
-            font-size: 1.1rem;
+            border-radius: 12px;
+            padding: 16px 40px;
+            font-size: 1.15rem;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(33,150,243,0.12);
-            transition: background 0.2s, transform 0.2s;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: slideInUp 0.8s ease-out 2s both;
+        }
+        .hero-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(140,93,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+        .hero-btn:hover::before {
+            left: 100%;
         }
         .hero-btn:hover {
-            background: linear-gradient(90deg, #1769aa 60%, #2196f3 100%);
-            transform: translateY(-2px) scale(1.04);
+            background: #f8f9fa;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(140,93,255,0.3);
         }
-        .hero-img {
-            width: 320px;
-            height: 220px;
-            background: linear-gradient(135deg, #e3f2fd 60%, #bbdefb 100%);
-            border-radius: 12px;
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hero-character {
+            width: 380px;
+            height: 380px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 12px rgba(33,150,243,0.08);
+            z-index: 2;
+            position: relative;
+            animation: slideInRight 1s ease-out 0.5s both;
         }
-        .hero-img img {
-            max-width: 90%;
-            max-height: 90%;
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(60px) rotate(10deg); }
+            to { opacity: 1; transform: translateX(0) rotate(0deg); }
+        }
+        .hero-character img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.2));
+            animation: characterFloat 4s ease-in-out infinite 2s;
+        }
+        @keyframes characterFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
         }
         .section-title {
             text-align: center;
-            font-size: 2rem;
+            font-size: 2.1rem;
             font-weight: 700;
-            margin: 48px 0 32px 0;
-            color: #1769aa;
+            margin: 56px 0 36px 0;
+            color: #8c5dff;
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease-out;
+        }
+        .section-title.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, #8c5dff, #6d3cff);
+            border-radius: 2px;
         }
         .features {
             display: flex;
             justify-content: center;
-            gap: 32px;
-            margin-bottom: 48px;
+            gap: 36px;
+            margin-bottom: 56px;
         }
         .feature {
             background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(33,150,243,0.08);
-            padding: 32px 24px;
-            width: 300px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(140,93,255,0.08);
+            padding: 40px 32px;
+            width: 320px;
             text-align: center;
-            transition: box-shadow 0.2s, transform 0.2s;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            opacity: 0;
+            transform: translateY(50px);
+            border: 2px solid transparent;
+        }
+        .feature.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .feature::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8c5dff, #6d3cff);
+            border-radius: 20px 20px 0 0;
+            transform: scaleX(0);
+            transition: transform 0.3s ease-out;
+        }
+        .feature:hover::before {
+            transform: scaleX(1);
         }
         .feature:hover {
-            box-shadow: 0 6px 24px rgba(33,150,243,0.16);
-            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 12px 40px rgba(140,93,255,0.16);
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(140,93,255,0.1);
         }
         .feature-icon {
-            font-size: 2.2rem;
-            margin-bottom: 16px;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-out;
+            display: inline-block;
+        }
+        .feature:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
         }
         .feature-title {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 700;
-            margin-bottom: 8px;
-            color: #2196f3;
+            margin-bottom: 10px;
+            color: #374151;
         }
         .feature-desc {
-            color: #555;
-            font-size: 1rem;
+            color: #6b7280;
+            font-size: 1.05rem;
         }
         .testimonials {
             display: flex;
             justify-content: center;
-            gap: 32px;
-            margin-bottom: 48px;
+            gap: 36px;
+            margin-bottom: 56px;
         }
         .testimonial {
             background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(33,150,243,0.08);
-            padding: 32px 24px;
-            width: 320px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(140,93,255,0.08);
+            padding: 40px 32px;
+            width: 340px;
             text-align: center;
-            transition: box-shadow 0.2s, transform 0.2s;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            opacity: 0;
+            transform: translateY(50px) scale(0.9);
+            border: 1px solid rgba(140,93,255,0.1);
+        }
+        .testimonial.animate {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        .testimonial::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            font-size: 4rem;
+            color: #8c5dff;
+            opacity: 0.3;
+            font-family: serif;
         }
         .testimonial:hover {
-            box-shadow: 0 6px 24px rgba(33,150,243,0.16);
-            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 12px 40px rgba(140,93,255,0.16);
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(140,93,255,0.2);
         }
         .testimonial-quote {
             font-style: italic;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            color: #4b5563;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
         }
         .testimonial-user {
             font-weight: 700;
-            color: #2196f3;
+            color: #374151;
         }
         .testimonial-role {
-            color: #888;
-            font-size: 0.95rem;
+            color: #6b7280;
+            font-size: 1rem;
         }
         .cta {
-            background: linear-gradient(90deg, #e3f2fd 60%, #bbdefb 100%);
-            border-radius: 12px;
+            background: linear-gradient(135deg, #f6f6e9 60%, #e9e6ff 100%);
+            border-radius: 20px;
             text-align: center;
-            padding: 40px 24px;
-            box-shadow: 0 2px 8px rgba(33,150,243,0.08);
+            padding: 50px 32px;
+            box-shadow: 0 8px 30px rgba(140,93,255,0.12);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.6s ease-out;
         }
-        .cta-title {
-            font-size: 1.7rem;
-            font-weight: 700;
-            color: #2196f3;
-            margin-bottom: 16px;
+        .cta.animate {
+            opacity: 1;
+            transform: translateY(0);
         }
-        .cta-desc {
-            color: #555;
-            font-size: 1.1rem;
-            margin-bottom: 24px;
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(140,93,255,0.05), transparent);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
         .cta-btn {
-            background: linear-gradient(90deg, #2196f3 60%, #1769aa 100%);
+            background: linear-gradient(135deg, #8c5dff 60%, #6d3cff 100%);
             color: #fff;
             border: none;
-            border-radius: 8px;
-            padding: 12px 32px;
-            font-size: 1.1rem;
+            border-radius: 12px;
+            padding: 16px 40px;
+            font-size: 1.15rem;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(33,150,243,0.12);
-            transition: background 0.2s, transform 0.2s;
+            box-shadow: 0 4px 20px rgba(140,93,255,0.25);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .cta-btn:hover::before {
+            left: 100%;
         }
         .cta-btn:hover {
-            background: linear-gradient(90deg, #1769aa 60%, #2196f3 100%);
-            transform: translateY(-2px) scale(1.04);
+            background: linear-gradient(135deg, #6d3cff 60%, #8c5dff 100%);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(140,93,255,0.4);
+        }
+                    }
+        }
+        .cta-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #8c5dff;
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+        }
+        .cta-desc {
+            color: #4b5563;
+            font-size: 1.15rem;
+            margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+            line-height: 1.6;
         }
         .footer {
             background: #fff;
-            color: #2196f3;
+            color: #6b7280;
             text-align: center;
-            padding: 24px 0 12px 0;
-            font-size: 1rem;
-            margin-top: 48px;
-            box-shadow: 0 -2px 8px rgba(33,150,243,0.04);
-        }
-        .footer-links {
-            margin-bottom: 8px;
-        }
-        .footer-links a {
-            color: #1769aa;
-            margin: 0 12px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: color 0.2s;
-        }
-        .footer-links a:hover {
-            color: #2196f3;
+            padding: 28px 0 14px 0;
+            font-size: 1.05rem;
+            margin-top: 56px;
+            box-shadow: 0 -2px 8px rgba(140,93,255,0.04);
         }
         @media (max-width: 900px) {
             .hero, .features, .testimonials {
                 flex-direction: column;
                 align-items: center;
             }
-            .hero-img {
-                margin-top: 32px;
+            .hero-character {
+                width: 280px;
+                height: 280px;
+                margin-top: 36px;
             }
             .features, .testimonials {
-                gap: 16px;
+                gap: 18px;
             }
             .feature, .testimonial {
-                width: 90vw;
-                max-width: 340px;
+                width: 95vw;
+                max-width: 360px;
             }
         }
         @media (max-width: 600px) {
             .container {
-                padding: 16px 4px;
+                padding: 18px 4px;
             }
             .hero {
-                padding: 24px 8px;
+                padding: 28px 8px;
             }
             .section-title {
-                font-size: 1.3rem;
-                margin: 32px 0 16px 0;
->>>>>>> ljubica
+                font-size: 1.35rem;
+                margin: 36px 0 18px 0;
             }
         }
     </style>
+    <script>
+        // Advanced animations and interactions for enhanced user experience
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enhanced smooth scrolling with easing
+            const smoothScrollLinks = document.querySelectorAll('a[href^="#"]');
+            smoothScrollLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        const targetPosition = target.offsetTop - 80;
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Dynamic text highlight animation
+            const dynamicTexts = document.querySelectorAll('.dynamic-text');
+            dynamicTexts.forEach(text => {
+                text.addEventListener('mouseenter', function() {
+                    this.style.background = 'linear-gradient(45deg, #6c47ff, #8c5dff, #9c6dff)';
+                    this.style.backgroundSize = '200% 200%';
+                    this.style.WebkitBackgroundClip = 'text';
+                    this.style.WebkitTextFillColor = 'transparent';
+                    this.style.animation = 'gradientShift 2s ease infinite';
+                });
+                
+                text.addEventListener('mouseleave', function() {
+                    this.style.background = 'none';
+                    this.style.WebkitTextFillColor = 'initial';
+                    this.style.animation = 'none';
+                });
+            });
+
+            // Progressive content loading animation
+            const sections = document.querySelectorAll('.section-title');
+            sections.forEach((section, index) => {
+                const letters = section.textContent.split('');
+                section.innerHTML = '';
+                
+                letters.forEach((letter, letterIndex) => {
+                    const span = document.createElement('span');
+                    span.textContent = letter === ' ' ? '\u00A0' : letter;
+                    span.style.opacity = '0';
+                    span.style.transform = 'translateY(20px)';
+                    span.style.transition = `all 0.5s ease ${letterIndex * 0.05}s`;
+                    section.appendChild(span);
+                });
+                
+                const letterSpans = section.querySelectorAll('span');
+                const sectionObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            letterSpans.forEach(span => {
+                                span.style.opacity = '1';
+                                span.style.transform = 'translateY(0)';
+                            });
+                        }
+                    });
+                }, { threshold: 0.5 });
+                
+                sectionObserver.observe(section);
+            });
+
+            // Scroll-triggered animations with Intersection Observer
+            const animatedElements = document.querySelectorAll('.feature, .testimonial, .cta, .section-title');
+            const observerOptions = {
+                threshold: 0.15,
+                rootMargin: '0px 0px -80px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.classList.add('animate-in');
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }, index * 150); // Stagger animations
+                    }
+                });
+            }, observerOptions);
+
+            animatedElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                observer.observe(el);
+            });
+
+            // Enhanced button click effects
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    // Create ripple effect
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.cssText = `
+                        position: absolute;
+                        width: ${size}px;
+                        height: ${size}px;
+                        left: ${x}px;
+                        top: ${y}px;
+                        background: rgba(255,255,255,0.5);
+                        border-radius: 50%;
+                        transform: scale(0);
+                        animation: rippleEffect 0.6s ease-out;
+                        pointer-events: none;
+                    `;
+                    
+                    this.style.position = 'relative';
+                    this.style.overflow = 'hidden';
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+
+            // Parallax effect for hero section
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                const parallaxElements = document.querySelectorAll('.bg-element');
+                
+                parallaxElements.forEach((element, index) => {
+                    const speed = 0.5 + (index * 0.2);
+                    element.style.transform = `translateY(${scrolled * speed}px)`;
+                });
+
+                // Dynamic navigation background
+                const navbar = document.querySelector('.navbar');
+                if (navbar) {
+                    if (scrolled > 50) {
+                        navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+                        navbar.style.backdropFilter = 'blur(10px)';
+                        navbar.style.boxShadow = '0 2px 20px rgba(0,0,0,0.1)';
+                    } else {
+                        navbar.style.background = 'rgba(255, 255, 255, 0.9)';
+                        navbar.style.backdropFilter = 'none';
+                        navbar.style.boxShadow = 'none';
+                    }
+                }
+            });
+
+            // Typewriter effect for hero title
+            const heroTitle = document.querySelector('.hero-title');
+            if (heroTitle) {
+                const text = heroTitle.textContent;
+                heroTitle.textContent = '';
+                heroTitle.style.borderRight = '2px solid #8c5dff';
+                
+                let i = 0;
+                const typeWriter = () => {
+                    if (i < text.length) {
+                        heroTitle.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(typeWriter, 80);
+                    } else {
+                        setTimeout(() => {
+                            heroTitle.style.borderRight = 'none';
+                        }, 1000);
+                    }
+                };
+                
+                setTimeout(typeWriter, 1000);
+            }
+
+            // Floating animation for character image
+            const character = document.querySelector('.character-img');
+            if (character) {
+                let rotation = 0;
+                setInterval(() => {
+                    rotation += 0.5;
+                    character.style.transform = `translateY(${Math.sin(rotation * 0.1) * 10}px) rotate(${Math.sin(rotation * 0.05) * 2}deg)`;
+                }, 50);
+            }
+
+            // Interactive feature cards hover effects
+            const features = document.querySelectorAll('.feature');
+            features.forEach(feature => {
+                feature.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                    this.style.boxShadow = '0 15px 35px rgba(108, 71, 255, 0.15)';
+                    
+                    const icon = this.querySelector('.feature-icon');
+                    if (icon) {
+                        icon.style.transform = 'scale(1.2) rotate(5deg)';
+                    }
+                });
+                
+                feature.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.08)';
+                    
+                    const icon = this.querySelector('.feature-icon');
+                    if (icon) {
+                        icon.style.transform = 'scale(1) rotate(0deg)';
+                    }
+                });
+                
+                // Add transition
+                this.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                const icon = this.querySelector('.feature-icon');
+                if (icon) {
+                    icon.style.transition = 'all 0.3s ease';
+                }
+            });
+
+            // Enhanced testimonial interactions
+            const testimonials = document.querySelectorAll('.testimonial');
+            testimonials.forEach((testimonial, index) => {
+                testimonial.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 12px 30px rgba(108, 71, 255, 0.12)';
+                    this.style.borderLeft = '4px solid #6c47ff';
+                });
+                
+                testimonial.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.08)';
+                    this.style.borderLeft = '4px solid transparent';
+                });
+                
+                this.style.transition = 'all 0.3s ease';
+                
+                // Add subtle entrance animation
+                setTimeout(() => {
+                    this.style.opacity = '1';
+                    this.style.transform = 'translateY(0)';
+                }, (index + 1) * 200);
+            });
+
+            // CTA button enhanced effects
+            const ctaBtn = document.querySelector('.cta-btn');
+            if (ctaBtn) {
+                ctaBtn.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px) scale(1.05)';
+                    this.style.boxShadow = '0 8px 25px rgba(108, 71, 255, 0.4)';
+                });
+                
+                ctaBtn.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '0 4px 15px rgba(108, 71, 255, 0.3)';
+                });
+            }
+
+            // Add interactive cursor effects
+            let cursor = document.createElement('div');
+            cursor.className = 'custom-cursor';
+            cursor.style.cssText = `
+                position: fixed;
+                width: 20px;
+                height: 20px;
+                background: rgba(108, 71, 255, 0.3);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 9999;
+                transition: all 0.1s ease;
+                transform: translate(-50%, -50%);
+                mix-blend-mode: difference;
+            `;
+            document.body.appendChild(cursor);
+
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            });
+
+            // Enhance cursor on interactive elements
+            const interactiveElements = document.querySelectorAll('button, a, .feature, .testimonial');
+            interactiveElements.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursor.style.transform = 'translate(-50%, -50%) scale(2)';
+                    cursor.style.background = 'rgba(108, 71, 255, 0.5)';
+                });
+                
+                el.addEventListener('mouseleave', () => {
+                    cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+                    cursor.style.background = 'rgba(108, 71, 255, 0.3)';
+                });
+            });
+
+            // Add scroll progress indicator
+            const scrollProgress = document.createElement('div');
+            scrollProgress.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 0%;
+                height: 3px;
+                background: linear-gradient(90deg, #6c47ff, #8c5dff);
+                z-index: 9999;
+                transition: width 0.1s ease;
+            `;
+            document.body.appendChild(scrollProgress);
+
+            window.addEventListener('scroll', () => {
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                scrollProgress.style.width = scrolled + '%';
+            });
+
+            // Add particle effect to hero section
+            createParticles();
+        });
+
+        // Particle system for hero background
+        function createParticles() {
+            const hero = document.querySelector('.hero-section');
+            if (!hero) return;
+
+            const particleContainer = document.createElement('div');
+            particleContainer.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                overflow: hidden;
+                z-index: 1;
+            `;
+            hero.appendChild(particleContainer);
+
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: absolute;
+                    width: ${Math.random() * 6 + 2}px;
+                    height: ${Math.random() * 6 + 2}px;
+                    background: rgba(108, 71, 255, ${Math.random() * 0.3 + 0.1});
+                    border-radius: 50%;
+                    left: ${Math.random() * 100}%;
+                    top: ${Math.random() * 100}%;
+                    animation: floatParticle ${Math.random() * 10 + 15}s infinite linear;
+                `;
+                particleContainer.appendChild(particle);
+            }
+        }
+
+        // Add CSS for additional animations and effects
+        const additionalCSS = `
+            @keyframes rippleEffect {
+                to { transform: scale(2); opacity: 0; }
+            }
+            @keyframes gradientShift {
+                0%, 100% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+            }
+            @keyframes floatParticle {
+                0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+            }
+            @keyframes slideInUp {
+                from { transform: translateY(30px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            @keyframes fadeInScale {
+                from { transform: scale(0.8); opacity: 0; }
+                to { transform: scale(1); opacity: 1; }
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+            }
+            
+            .animate-visible {
+                animation: slideInUp 0.8s ease-out forwards;
+            }
+            
+            .navbar {
+                transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            }
+            
+            .dynamic-text {
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+            
+            .feature {
+                transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                cursor: pointer;
+            }
+            
+            .testimonial {
+                transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                cursor: pointer;
+            }
+            
+            .cta-btn {
+                transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .cta-btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                transition: left 0.5s;
+            }
+            
+            .cta-btn:hover::before {
+                left: 100%;
+            }
+            
+            .feature-icon {
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            
+            .custom-cursor {
+                display: block;
+            }
+            
+            @media (max-width: 768px) {
+                .custom-cursor {
+                    display: none;
+                }
+            }
+            
+            /* Enhanced hero animations */
+            .hero-banner {
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .hero-banner::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(45deg, rgba(108, 71, 255, 0.1) 0%, rgba(140, 93, 255, 0.05) 100%);
+                animation: pulse 4s ease-in-out infinite;
+            }
+            
+            /* Smooth entrance animations for all elements */
+            .section-title, .feature, .testimonial, .cta {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            
+            .animate-in {
+                opacity: 1 !important;
+                transform: translateY(0) !important;
+            }
+        `;
+        
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = additionalCSS;
+        document.head.appendChild(styleSheet);
+    </script>
 </head>
 <body>
-<<<<<<< HEAD
-    <div class="hero-section">
-        <div class="hero-card">
-            <!-- Logo and Title -->
-            <h1 class="logo-title">MindMate</h1>
-            <p class="hero-subtitle">
-                Вашиот паметен партнер за учење, продуктивност и организација на студиите
-            </p>
-
-            <!-- Call to Action Buttons -->
-            <div class="cta-buttons">
-                <a href="{% url 'mindmate:register' %}" class="btn-primary-custom">
-                    <i class="fas fa-user-plus me-2"></i>
-                    Регистрирај се
-                </a>
-                <a href="{% url 'mindmate:login' %}" class="btn-outline-custom">
-                    <i class="fas fa-sign-in-alt me-2"></i>
-                    Најави се
-                </a>
-            </div>
-
-            <!-- Features Section -->
-            <div class="features-section">
-                <h2 class="features-title">Зошто MindMate?</h2>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-brain"></i>
-                        </div>
-                        <h3 class="feature-title">Паметно учење</h3>
-                        <p class="feature-description">
-                            AI-алатки за создавање квизови, анализа на материјали и персонализирани препораки
-                        </p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-calendar-alt"></i>
-                        </div>
-                        <h3 class="feature-title">Организација</h3>
-                        <p class="feature-description">
-                            Календар за задачи, следење рокови и планирање на студиските активности
-                        </p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h3 class="feature-title">Следење напредок</h3>
-                        <p class="feature-description">
-                            Детални анализи на вашиот напредок, точност и постигнувања
-                        </p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <h3 class="feature-title">AI Асистент</h3>
-                        <p class="feature-description">
-                            Интелигентен чет-бот за помош при учење и организација на времето
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-=======
     <div class="navbar">
-    <div class="navbar-logo">MindMate</div>
+        <div class="navbar-logo">
+            <img src="{% static 'mindLogo.png' %}" alt="MindMate Logo">
+        </div>
         <div class="navbar-links">
-            <a href="/login/">Најави се</a>
-            <a href="/register/">Регистрирај се</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'mindmate:logout' %}">Одјави се</a>
+            {% else %}
+                <a href="{% url 'mindmate:login' %}">Најави се</a>
+                <a href="{% url 'mindmate:register' %}">Регистрирај се</a>
+            {% endif %}
         </div>
     </div>
     <div class="container">
-    <div class="hero">
+        <div class="hero">
             <div class="hero-text">
                 <div class="hero-title">Отклучи го твојот студиски потенцијал со MindMate</div>
                 <div class="hero-desc">MindMate е твојот AI-поддржан асистент за продуктивност и учење, дизајниран да го подобри учењето, организацијата и мотивацијата со паметни алатки и гамификација.</div>
                 <a href="/register/"><button class="hero-btn">Дознај повеќе</button></a>
             </div>
-            <div class="hero-img">
-                <img src="https://cdn.pixabay.com/photo/2017/01/10/19/05/education-1976101_1280.png" alt="Илустрација за учење">
+            <div class="hero-character">
+                <img src="{% static 'character.png' %}" alt="MindMate Character">
             </div>
         </div>
     <div class="section-title">Зошто да го одбереш MindMate?</div>
     <div class="features">
-            <div class="feature">
-                <div class="feature-icon">🧠</div>
-                <div class="feature-title">AI-Поддржано учење</div>
-                <div class="feature-desc">Интеракција со паметен студиски агент за Q&A на документи, генерирање квизови и персонализирани увидувања.</div>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">📅</div>
-                <div class="feature-title">Беспрекорна организација</div>
-                <div class="feature-desc">Управувај со распоредот преку интуитивен календар, постави потсетници и следи рокови без напор.</div>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🏆</div>
-                <div class="feature-title">Мотивирачки напредок</div>
-                <div class="feature-desc">Остани мотивиран со гамифицирано следење на напредок, серии, значки и реални награди.</div>
-            </div>
+        <div class="feature">
+            <div class="feature-icon">🧠</div>
+            <div class="feature-title dynamic-text">AI-Поддржано учење</div>
+            <div class="feature-desc">Интеракција со паметен студиски агент за Q&A на документи, генерирање квизови и персонализирани увидувања.</div>
         </div>
+        <div class="feature">
+            <div class="feature-icon">📅</div>
+            <div class="feature-title dynamic-text">Беспрекорна организација</div>
+            <div class="feature-desc">Управувај со распоредот преку интуитивен календар, постави потсетници и следи рокови без напор.</div>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">🏆</div>
+            <div class="feature-title dynamic-text">Мотивирачки напредок</div>
+            <div class="feature-desc">Остани мотивиран со гамифицирано следење на напредок, серии, значки и реални награди.</div>
+        </div>
+    </div>
     <div class="section-title">Што велат нашите корисници</div>
     <div class="testimonials">
-            <div class="testimonial">
-                <div class="testimonial-quote">„MindMate целосно го промени мојот пристап кон студиите. AI агентот е неверојатно корисен, а следењето на напредокот ме држи на вистинскиот пат.“</div>
-                <div class="testimonial-user">Сара Ј.</div>
-                <div class="testimonial-role">Студент на универзитет</div>
-            </div>
-            <div class="testimonial">
-                <div class="testimonial-quote">„Порано имав проблеми со одложување, но гамификацијата на MindMate го прави учењето забавно и наградувачко. Топло препорачувам!“</div>
-                <div class="testimonial-user">Михаил Б.</div>
-                <div class="testimonial-role">Маркетинг практикант</div>
-            </div>
-            <div class="testimonial">
-                <div class="testimonial-quote">„Управувањето со календарот е спас! Можам да го планирам целата недела и лесно да креирам настани без мака.“</div>
-                <div class="testimonial-user">Емили Р.</div>
-                <div class="testimonial-role">Софтверски инженер</div>
-            </div>
+        <div class="testimonial">
+            <div class="testimonial-quote">„MindMate целосно го промени мојот пристап кон студиите. AI агентот е неверојатно корисен, а следењето на напредокот ме држи на вистинскиот пат.“</div>
+            <div class="testimonial-user">Сара Ј.</div>
+            <div class="testimonial-role">Студент на универзитет</div>
         </div>
+        <div class="testimonial">
+            <div class="testimonial-quote">„Порано имав проблеми со одложување, но гамификацијата на MindMate го прави учењето забавно и наградувачко. Топло препорачувам!“</div>
+            <div class="testimonial-user">Михаил Б.</div>
+            <div class="testimonial-role">Маркетинг практикант</div>
+        </div>
+        <div class="testimonial">
+            <div class="testimonial-quote">„Управувањето со календарот е спас! Можам да го планирам целата недела и лесно да креирам настани без мака.“</div>
+            <div class="testimonial-user">Емили Р.</div>
+            <div class="testimonial-role">Софтверски инженер</div>
+        </div>
+    </div>
     <div class="cta">
-            <div class="cta-title">Подготвен/а да го трансформираш учењето?</div>
-            <div class="cta-desc">Придружи се на MindMate денес и отклучи попаметно, поорганизирано и помотивирано студиско патување.</div>
-            <a href="/register/"><button class="cta-btn">Регистрирај се сега</button></a>
-        </div>
+        <div class="cta-title">Подготвен/а да го трансформираш учењето?</div>
+        <div class="cta-desc">Придружи се на MindMate денес и отклучи попаметно, поорганизирано и помотивирано студиско патување.</div>
+        <a href="/register/"><button class="cta-btn">Регистрирај се сега</button></a>
+    </div>
     </div>
     <div class="footer">
         &copy; 2025 MindMate. Сите права задржани.
     </div>
->>>>>>> ljubica
 </body>
 </html>

@@ -1,40 +1,85 @@
 
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-/* Force sidebar links and app labels to #14345c even when not selected */
+
+body, .module, .dashboard, .admin-interface {
+    font-family: 'Poppins', Arial, sans-serif !important;
+}
+
+
+/* Header and navigation */
+#header, .module caption, .breadcrumbs, .dashboard-module h2, .login #header, .login .module caption, .login .breadcrumbs {
+    background-color: #6c47ff !important;
+    color: #fff !important;
+}
+
+#header, .login #header {
+    border-bottom: 4px solid #8c5dff !important;
+}
+
+/* Login form background and box */
+.login, .login #content, .login .form-row, .login .form-row input, .login .form-row label {
+    background: #f6f1ff !important;
+    color: #4b2996 !important;
+}
+
+.login .form-row input[type="text"],
+.login .form-row input[type="password"] {
+    background: #fff !important;
+    border: 1.5px solid #8c5dff !important;
+    color: #4b2996 !important;
+    border-radius: 6px !important;
+    font-family: 'Poppins', Arial, sans-serif !important;
+}
+
+.login .submit-row input[type="submit"] {
+    background-color: #6c47ff !important;
+    color: #fff !important;
+    border: 2px solid #8c5dff !important;
+    font-family: 'Poppins', Arial, sans-serif !important;
+    border-radius: 6px !important;
+    font-weight: 600;
+    box-shadow: 0 2px 8px #e6d6ff44;
+    transition: background 0.2s;
+}
+.login .submit-row input[type="submit"]:hover {
+    background-color: #8c5dff !important;
+    color: #fff !important;
+}
+
+/* Login box shadow and border */
+.login #content {
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px #6c47ff22 !important;
+    border: 1.5px solid #8c5dff !important;
+    padding: 2em 2em 1.5em 2em !important;
+}
+
+/* General admin background */
+body, .dashboard, .admin-interface, .login {
+    background: #f6f1ff !important;
+}
+
 #nav-sidebar a,
 #nav-sidebar .app-label,
 #nav-sidebar .model,
 #nav-sidebar .nav-item,
 #nav-sidebar .nav-item a,
 #nav-sidebar .nav-item .app-label {
-    color: #14345c !important;
+    color: #4b2996 !important;
 }
-/* Sidebar and app list font color */
+
 #nav-sidebar, #nav-sidebar a, #nav-sidebar .model, #nav-sidebar .app-label, .app-MindMateAPP {
-    color: #14345c !important;
-}
-
-body, .module, .dashboard, .admin-interface {
-    font-family: 'Poppins', Arial, sans-serif !important;
-}
-
-#header, .module caption, .breadcrumbs, .dashboard-module h2 {
-    background-color: #c5eaf0 !important;
-    color: #14345c !important;
-}
-
-#header {
-    border-bottom: 4px solid #0cc0df;
+    color: #4b2996 !important;
 }
 
 .login .submit-row input[type="submit"] {
-    background-color: #c5eaf0 !important;
-    color: #14345c !important;
-    border: 2px solid #0cc0df !important;
+    background-color: #6c47ff !important;
+    color: #fff !important;
+    border: 2px solid #8c5dff !important;
     font-family: 'Poppins', Arial, sans-serif !important;
 }
 
-/* Custom admin logo */
 #site-name {
     font-size: 0; /* Hide text */
     padding-left: 0;
@@ -48,20 +93,15 @@ body, .module, .dashboard, .admin-interface {
     display: block;
     margin: 0 auto;
 }
-/* Hide site name text in login page */
 .login #site-name {
     font-size: 0;
     padding-left: 0;
 }
-
-/* Highlight selected menu */
 #nav-sidebar .current-model {
-    background-color: #ffe34e !important;
-    color: #14345c !important;
+    background-color: #e6d6ff !important;
+    color: #4b2996 !important;
 }
-
-/* Custom dashboard title */
 h1, h2 {
-    color: #14345c !important;
+    color: #4b2996 !important;
     font-family: 'Poppins', Arial, sans-serif !important;
 }

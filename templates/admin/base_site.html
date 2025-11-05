@@ -2,10 +2,33 @@
 {% load static %}
 {% block title %}{{ site_title }} | {{ title }}{% endblock %}
 {% block extrastyle %}
-    <link rel="stylesheet" type="text/css" href="{% static 'admin/custom.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/custom.css' %}?v=2" />
+{% endblock %}
+{% block extrahead %}
+    <style>
+        /* Force purple admin theme - inline to override default styles */
+        #header, .module caption, .breadcrumbs, .dashboard-module h2 {
+            background-color: #000000 !important;
+            color: #fff !important;
+        }
+        #header {
+            border-bottom: 4px solid hsl(263, 35%, 7%) !important;
+        }
+        .login .submit-row input[type="submit"] {
+            background-color: #281c63 !important;
+            color: #fff !important;
+            border: 2px solid #8c5dff !important;
+        }
+        body, .login {
+            background: #f6f1ff !important;
+        }
+        #nav-sidebar a, #nav-sidebar .app-label, #nav-sidebar .model {
+            color: #4b2996 !important;
+        }
+    </style>
 {% endblock %}
 {% block branding %}
     <h1 id="site-name">
-        <img src="{% static 'admin/logo.png' %}" alt="MindMate Logo" class="admin-logo">
+        <img src="{% static 'admin/mindLogo.png' %}" alt="MindMate Logo" class="admin-logo">
     </h1>
 {% endblock %}

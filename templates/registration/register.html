@@ -1,3 +1,29 @@
+{% load static %}
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Веќе сте најавени - MindMate</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="alert alert-info text-center">
+            <h4>Веќе сте најавени!</h4>
+            <p>Веќе имате активна сесија. <a href="{% url 'mindmate:home' %}">Одете на почетната страница</a> или <a href="{% url 'mindmate:logout' %}">одјавете се</a> за да создадете нова сметка.</p>
+        </div>
+    </div>
+</body>
+</html>
+{% else %}
 <!DOCTYPE html>
 <html lang="mk">
 <head>
@@ -6,69 +32,101 @@
     <title>Регистрација за MindMate</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-blue: #3b82f6;
-            --light-blue: #93c5fd;
+            --primary-purple: #6c47ff;
+            --primary-purple-dark: #4b2996;
             --background-gray: #f8fafc;
             --text-gray: #6b7280;
             --border-gray: #e5e7eb;
+            --white: #ffffff;
         }
-
+        
         body {
-            background-color: var(--background-gray);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .registration-container {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--background-gray) 0%, #e9e6ff 100%);
             min-height: 100vh;
+        }
+        
+        .register-container {
             display: flex;
+            min-height: 100vh;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
-
-        .registration-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            max-width: 700px;
+        
+        .register-form-grid {
             width: 100%;
-            padding: 40px;
+            max-width: 950px;
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 40px 30px;
         }
-
-        .logo-section {
+        
+        .brand-section {
+            margin-bottom: 40px;
             text-align: center;
-            margin-bottom: 30px;
         }
-
-        .logo-title {
-            color: var(--primary-blue);
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
+        
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
         }
-
-        .logo-subtitle {
+        
+        .brand-logo a {
+            display: inline-block;
+        }
+        
+        .brand-logo img {
+            height: 56px;
+            width: auto;
+            display: block;
+        }
+        
+        .brand-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-purple-dark);
+            margin-bottom: 8px;
+        }
+        
+        .brand-subtitle {
             color: var(--text-gray);
             font-size: 1rem;
             margin-bottom: 30px;
         }
-
+        
+        .form-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 20px;
+        }
+        
+        .form-col {
+            display: flex;
+            flex-direction: column;
+        }
+        
         .section-title {
             color: #374151;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 600;
-            margin-bottom: 20px;
-            margin-top: 30px;
+            margin-bottom: 18px;
+            margin-top: 0px;
         }
-
+        
         .form-label {
             color: #374151;
             font-weight: 500;
             margin-bottom: 8px;
         }
-
+        
         .form-control, .form-select {
             border: 2px solid var(--border-gray);
             border-radius: 10px;
@@ -76,94 +134,103 @@
             font-size: 1rem;
             transition: all 0.3s ease;
         }
-
+        
         .form-control:focus, .form-select:focus {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 0.2rem rgba(108, 71, 255, 0.25);
         }
-
-        .form-control i {
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
             color: var(--text-gray);
-            margin-right: 10px;
+            z-index: 10;
         }
-
+        
+        .input-group .form-control {
+            padding-left: 45px;
+        }
+        
         .interests-section {
             margin: 20px 0;
         }
-
+        
         .interests-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 8px;
+            margin-top: 10px;
         }
-
-        .interest-item {
+        
+        .interest-btn {
             background: #f3f4f6;
-            border: 1px solid var(--border-gray);
+            border: 2px solid var(--border-gray);
             border-radius: 20px;
-            padding: 8px 16px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: inline-block;
+            padding: 8px 18px;
             font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: inline-block;
             position: relative;
         }
-
-        .interest-item:hover {
-            background: #e5e7eb;
-            border-color: var(--primary-blue);
-        }
-
-        .interest-item input[type="checkbox"] {
+        
+        .interest-btn input[type="checkbox"] {
             display: none;
         }
-
-        .interest-item input[type="checkbox"]:checked + .interest-label {
-            background: var(--primary-blue);
-            color: white;
-            border-color: var(--primary-blue);
+        
+        .interest-btn input[type="checkbox"]:checked + .interest-label {
+            background: var(--primary-purple);
+            color: #fff;
+            border-color: var(--primary-purple);
         }
-
+        
         .interest-label {
             display: block;
-            background: #f3f4f6;
-            border: 1px solid var(--border-gray);
-            border-radius: 20px;
-            padding: 8px 16px;
-            transition: all 0.3s ease;
+            background: inherit;
+            border: inherit;
+            border-radius: inherit;
+            padding: inherit;
+            color: inherit;
             cursor: pointer;
-            font-size: 14px;
             margin: 0;
+            transition: all 0.2s ease;
         }
-
-        .interest-label:hover {
-            background: #e5e7eb;
-            border-color: var(--primary-blue);
+        
+        .interest-btn:hover .interest-label {
+            border-color: var(--primary-purple);
         }
-
+        
         .terms-section {
             margin: 25px 0;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
+            gap: 10px;
         }
-
+        
         .terms-section input[type="checkbox"] {
-            margin-right: 10px;
-            accent-color: var(--primary-blue);
+            margin-top: 3px;
+            accent-color: var(--primary-purple);
         }
-
+        
         .terms-link {
-            color: var(--primary-blue);
+            color: var(--primary-purple);
             text-decoration: none;
         }
-
+        
         .terms-link:hover {
             text-decoration: underline;
         }
-
+        
         .register-btn {
-            background: var(--primary-blue);
+            background: var(--primary-purple);
             border: none;
             border-radius: 10px;
             color: white;
@@ -174,43 +241,47 @@
             transition: all 0.3s ease;
             margin-top: 20px;
         }
-
+        
         .register-btn:hover {
-            background: #2563eb;
+            background: var(--primary-purple-dark);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 5px 15px rgba(108, 71, 255, 0.4);
         }
-
+        
         .register-btn:disabled {
             background: var(--text-gray);
             transform: none;
             box-shadow: none;
         }
-
+        
         .alert {
             border-radius: 10px;
             margin-bottom: 20px;
         }
-
-        .input-group {
-            position: relative;
+        
+        .login-link {
+            text-align: center;
+            color: var(--primary-purple);
+            margin-top: 30px;
         }
-
-        .input-group i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-gray);
-            z-index: 10;
+        
+        .login-link a {
+            color: var(--primary-purple);
+            text-decoration: none;
+            font-weight: 500;
         }
-
-        .input-group .form-control {
-            padding-left: 45px;
+        
+        .login-link a:hover {
+            text-decoration: underline;
         }
-
-        @media (max-width: 576px) {
-            .registration-card {
+        
+        @media (max-width: 768px) {
+            .form-cols {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .register-form-grid {
                 padding: 30px 20px;
                 margin: 10px;
             }
@@ -222,14 +293,19 @@
     </style>
 </head>
 <body>
-    <div class="registration-container">
-        <div class="registration-card">
-            <!-- Logo Section -->
-            <div class="logo-section">
-                <h1 class="logo-title">Регистрација за MindMate</h1>
-                <p class="logo-subtitle">Создајте ја вашата сметка за да ги отклучите персонализираните алатки за учење и продуктивност.</p>
+    <div class="register-container">
+        <div class="register-form-grid">
+            <!-- Brand Section -->
+            <div class="brand-section">
+                <div class="brand-logo">
+                    <a href="{% url 'mindmate:home' %}">
+                        <img src="{% static 'mindLogo.png' %}" alt="MindMate Logo">
+                    </a>
+                </div>
+                <div class="brand-title">Регистрација за MindMate</div>
+                <div class="brand-subtitle">Создајте ја вашата сметка за да ги отклучите персонализираните алатки за учење и продуктивност.</div>
             </div>
-
+            
             <!-- Display Messages -->
             {% if messages %}
                 {% for message in messages %}
@@ -239,156 +315,150 @@
                     </div>
                 {% endfor %}
             {% endif %}
-
+            
             <!-- Registration Form -->
             <form method="post" id="registrationForm">
                 {% csrf_token %}
-                
-                <!-- Account Details Section -->
-                <div class="section-title">Детали за сметката</div>
-                
-                <div class="mb-3">
-                    <label for="{{ form.full_name.id_for_label }}" class="form-label">{{ form.full_name.label }}</label>
-                    <div class="input-group">
-                        <i class="fas fa-user"></i>
-                        {{ form.full_name }}
-                    </div>
-                    {% if form.full_name.errors %}
-                        <div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="mb-3">
-                    <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
-                    <div class="input-group">
-                        <i class="fas fa-envelope"></i>
-                        {{ form.email }}
-                    </div>
-                    {% if form.email.errors %}
-                        <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="mb-3">
-                    <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
-                    <div class="input-group">
-                        <i class="fas fa-lock"></i>
-                        {{ form.password }}
-                    </div>
-                    {% if form.password.errors %}
-                        <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="mb-3">
-                    <label for="{{ form.password_confirm.id_for_label }}" class="form-label">{{ form.password_confirm.label }}</label>
-                    <div class="input-group">
-                        <i class="fas fa-lock"></i>
-                        {{ form.password_confirm }}
-                    </div>
-                    {% if form.password_confirm.errors %}
-                        <div class="text-danger small mt-1">{{ form.password_confirm.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <!-- Academic Background Section -->
-                <div class="section-title">Академска позадина</div>
-                
-                <div class="mb-3">
-                    <label for="{{ form.study_level.id_for_label }}" class="form-label">{{ form.study_level.label }}</label>
-                    {{ form.study_level }}
-                    {% if form.study_level.errors %}
-                        <div class="text-danger small mt-1">{{ form.study_level.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="mb-3">
-                    <label for="{{ form.study_direction.id_for_label }}" class="form-label">{{ form.study_direction.label }}</label>
-                    {{ form.study_direction }}
-                    {% if form.study_direction.errors %}
-                        <div class="text-danger small mt-1">{{ form.study_direction.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <!-- Personalize Experience Section -->
-                <div class="section-title">Персонализирајте го вашето искуство</div>
-                
-                <div class="interests-section">
-                    <label class="form-label">{{ form.interests.label }}</label>
-                    <div class="interests-grid">
-                        {% for choice in form.interests %}
-                            <div class="interest-item">
-                                {{ choice.tag }}
-                                <label class="interest-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+                <div class="form-cols">
+                    <!-- Left Column -->
+                    <div class="form-col">
+                        <div class="section-title">Детали за сметката</div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.full_name.id_for_label }}" class="form-label">{{ form.full_name.label }}</label>
+                            <div class="input-group">
+                                <i class="fas fa-user"></i>
+                                {{ form.full_name }}
                             </div>
-                        {% endfor %}
+                            {% if form.full_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                            <div class="input-group">
+                                <i class="fas fa-envelope"></i>
+                                {{ form.email }}
+                            </div>
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                {{ form.password }}
+                            </div>
+                            {% if form.password.errors %}
+                                <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.password_confirm.id_for_label }}" class="form-label">{{ form.password_confirm.label }}</label>
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                {{ form.password_confirm }}
+                            </div>
+                            {% if form.password_confirm.errors %}
+                                <div class="text-danger small mt-1">{{ form.password_confirm.errors.0 }}</div>
+                            {% endif %}
+                        </div>
                     </div>
-                    {% if form.interests.errors %}
-                        <div class="text-danger small mt-2">{{ form.interests.errors.0 }}</div>
-                    {% endif %}
-                </div>
+                    
+                    <!-- Right Column -->
+                    <div class="form-col">
+                        <div class="section-title">Академска позадина</div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.study_level.id_for_label }}" class="form-label">{{ form.study_level.label }}</label>
+                            {{ form.study_level }}
+                            {% if form.study_level.errors %}
+                                <div class="text-danger small mt-1">{{ form.study_level.errors.0 }}</div>
+                            {% endif %}
+                        </div>
 
-                <!-- Terms and Conditions -->
-                <div class="terms-section">
-                    {{ form.terms_agreed }}
-                    <label for="{{ form.terms_agreed.id_for_label }}">
-                        Се согласувам со <a href="#" class="terms-link">условите и правилата</a>.
-                    </label>
-                    {% if form.terms_agreed.errors %}
-                        <div class="text-danger small mt-1">{{ form.terms_agreed.errors.0 }}</div>
-                    {% endif %}
-                </div>
+                        <div class="mb-3">
+                            <label for="{{ form.study_direction.id_for_label }}" class="form-label">{{ form.study_direction.label }}</label>
+                            {{ form.study_direction }}
+                            {% if form.study_direction.errors %}
+                                <div class="text-danger small mt-1">{{ form.study_direction.errors.0 }}</div>
+                            {% endif %}
+                        </div>
 
-                <!-- Submit Button -->
-                <button type="submit" class="register-btn" id="submitBtn">
-                    <i class="fas fa-user-plus me-2"></i>
-                    Регистрирај сметка
-                </button>
+                        <div class="section-title">Персонализирајте го вашето искуство</div>
+                        
+                        <div class="interests-section">
+                            <label class="form-label">{{ form.interests.label }}</label>
+                            <div class="interests-grid">
+                                {% for choice in form.interests %}
+                                    <div class="interest-btn">
+                                        {{ choice.tag }}
+                                        <label class="interest-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.interests.errors %}
+                                <div class="text-danger small mt-2">{{ form.interests.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="terms-section">
+                            {{ form.terms_agreed }}
+                            <label for="{{ form.terms_agreed.id_for_label }}">
+                                Се согласувам со <a href="#" class="terms-link">условите и правилата</a>.
+                            </label>
+                            {% if form.terms_agreed.errors %}
+                                <div class="text-danger small mt-1">{{ form.terms_agreed.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="register-btn" id="submitBtn">
+                            <i class="fas fa-user-plus me-2"></i>
+                            Регистрирај сметка
+                        </button>
+                    </div>
+                </div>
             </form>
 
             <!-- Login Link -->
-            <div class="text-center mt-3">
-                <p class="text-muted">Веќе имате сметка? <a href="#" class="terms-link">Најавете се</a></p>
+            <div class="login-link">
+                Веќе имате сметка? <a href="{% url 'mindmate:login' %}">Најавете се</a>
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Interest selection validation
-        const interestCheckboxes = document.querySelectorAll('input[name="interests"]');
-        const maxInterests = 5;
-
-        interestCheckboxes.forEach(checkbox => {
+        // Interest selection as clickable buttons with purple color
+        document.querySelectorAll('.interest-btn input[type="checkbox"]').forEach(function(checkbox) {
+            const btn = checkbox.closest('.interest-btn');
+            const label = btn.querySelector('.interest-label');
+            
             checkbox.addEventListener('change', function() {
-                const checkedCount = document.querySelectorAll('input[name="interests"]:checked').length;
-                
-                // Update visual state
-                const label = this.nextElementSibling;
                 if (this.checked) {
-                    label.style.background = 'var(--primary-blue)';
-                    label.style.color = 'white';
-                    label.style.borderColor = 'var(--primary-blue)';
+                    btn.style.background = '#6c47ff';
+                    btn.style.borderColor = '#6c47ff';
+                    btn.style.color = '#fff';
+                    label.style.background = '#6c47ff';
+                    label.style.color = '#fff';
                 } else {
+                    btn.style.background = '#f3f4f6';
+                    btn.style.borderColor = '#e5e7eb';
+                    btn.style.color = '#374151';
                     label.style.background = '#f3f4f6';
                     label.style.color = '#374151';
-                    label.style.borderColor = 'var(--border-gray)';
                 }
-                
-                if (checkedCount >= maxInterests) {
-                    interestCheckboxes.forEach(cb => {
-                        if (!cb.checked) {
-                            cb.disabled = true;
-                            cb.nextElementSibling.style.opacity = '0.5';
-                            cb.nextElementSibling.style.cursor = 'not-allowed';
-                        }
-                    });
-                } else {
-                    interestCheckboxes.forEach(cb => {
-                        cb.disabled = false;
-                        cb.nextElementSibling.style.opacity = '1';
-                        cb.nextElementSibling.style.cursor = 'pointer';
-                    });
+            });
+            
+            // Make the entire button clickable
+            btn.addEventListener('click', function(e) {
+                if (e.target !== checkbox) {
+                    checkbox.click();
                 }
             });
         });
@@ -401,22 +471,7 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Се регистрира...';
         });
-
-        // Password strength indicator
-        const passwordField = document.getElementById('{{ form.password.id_for_label }}');
-        if (passwordField) {
-            passwordField.addEventListener('input', function() {
-                const password = this.value;
-                let strength = 0;
-                
-                if (password.length >= 8) strength++;
-                if (/[A-Z]/.test(password)) strength++;
-                if (/[0-9]/.test(password)) strength++;
-                if (/[^A-Za-z0-9]/.test(password)) strength++;
-                
-                // You can add a visual indicator here
-            });
-        }
     </script>
 </body>
 </html>
+{% endif %}
