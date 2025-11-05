@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрација за MindMate</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --light-blue: #93c5fd;
+            --background-gray: #f8fafc;
+            --text-gray: #6b7280;
+            --border-gray: #e5e7eb;
+        }
+
+        body {
+            background-color: var(--background-gray);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .registration-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .registration-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-title {
+            color: var(--primary-blue);
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .logo-subtitle {
+            color: var(--text-gray);
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #374151;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            margin-top: 30px;
+        }
+
+        .form-label {
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid var(--border-gray);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+
+        .form-control i {
+            color: var(--text-gray);
+            margin-right: 10px;
+        }
+
+        .interests-section {
+            margin: 20px 0;
+        }
+
+        .interests-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .interest-item {
+            background: #f3f4f6;
+            border: 1px solid var(--border-gray);
+            border-radius: 20px;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .interest-item:hover {
+            background: #e5e7eb;
+            border-color: var(--primary-blue);
+        }
+
+        .interest-item input[type="checkbox"] {
+            display: none;
+        }
+
+        .interest-item input[type="checkbox"]:checked + .interest-label {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        .interest-label {
+            display: block;
+            background: #f3f4f6;
+            border: 1px solid var(--border-gray);
+            border-radius: 20px;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .interest-label:hover {
+            background: #e5e7eb;
+            border-color: var(--primary-blue);
+        }
+
+        .terms-section {
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .terms-section input[type="checkbox"] {
+            margin-right: 10px;
+            accent-color: var(--primary-blue);
+        }
+
+        .terms-link {
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+
+        .terms-link:hover {
+            text-decoration: underline;
+        }
+
+        .register-btn {
+            background: var(--primary-blue);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 15px;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .register-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .register-btn:disabled {
+            background: var(--text-gray);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-gray);
+            z-index: 10;
+        }
+
+        .input-group .form-control {
+            padding-left: 45px;
+        }
+
+        @media (max-width: 576px) {
+            .registration-card {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .interests-grid {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="registration-container">
+        <div class="registration-card">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <h1 class="logo-title">Регистрација за MindMate</h1>
+                <p class="logo-subtitle">Создајте ја вашата сметка за да ги отклучите персонализираните алатки за учење и продуктивност.</p>
+            </div>
+
+            <!-- Display Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Registration Form -->
+            <form method="post" id="registrationForm">
+                {% csrf_token %}
+                
+                <!-- Account Details Section -->
+                <div class="section-title">Детали за сметката</div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.full_name.id_for_label }}" class="form-label">{{ form.full_name.label }}</label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        {{ form.full_name }}
+                    </div>
+                    {% if form.full_name.errors %}
+                        <div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        {{ form.email }}
+                    </div>
+                    {% if form.email.errors %}
+                        <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        {{ form.password }}
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.password_confirm.id_for_label }}" class="form-label">{{ form.password_confirm.label }}</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        {{ form.password_confirm }}
+                    </div>
+                    {% if form.password_confirm.errors %}
+                        <div class="text-danger small mt-1">{{ form.password_confirm.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Academic Background Section -->
+                <div class="section-title">Академска позадина</div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.study_level.id_for_label }}" class="form-label">{{ form.study_level.label }}</label>
+                    {{ form.study_level }}
+                    {% if form.study_level.errors %}
+                        <div class="text-danger small mt-1">{{ form.study_level.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.study_direction.id_for_label }}" class="form-label">{{ form.study_direction.label }}</label>
+                    {{ form.study_direction }}
+                    {% if form.study_direction.errors %}
+                        <div class="text-danger small mt-1">{{ form.study_direction.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Personalize Experience Section -->
+                <div class="section-title">Персонализирајте го вашето искуство</div>
+                
+                <div class="interests-section">
+                    <label class="form-label">{{ form.interests.label }}</label>
+                    <div class="interests-grid">
+                        {% for choice in form.interests %}
+                            <div class="interest-item">
+                                {{ choice.tag }}
+                                <label class="interest-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if form.interests.errors %}
+                        <div class="text-danger small mt-2">{{ form.interests.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="terms-section">
+                    {{ form.terms_agreed }}
+                    <label for="{{ form.terms_agreed.id_for_label }}">
+                        Се согласувам со <a href="#" class="terms-link">условите и правилата</a>.
+                    </label>
+                    {% if form.terms_agreed.errors %}
+                        <div class="text-danger small mt-1">{{ form.terms_agreed.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="register-btn" id="submitBtn">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Регистрирај сметка
+                </button>
+            </form>
+
+            <!-- Login Link -->
+            <div class="text-center mt-3">
+                <p class="text-muted">Веќе имате сметка? <a href="#" class="terms-link">Најавете се</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Interest selection validation
+        const interestCheckboxes = document.querySelectorAll('input[name="interests"]');
+        const maxInterests = 5;
+
+        interestCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const checkedCount = document.querySelectorAll('input[name="interests"]:checked').length;
+                
+                // Update visual state
+                const label = this.nextElementSibling;
+                if (this.checked) {
+                    label.style.background = 'var(--primary-blue)';
+                    label.style.color = 'white';
+                    label.style.borderColor = 'var(--primary-blue)';
+                } else {
+                    label.style.background = '#f3f4f6';
+                    label.style.color = '#374151';
+                    label.style.borderColor = 'var(--border-gray)';
+                }
+                
+                if (checkedCount >= maxInterests) {
+                    interestCheckboxes.forEach(cb => {
+                        if (!cb.checked) {
+                            cb.disabled = true;
+                            cb.nextElementSibling.style.opacity = '0.5';
+                            cb.nextElementSibling.style.cursor = 'not-allowed';
+                        }
+                    });
+                } else {
+                    interestCheckboxes.forEach(cb => {
+                        cb.disabled = false;
+                        cb.nextElementSibling.style.opacity = '1';
+                        cb.nextElementSibling.style.cursor = 'pointer';
+                    });
+                }
+            });
+        });
+
+        // Form validation
+        const form = document.getElementById('registrationForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Се регистрира...';
+        });
+
+        // Password strength indicator
+        const passwordField = document.getElementById('{{ form.password.id_for_label }}');
+        if (passwordField) {
+            passwordField.addEventListener('input', function() {
+                const password = this.value;
+                let strength = 0;
+                
+                if (password.length >= 8) strength++;
+                if (/[A-Z]/.test(password)) strength++;
+                if (/[0-9]/.test(password)) strength++;
+                if (/[^A-Za-z0-9]/.test(password)) strength++;
+                
+                // You can add a visual indicator here
+            });
+        }
+    </script>
+</body>
+</html>

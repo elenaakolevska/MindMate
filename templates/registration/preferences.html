@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Персонализирајте го вашето MindMate искуство</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --light-blue: #93c5fd;
+            --background-gray: #f8fafc;
+            --text-gray: #6b7280;
+            --border-gray: #e5e7eb;
+        }
+
+        body {
+            background-color: var(--background-gray);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .preferences-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .preferences-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            padding: 50px;
+        }
+
+        .preferences-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .preferences-title {
+            color: #374151;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .preferences-subtitle {
+            color: var(--text-gray);
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #374151;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            margin-top: 35px;
+        }
+
+        .form-label {
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .learning-style-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px;
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option:hover {
+            border-color: var(--primary-blue);
+            background-color: #f8fafc;
+        }
+
+        .radio-option input[type="radio"] {
+            margin-right: 10px;
+            margin-top: 3px;
+            accent-color: var(--primary-blue);
+        }
+
+        .radio-option input[type="radio"]:checked {
+            accent-color: var(--primary-blue);
+        }
+
+        .radio-option.checked {
+            border-color: var(--primary-blue);
+            background-color: #eff6ff;
+        }
+
+        .radio-label {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .radio-title {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .radio-description {
+            color: var(--text-gray);
+            font-size: 0.85rem;
+        }
+
+        .slider-container {
+            margin: 15px 0;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .slider-value {
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        .form-range {
+            width: 100%;
+            height: 6px;
+            background: var(--border-gray);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .form-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            cursor: pointer;
+        }
+
+        .form-range::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-hint {
+            color: var(--text-gray);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 40px;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 2px solid var(--text-gray);
+            border-radius: 10px;
+            color: var(--text-gray);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 12px 25px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: var(--text-gray);
+            color: white;
+        }
+
+        .btn-complete {
+            background: var(--primary-blue);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 12px 25px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-complete:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .preferences-card {
+                padding: 30px 25px;
+                margin: 10px;
+            }
+            
+            .two-column {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .learning-style-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="preferences-container">
+        <div class="preferences-card">
+            <!-- Header -->
+            <div class="preferences-header">
+                <h1 class="preferences-title">Персонализирајте го вашето MindMate искуство</h1>
+                <p class="preferences-subtitle">Помогнете ни да го прилагодиме вашето патување на учење со давање на некои детали.</p>
+            </div>
+
+            <!-- Display Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Preferences Form -->
+            <form method="post" id="preferencesForm">
+                {% csrf_token %}
+                
+                <!-- Academic Information -->
+                <div class="section-title">Академски информации</div>
+                
+                <div class="two-column">
+                    <div class="mb-3">
+                        <label for="{{ form.major_field_of_study.id_for_label }}" class="form-label">{{ form.major_field_of_study.label }}</label>
+                        {{ form.major_field_of_study }}
+                        {% if form.major_field_of_study.errors %}
+                            <div class="text-danger small mt-1">{{ form.major_field_of_study.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.current_courses.id_for_label }}" class="form-label">{{ form.current_courses.label }}</label>
+                        {{ form.current_courses }}
+                        {% if form.current_courses.errors %}
+                            <div class="text-danger small mt-1">{{ form.current_courses.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Study Preferences -->
+                <div class="section-title">Преференци за учење</div>
+                
+                <div class="two-column">
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.preferred_learning_style.label }}</label>
+                        <div class="learning-style-options">
+                            {% for choice in form.preferred_learning_style %}
+                                <div class="radio-option">
+                                    {{ choice.tag }}
+                                    <div class="radio-label">
+                                        <div class="radio-title">
+                                            {% if choice.choice_value == 'visual' %}Визуелно
+                                            {% elif choice.choice_value == 'auditory' %}Аудитивно
+                                            {% elif choice.choice_value == 'kinesthetic' %}Кинестетичко
+                                            {% elif choice.choice_value == 'reading_writing' %}Читање/Пишување
+                                            {% endif %}
+                                        </div>
+                                        <div class="radio-description">{{ choice.choice_label }}</div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.preferred_learning_style.errors %}
+                            <div class="text-danger small mt-1">{{ form.preferred_learning_style.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <label class="form-label">Дневни часови на учење:</label>
+                                <span class="slider-value" id="hoursValue">4 часа</span>
+                            </div>
+                            {{ form.daily_study_hours }}
+                            <div class="slider-hint">Прилагоди врз основа на вашата типична рутина на учење.</div>
+                        </div>
+                        {% if form.daily_study_hours.errors %}
+                            <div class="text-danger small mt-1">{{ form.daily_study_hours.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.learning_goals.id_for_label }}" class="form-label">Цели за учење</label>
+                    {{ form.learning_goals }}
+                    {% if form.learning_goals.errors %}
+                        <div class="text-danger small mt-1">{{ form.learning_goals.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="button" class="btn-back" onclick="window.history.back()">Назад</button>
+                    <button type="submit" class="btn-complete">Комплетирај поставување</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Hours slider functionality
+        const hoursSlider = document.getElementById('{{ form.daily_study_hours.id_for_label }}');
+        const hoursValue = document.getElementById('hoursValue');
+
+        if (hoursSlider && hoursValue) {
+            hoursSlider.addEventListener('input', function() {
+                const hours = parseFloat(this.value);
+                hoursValue.textContent = hours + ' часа';
+            });
+        }
+
+        // Radio button styling - fixed version
+        document.addEventListener('DOMContentLoaded', function() {
+            const radioOptions = document.querySelectorAll('.radio-option');
+            
+            radioOptions.forEach(option => {
+                const radioInput = option.querySelector('input[type="radio"]');
+                
+                // Add click handler to the entire option div
+                option.addEventListener('click', function() {
+                    // Remove checked class from all options
+                    radioOptions.forEach(opt => opt.classList.remove('checked'));
+                    
+                    // Check the radio button
+                    radioInput.checked = true;
+                    
+                    // Add checked class to current option
+                    option.classList.add('checked');
+                });
+                
+                // Also handle direct radio button changes
+                radioInput.addEventListener('change', function() {
+                    if (this.checked) {
+                        radioOptions.forEach(opt => opt.classList.remove('checked'));
+                        option.classList.add('checked');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
