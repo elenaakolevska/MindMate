@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html lang="mk">
 <head>
     <meta charset="UTF-8">
@@ -165,11 +166,279 @@
             .btn-outline-custom {
                 width: 100%;
                 max-width: 300px;
+=======
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMate - Unleash Your Study Potential</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fb 100%);
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding: 18px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar-logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #2196f3;
+            margin-left: 32px;
+            letter-spacing: 1px;
+        }
+        .navbar-links {
+            margin-right: 32px;
+        }
+        .navbar-links a {
+            color: #2196f3;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 24px;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+        .navbar-links a:hover {
+            color: #1769aa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(33,150,243,0.08);
+            padding: 48px 32px;
+            margin-bottom: 48px;
+            animation: fadeIn 1.2s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hero-text {
+            max-width: 540px;
+        }
+        .hero-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, #2196f3 40%, #1769aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-desc {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 32px;
+        }
+        .hero-btn {
+            background: linear-gradient(90deg, #2196f3 60%, #1769aa 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(33,150,243,0.12);
+            transition: background 0.2s, transform 0.2s;
+        }
+        .hero-btn:hover {
+            background: linear-gradient(90deg, #1769aa 60%, #2196f3 100%);
+            transform: translateY(-2px) scale(1.04);
+        }
+        .hero-img {
+            width: 320px;
+            height: 220px;
+            background: linear-gradient(135deg, #e3f2fd 60%, #bbdefb 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 12px rgba(33,150,243,0.08);
+        }
+        .hero-img img {
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 48px 0 32px 0;
+            color: #1769aa;
+        }
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 48px;
+        }
+        .feature {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(33,150,243,0.08);
+            padding: 32px 24px;
+            width: 300px;
+            text-align: center;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .feature:hover {
+            box-shadow: 0 6px 24px rgba(33,150,243,0.16);
+            transform: translateY(-4px) scale(1.03);
+        }
+        .feature-icon {
+            font-size: 2.2rem;
+            margin-bottom: 16px;
+        }
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #2196f3;
+        }
+        .feature-desc {
+            color: #555;
+            font-size: 1rem;
+        }
+        .testimonials {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 48px;
+        }
+        .testimonial {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(33,150,243,0.08);
+            padding: 32px 24px;
+            width: 320px;
+            text-align: center;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .testimonial:hover {
+            box-shadow: 0 6px 24px rgba(33,150,243,0.16);
+            transform: translateY(-4px) scale(1.03);
+        }
+        .testimonial-quote {
+            font-style: italic;
+            margin-bottom: 16px;
+        }
+        .testimonial-user {
+            font-weight: 700;
+            color: #2196f3;
+        }
+        .testimonial-role {
+            color: #888;
+            font-size: 0.95rem;
+        }
+        .cta {
+            background: linear-gradient(90deg, #e3f2fd 60%, #bbdefb 100%);
+            border-radius: 12px;
+            text-align: center;
+            padding: 40px 24px;
+            box-shadow: 0 2px 8px rgba(33,150,243,0.08);
+        }
+        .cta-title {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #2196f3;
+            margin-bottom: 16px;
+        }
+        .cta-desc {
+            color: #555;
+            font-size: 1.1rem;
+            margin-bottom: 24px;
+        }
+        .cta-btn {
+            background: linear-gradient(90deg, #2196f3 60%, #1769aa 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(33,150,243,0.12);
+            transition: background 0.2s, transform 0.2s;
+        }
+        .cta-btn:hover {
+            background: linear-gradient(90deg, #1769aa 60%, #2196f3 100%);
+            transform: translateY(-2px) scale(1.04);
+        }
+        .footer {
+            background: #fff;
+            color: #2196f3;
+            text-align: center;
+            padding: 24px 0 12px 0;
+            font-size: 1rem;
+            margin-top: 48px;
+            box-shadow: 0 -2px 8px rgba(33,150,243,0.04);
+        }
+        .footer-links {
+            margin-bottom: 8px;
+        }
+        .footer-links a {
+            color: #1769aa;
+            margin: 0 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover {
+            color: #2196f3;
+        }
+        @media (max-width: 900px) {
+            .hero, .features, .testimonials {
+                flex-direction: column;
+                align-items: center;
+            }
+            .hero-img {
+                margin-top: 32px;
+            }
+            .features, .testimonials {
+                gap: 16px;
+            }
+            .feature, .testimonial {
+                width: 90vw;
+                max-width: 340px;
+            }
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 16px 4px;
+            }
+            .hero {
+                padding: 24px 8px;
+            }
+            .section-title {
+                font-size: 1.3rem;
+                margin: 32px 0 16px 0;
+>>>>>>> ljubica
             }
         }
     </style>
 </head>
 <body>
+<<<<<<< HEAD
     <div class="hero-section">
         <div class="hero-card">
             <!-- Logo and Title -->
@@ -239,5 +508,70 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+=======
+    <div class="navbar">
+    <div class="navbar-logo">MindMate</div>
+        <div class="navbar-links">
+            <a href="/login/">Најави се</a>
+            <a href="/register/">Регистрирај се</a>
+        </div>
+    </div>
+    <div class="container">
+    <div class="hero">
+            <div class="hero-text">
+                <div class="hero-title">Отклучи го твојот студиски потенцијал со MindMate</div>
+                <div class="hero-desc">MindMate е твојот AI-поддржан асистент за продуктивност и учење, дизајниран да го подобри учењето, организацијата и мотивацијата со паметни алатки и гамификација.</div>
+                <a href="/register/"><button class="hero-btn">Дознај повеќе</button></a>
+            </div>
+            <div class="hero-img">
+                <img src="https://cdn.pixabay.com/photo/2017/01/10/19/05/education-1976101_1280.png" alt="Илустрација за учење">
+            </div>
+        </div>
+    <div class="section-title">Зошто да го одбереш MindMate?</div>
+    <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🧠</div>
+                <div class="feature-title">AI-Поддржано учење</div>
+                <div class="feature-desc">Интеракција со паметен студиски агент за Q&A на документи, генерирање квизови и персонализирани увидувања.</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📅</div>
+                <div class="feature-title">Беспрекорна организација</div>
+                <div class="feature-desc">Управувај со распоредот преку интуитивен календар, постави потсетници и следи рокови без напор.</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🏆</div>
+                <div class="feature-title">Мотивирачки напредок</div>
+                <div class="feature-desc">Остани мотивиран со гамифицирано следење на напредок, серии, значки и реални награди.</div>
+            </div>
+        </div>
+    <div class="section-title">Што велат нашите корисници</div>
+    <div class="testimonials">
+            <div class="testimonial">
+                <div class="testimonial-quote">„MindMate целосно го промени мојот пристап кон студиите. AI агентот е неверојатно корисен, а следењето на напредокот ме држи на вистинскиот пат.“</div>
+                <div class="testimonial-user">Сара Ј.</div>
+                <div class="testimonial-role">Студент на универзитет</div>
+            </div>
+            <div class="testimonial">
+                <div class="testimonial-quote">„Порано имав проблеми со одложување, но гамификацијата на MindMate го прави учењето забавно и наградувачко. Топло препорачувам!“</div>
+                <div class="testimonial-user">Михаил Б.</div>
+                <div class="testimonial-role">Маркетинг практикант</div>
+            </div>
+            <div class="testimonial">
+                <div class="testimonial-quote">„Управувањето со календарот е спас! Можам да го планирам целата недела и лесно да креирам настани без мака.“</div>
+                <div class="testimonial-user">Емили Р.</div>
+                <div class="testimonial-role">Софтверски инженер</div>
+            </div>
+        </div>
+    <div class="cta">
+            <div class="cta-title">Подготвен/а да го трансформираш учењето?</div>
+            <div class="cta-desc">Придружи се на MindMate денес и отклучи попаметно, поорганизирано и помотивирано студиско патување.</div>
+            <a href="/register/"><button class="cta-btn">Регистрирај се сега</button></a>
+        </div>
+    </div>
+    <div class="footer">
+        &copy; 2025 MindMate. Сите права задржани.
+    </div>
+>>>>>>> ljubica
 </body>
 </html>

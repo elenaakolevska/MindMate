@@ -14,7 +14,12 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+<<<<<<< HEAD
 from django.urls import path, include
+=======
+from django.urls import path
+from MindMateAPP import views as app_views
+>>>>>>> ljubica
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -22,6 +27,7 @@ from django.contrib import admin as default_admin
 from MindMateAPP.admin import custom_admin_site
 
 urlpatterns = [
+    path('', app_views.home, name='home'),
     path('admin/', custom_admin_site.urls),
     path('admin/', include('django.contrib.auth.urls')),  # Add default admin auth URLs
     path('', include('MindMateAPP.urls')),  # Include app URLs

@@ -70,11 +70,6 @@ def student_preferences(request):
     
     return render(request, 'registration/preferences.html', {'form': form, 'student': student})
 
-
-def home(request):
-    return render(request, 'home.html')
-
-
 def login(request):
     if request.method == 'POST':
         form = StudentLoginForm(request.POST)
@@ -102,3 +97,14 @@ def login(request):
         form = StudentLoginForm()
     
     return render(request, 'auth/login.html', {'form': form})
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user
+
+# Create your views here.
+
+def home(request):
+	if request.user.is_authenticated:
+		return redirect('dashboard')  # Change 'dashboard' to your logged-in landing page name
+	return render(request, 'home.html')
