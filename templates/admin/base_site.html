@@ -1,0 +1,11 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% block title %}{{ site_title }} | {{ title }}{% endblock %}
+{% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/custom.css' %}" />
+{% endblock %}
+{% block branding %}
+    <h1 id="site-name">
+        <img src="{% static 'admin/logo.png' %}" alt="MindMate Logo" class="admin-logo">
+    </h1>
+{% endblock %}
