@@ -135,6 +135,83 @@ class StudentAnswer(models.Model):
     is_correct = models.BooleanField()
     points_earned = models.IntegerField(default=0)
 
+class StudentPreferences(models.Model):
+    LEARNING_STYLE_CHOICES = [
+        ('visual', 'Visual (learning through seeing)'),
+        ('auditory', 'Auditory (learning through hearing)'),
+        ('kinesthetic', 'Kinesthetic (learning through doing)'),
+        ('reading_writing', 'Reading/Writing (learning through text)'),
+    ]
+    
+    REMINDER_TYPE_CHOICES = [
+        ('email', 'Email'),
+        ('push_notifications', 'Push Notifications'),
+        ('in_app_alerts', 'In-app alerts'),
+        ('sms', 'SMS'),
+        ('none', 'No reminders'),
+    ]
+    
+
+    
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='preferences')
+    
+    # Academic Information
+    major_field_of_study = models.CharField(max_length=256, blank=True, help_text="e.g., Computer Science, Biology")
+    current_courses = models.TextField(blank=True, help_text="List of current courses, separated by commas")
+    
+    # Study Preferences
+    preferred_learning_style = models.CharField(max_length=20, choices=LEARNING_STYLE_CHOICES, blank=True)
+    daily_study_hours = models.FloatField(default=4.0, help_text="Typical daily study hours")
+    
+    # Goals
+    learning_goals = models.TextField(blank=True, help_text="e.g., Improve grades by 10%, learn a new coding language")
+    
+    # Interests & Personalization
+    key_interests = models.TextField(blank=True, help_text="Comma-separated list of interests")
+    reminder_preferences = models.CharField(max_length=20, choices=REMINDER_TYPE_CHOICES, default='in_app_alerts')
+    
+    # Additional preferences for AI personalization
+    difficulty_preference = models.CharField(
+        max_length=20, 
+        choices=[('easy', 'Easy'), ('medium', 'Medium'), ('hard', 'Hard'), ('adaptive', 'Adaptive')],
+        default='adaptive',
+        help_text="Preferred difficulty level for generated content"
+    )
+    
+    study_pace = models.CharField(
+        max_length=20,
+        choices=[('slow', 'Slow and steady'), ('moderate', 'Moderate pace'), ('fast', 'Fast-paced'), ('intensive', 'Intensive')],
+        default='moderate',
+        help_text="Preferred learning pace"
+    )
+    
+    # AI interaction preferences
+    ai_interaction_style = models.CharField(
+        max_length=20,
+        choices=[
+            ('formal', 'Formal and professional'), 
+            ('friendly', 'Friendly and conversational'), 
+            ('motivational', 'Motivational and encouraging'),
+            ('direct', 'Direct and to the point')
+        ],
+        default='friendly',
+        help_text="Preferred AI interaction style"
+    )
+    
+    # Accessibility and special needs
+    accessibility_needs = models.TextField(blank=True, help_text="Any special accessibility requirements")
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.student.full_name}'s Preferences"
+    
+    class Meta:
+        verbose_name = "Student Preference"
+        verbose_name_plural = "Student Preferences"
+
 class Notification(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     title = models.CharField(max_length=256)

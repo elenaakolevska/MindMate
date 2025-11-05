@@ -5,7 +5,8 @@ from django.template.response import TemplateResponse
 from .models import (
 	Student, CalendarEvent, Progress, Streak, Accuracy, Badge, Quiz, QuizResult, Homework,
 	ChatbotInteraction, ChatBot, ProgressAnalysis, EventPlanning, StudyPipeline, StudyAgent,
-	StudyMaterial, StudySession, NextStudyTopic, QuizQuestion, StudentAnswer, Notification
+	StudyMaterial, StudySession, NextStudyTopic, QuizQuestion, StudentAnswer, Notification,
+	StudentPreferences
 )
 
 # Custom admin dashboard view
@@ -57,6 +58,19 @@ class CustomAdminSite(admin.AdminSite):
 custom_admin_site = CustomAdminSite(name='custom_admin')
 
 # Inlines for better editing
+class StudentPreferencesInline(admin.StackedInline):
+	model = StudentPreferences
+	extra = 0
+	max_num = 1
+	fields = (
+		('major_field_of_study', 'current_courses'),
+		('preferred_learning_style', 'daily_study_hours'),
+		('learning_goals',),
+		('key_interests', 'reminder_preferences'),
+		('difficulty_preference', 'study_pace'),
+		('ai_interaction_style', 'accessibility_needs')
+	)
+
 class QuizQuestionInline(admin.TabularInline):
 	model = QuizQuestion
 	extra = 1
@@ -70,6 +84,36 @@ class StudentAdmin(admin.ModelAdmin):
 	list_display = ("id", "full_name", "email", "study_level", "study_direction", "created_at")
 	search_fields = ("full_name", "email", "study_direction", "interests")
 	list_filter = ("study_level", "study_direction")
+	inlines = [StudentPreferencesInline]
+
+@admin.register(StudentPreferences, site=custom_admin_site)
+class StudentPreferencesAdmin(admin.ModelAdmin):
+	list_display = ("id", "student", "preferred_learning_style", "daily_study_hours", "reminder_preferences")
+	search_fields = ("student__full_name", "major_field_of_study", "key_interests")
+	list_filter = ("preferred_learning_style", "reminder_preferences", "difficulty_preference", "study_pace", "ai_interaction_style")
+	fieldsets = (
+		("Student", {
+			"fields": ("student",)
+		}),
+		("Academic Information", {
+			"fields": ("major_field_of_study", "current_courses")
+		}),
+		("Study Preferences", {
+			"fields": ("preferred_learning_style", "daily_study_hours")
+		}),
+		("Goals", {
+			"fields": ("learning_goals",)
+		}),
+		("Interests & Personalization", {
+			"fields": ("key_interests", "reminder_preferences")
+		}),
+		("AI Personalization", {
+			"fields": ("difficulty_preference", "study_pace", "ai_interaction_style")
+		}),
+		("Accessibility", {
+			"fields": ("accessibility_needs",)
+		})
+	)
 
 @admin.register(StudyMaterial, site=custom_admin_site)
 class StudyMaterialAdmin(admin.ModelAdmin):
