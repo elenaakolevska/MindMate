@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
+from MindMateAPP import views as app_views
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -23,6 +24,7 @@ from django.urls import include
 from MindMateAPP.admin import custom_admin_site
 
 urlpatterns = [
+    path('', app_views.home, name='home'),
     path('admin/', custom_admin_site.urls),
     path('admin/', include('django.contrib.auth.urls')),  # Add default admin auth URLs
 ]
