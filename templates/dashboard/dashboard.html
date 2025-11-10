@@ -1,0 +1,1035 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMate Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fb;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 24px 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-logo {
+            padding: 0 24px 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .sidebar-logo span {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .sidebar.collapsed .sidebar-logo span {
+            display: none;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 24px;
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background: #f3f4f6;
+            color: #4285f4;
+        }
+
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #4285f4;
+        }
+
+        .sidebar-link i {
+            font-size: 20px;
+            min-width: 20px;
+        }
+
+        .sidebar.collapsed .sidebar-link span {
+            display: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 80px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .menu-toggle:hover {
+            background: #f3f4f6;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .user-profile:hover {
+            background: #f3f4f6;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Dashboard Content */
+        .dashboard-wrapper {
+            padding: 32px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        /* Left Column */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Right Column */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* Upcoming Schedule */
+        .schedule-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .schedule-tab {
+            padding: 8px 20px;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 8px;
+            color: #6b7280;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .schedule-tab.active {
+            background: #4285f4;
+            color: white;
+        }
+
+        .calendar-view {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            color: #9ca3af;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-view i {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        /* Study Agent & Recent Activity Row */
+        .two-column-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #4285f4;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3367d6;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+
+        /* Recent Activity */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #4285f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .activity-text {
+            flex: 1;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .activity-text a {
+            color: #4285f4;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* Quiz Progress */
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .progress-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .progress-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #4285f4;
+        }
+
+        .progress-bar-container {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4285f4 0%, #667eea 100%);
+            transition: width 0.3s ease;
+        }
+
+        .quiz-count {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* Streak Card */
+        .streak-display {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .streak-number {
+            font-size: 48px;
+            font-weight: 800;
+            color: #4285f4;
+            margin-bottom: 8px;
+        }
+
+        .streak-text {
+            font-size: 18px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .streak-subtext {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+
+        .streak-icon {
+            font-size: 24px;
+            color: #fbbf24;
+        }
+
+        /* Badges */
+        .badges-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .badge-item {
+            padding: 8px 16px;
+            background: #eff6ff;
+            color: #1e40af;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Profile Card */
+        .profile-content {
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 32px;
+            margin: 0 auto 16px;
+        }
+
+        .profile-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .profile-role {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .profile-section {
+            text-align: left;
+            margin-top: 16px;
+        }
+
+        .profile-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .profile-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .profile-tag {
+            padding: 6px 12px;
+            background: #f3f4f6;
+            color: #374151;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .profile-recommendation {
+            font-size: 13px;
+            color: #4285f4;
+            line-height: 1.5;
+        }
+
+        /* Chatbot Card */
+        .chatbot-content {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .chatbot-icon {
+            font-size: 48px;
+            color: #4285f4;
+            margin-bottom: 16px;
+        }
+
+        .chatbot-link {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #4285f4;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .chatbot-link:hover {
+            background: #3367d6;
+            transform: translateY(-1px);
+        }
+
+        /* Upload Modal */
+        .upload-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-modal.active {
+            display: flex;
+        }
+
+        .upload-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 20px 0;
+        }
+
+        .upload-area:hover {
+            border-color: #4285f4;
+            background: #f9fafb;
+        }
+
+        .upload-area.drag-over {
+            border-color: #4285f4;
+            background: #eff6ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #9ca3af;
+            margin-bottom: 16px;
+        }
+
+        .uploaded-files {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-icon {
+            color: #4285f4;
+            font-size: 20px;
+        }
+
+        .file-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .file-remove {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .two-column-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="{% static 'mindLogo.png' %}" alt="MindMate">
+            <span>MindMate</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'mindmate:dashboard' %}" class="sidebar-link active">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-robot"></i>
+                <span>Study Agent</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Calendar</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="header-right">
+                <div class="user-profile">
+                    <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ student.full_name }}</div>
+                        <div class="user-role">{{ student.get_study_level_display }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-wrapper">
+            <div class="dashboard-grid">
+                <!-- Left Column -->
+                <div class="left-column">
+                    <!-- Upcoming Schedule -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Upcoming Schedule</div>
+                            </div>
+                            <div class="schedule-tabs">
+                                <button class="schedule-tab">Day</button>
+                                <button class="schedule-tab">Week</button>
+                                <button class="schedule-tab active">Month</button>
+                            </div>
+                        </div>
+                        <div class="calendar-view">
+                            <i class="fas fa-calendar"></i>
+                            <div>Interactive Calendar View</div>
+                            <div style="font-size: 13px; margin-top: 8px;">(Calendar functionality coming soon)</div>
+                        </div>
+                    </div>
+
+                    <!-- Two Column Row -->
+                    <div class="two-column-row">
+                        <!-- Study Agent Quick Access -->
+                        <div class="card">
+                            <div class="card-title">Study Agent Quick Access</div>
+                            <div class="card-subtitle">Interact with your AI study assistant.</div>
+                            <div class="action-buttons" style="margin-top: 16px;">
+                                <button class="btn btn-primary" onclick="openUploadModal()">
+                                    <i class="fas fa-upload"></i>
+                                    Upload Document
+                                </button>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-question-circle"></i>
+                                    Ask Q&A
+                                </button>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-clipboard-list"></i>
+                                    Generate Quiz
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="card">
+                            <div class="card-title">Recent Activity</div>
+                            <div class="card-subtitle">Your latest study engagements.</div>
+                            <div class="activity-list" style="margin-top: 16px;">
+                                {% if recent_activities %}
+                                    {% for activity in recent_activities|slice:":4" %}
+                                    <div class="activity-item">
+                                        <div class="activity-icon">
+                                            <i class="fas {{ activity.icon }}"></i>
+                                        </div>
+                                        <div class="activity-text">{{ activity.text }}</div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="activity-item">
+                                        <div class="activity-icon">
+                                            <i class="fas fa-info-circle"></i>
+                                        </div>
+                                        <div class="activity-text">No recent activity yet</div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="right-column">
+                    <!-- Quiz Progress -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Quiz Progress</div>
+                            <i class="fas fa-chart-bar" style="color: #9ca3af;"></i>
+                        </div>
+                        <div class="progress-info">
+                            <span class="progress-label">Accuracy</span>
+                            <span class="progress-value">{{ accuracy_percentage }}%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: {{ accuracy_percentage }}%"></div>
+                        </div>
+                        <div class="quiz-count">
+                            Completed Quizzes: <strong>{{ completed_quizzes }}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Current Streak -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Current Streak</div>
+                            <i class="fas fa-trophy streak-icon"></i>
+                        </div>
+                        <div class="streak-display">
+                            <div class="streak-number">{{ streak_days }}</div>
+                            <div class="streak-text">Days</div>
+                            <div class="streak-subtext">Keep up the great work!</div>
+                        </div>
+                    </div>
+
+                    <!-- Badges Earned -->
+                    <div class="card">
+                        <div class="card-title">Badges Earned</div>
+                        <div class="badges-grid" style="margin-top: 16px;">
+                            {% if badges %}
+                                {% for badge in badges %}
+                                <div class="badge-item">
+                                    <i class="fas fa-award"></i>
+                                    {{ badge.badge_name }}
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="badge-item">
+                                    <i class="fas fa-star"></i>
+                                    No badges yet - keep studying!
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- User Profile -->
+                    <div class="card">
+                        <div class="profile-content">
+                            <div class="profile-avatar">{{ student.full_name|slice:":1"|upper }}</div>
+                            <div class="profile-name">{{ student.full_name }}</div>
+                            <div class="profile-role">{{ student.study_direction }}</div>
+                            
+                            {% if interests %}
+                            <div class="profile-section">
+                                <div class="profile-section-title">Interests:</div>
+                                <div class="profile-tags">
+                                    {% for interest in interests %}
+                                    <div class="profile-tag">{{ interest }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if preferences.learning_goals %}
+                            <div class="profile-section">
+                                <div class="profile-section-title">Goals:</div>
+                                <div class="profile-recommendation">{{ preferences.learning_goals|truncatewords:15 }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Time Agent Chatbot -->
+                    <div class="card">
+                        <div class="chatbot-content">
+                            <i class="fas fa-comments chatbot-icon"></i>
+                            <div class="card-title">Time Agent Chatbot</div>
+                            <a href="#" class="chatbot-link">Click to Chat</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="upload-modal" id="uploadModal">
+        <div class="upload-modal-content">
+            <div class="card-header">
+                <div class="card-title">Upload Documents</div>
+                <button onclick="closeUploadModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #9ca3af;">×</button>
+            </div>
+            
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <p><strong>Click to upload</strong> or drag and drop</p>
+                <p style="font-size: 13px; color: #9ca3af; margin-top: 8px;">PDF, DOCX, TXT, or Images (Max 10MB)</p>
+                <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png" style="display: none;">
+            </div>
+
+            <div class="uploaded-files" id="uploadedFiles"></div>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+
+        // Upload Modal
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('active');
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('active');
+        }
+
+        // File Upload
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadedFiles = document.getElementById('uploadedFiles');
+        let files = [];
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(newFiles) {
+            Array.from(newFiles).forEach(file => {
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`${file.name} is too large. Maximum size is 10MB.`);
+                    return;
+                }
+                
+                files.push(file);
+                displayFile(file);
+                uploadFile(file);
+            });
+        }
+
+        function displayFile(file) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.id = `file-${file.name}`;
+            
+            const fileIcon = getFileIcon(file.name);
+            const fileSize = (file.size / 1024).toFixed(2);
+            
+            fileItem.innerHTML = `
+                <div class="file-info">
+                    <i class="fas ${fileIcon} file-icon"></i>
+                    <div>
+                        <div class="file-name">${file.name}</div>
+                        <div style="font-size: 12px; color: #9ca3af;">${fileSize} KB</div>
+                    </div>
+                </div>
+                <button class="file-remove" onclick="removeFile('${file.name}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            uploadedFiles.appendChild(fileItem);
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                'pdf': 'fa-file-pdf',
+                'doc': 'fa-file-word',
+                'docx': 'fa-file-word',
+                'txt': 'fa-file-alt',
+                'jpg': 'fa-file-image',
+                'jpeg': 'fa-file-image',
+                'png': 'fa-file-image'
+            };
+            return icons[ext] || 'fa-file';
+        }
+
+        function removeFile(filename) {
+            files = files.filter(f => f.name !== filename);
+            const fileElement = document.getElementById(`file-${filename}`);
+            if (fileElement) {
+                fileElement.remove();
+            }
+        }
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            fetch("{% url 'mindmate:upload_document' %}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('File uploaded successfully:', data);
+                } else {
+                    alert('Upload failed: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                alert('Upload failed. Please try again.');
+            });
+        }
+
+        // Mobile sidebar toggle
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
