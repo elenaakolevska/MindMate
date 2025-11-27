@@ -100,15 +100,34 @@ class StudyAgent(models.Model):
     is_active = models.BooleanField(default=True)
 
 class StudyMaterial(models.Model):
+    PROCESSING_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('partial', 'Partially Completed')
+    ]
+    
     pipeline = models.ForeignKey(StudyPipeline, on_delete=models.SET_NULL, null=True, blank=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)  # Associate material with student
     type = models.CharField(max_length=64, choices=[('pdf', 'PDF'), ('image', 'Image'), ('word', 'Word Document'), ('text', 'Text')])
     title = models.CharField(max_length=256, blank=True)  # Document title
     original_filename = models.CharField(max_length=256, blank=True)  # Original file name
     file_path = models.CharField(max_length=512, blank=True)  # Path to uploaded file
-    content = models.TextField()  # OCR extracted text
+    content = models.TextField(blank=True)  # OCR extracted text
     upload_date = models.DateTimeField(auto_now_add=True)
     subject = models.CharField(max_length=128, blank=True)  # Subject/topic for organization
+    
+    # OCR Processing fields
+    processing_status = models.CharField(max_length=32, choices=PROCESSING_STATUS_CHOICES, default='pending')
+    processing_error = models.TextField(blank=True)  # Store error messages
+    processing_date = models.DateTimeField(null=True, blank=True)  # When OCR was completed
+    
+    # File metadata
+    file_size = models.PositiveIntegerField(default=0)  # File size in bytes
+    
+    def __str__(self):
+        return f"{self.title or self.original_filename} - {self.student.full_name}"
 
 class StudySession(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
