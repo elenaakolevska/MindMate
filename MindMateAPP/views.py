@@ -6,7 +6,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from datetime import datetime, timedelta
+import json
 from .forms import StudentRegistrationForm
 from .preference_forms import StudentPreferencesForm
 from .login_forms import StudentLoginForm
@@ -316,3 +319,254 @@ def upload_document(request):
             }, status=400)
 
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+
+
+@login_required
+def calendar_view(request):
+    """Display the calendar page"""
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        messages.error(request, 'Student profile not found.')
+        return redirect('mindmate:register')
+
+    context = {
+        'student': student,
+    }
+    
+    return render(request, 'calendar/index.html', context)
+
+
+@login_required
+def api_events(request):
+    """
+    API endpoint for calendar events
+    GET: Fetch events for date range
+    POST: Create new event
+    """
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Student not found'}, status=404)
+
+    if request.method == 'GET':
+        # Get query parameters for date filtering
+        start_date = request.GET.get('start')
+        end_date = request.GET.get('end')
+        
+        # Base query for student's events
+        events = CalendarEvent.objects.filter(student=student)
+        
+        # Apply date filtering if provided
+        if start_date:
+            try:
+                start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+                events = events.filter(date_time__gte=start_dt)
+            except ValueError:
+                pass
+        
+        if end_date:
+            try:
+                end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                events = events.filter(date_time__lte=end_dt)
+            except ValueError:
+                pass
+        
+        # Convert events to FullCalendar format
+        event_list = []
+        for event in events:
+            event_data = {
+                'id': event.id,
+                'title': event.title,
+                'start': event.date_time.strftime('%Y-%m-%dT%H:%M:%S'),
+                'allDay': False,  # Explicitly set to false for timed events
+                'description': event.description,
+                'backgroundColor': event.color,
+                'borderColor': event.color,
+                'textColor': '#ffffff',  # White text for better contrast
+                'display': 'block',  # Ensure full block display
+                'extendedProps': {
+                    'event_type': event.event_type,
+                    'description': event.description
+                }
+            }
+            
+            # Add end time if available (for multi-hour events)
+            if event.end_time:
+                event_data['end'] = event.end_time.strftime('%Y-%m-%dT%H:%M:%S')
+            # If no end time is set, don't add an end property (FullCalendar will handle it as all-day or timed event)
+                
+            event_list.append(event_data)
+        
+        return JsonResponse(event_list, safe=False)
+    
+    elif request.method == 'POST':
+        try:
+            # Parse JSON data
+            data = json.loads(request.body)
+            
+            # Validate required fields
+            title = data.get('title', '').strip()
+            start = data.get('start')
+            
+            if not title:
+                return JsonResponse({'success': False, 'message': 'Title is required'}, status=400)
+            
+            if not start:
+                return JsonResponse({'success': False, 'message': 'Start date is required'}, status=400)
+            
+            # Parse start datetime
+            try:
+                # Handle both datetime-local format and ISO format
+                if 'T' in start and len(start) == 16:  # datetime-local format YYYY-MM-DDTHH:MM
+                    start_dt = datetime.strptime(start, '%Y-%m-%dT%H:%M')
+                else:
+                    start_dt = datetime.fromisoformat(start.replace('Z', '+00:00'))
+                
+                # Make timezone aware
+                if timezone.is_naive(start_dt):
+                    start_dt = timezone.make_aware(start_dt)
+            except ValueError:
+                return JsonResponse({'success': False, 'message': 'Invalid start date format'}, status=400)
+            
+            # Parse end datetime if provided
+            end_dt = None
+            end = data.get('end')
+            if end:
+                try:
+                    if 'T' in end and len(end) == 16:  # datetime-local format YYYY-MM-DDTHH:MM
+                        end_dt = datetime.strptime(end, '%Y-%m-%dT%H:%M')
+                    else:
+                        end_dt = datetime.fromisoformat(end.replace('Z', '+00:00'))
+                    
+                    # Make timezone aware
+                    if timezone.is_naive(end_dt):
+                        end_dt = timezone.make_aware(end_dt)
+                except ValueError:
+                    pass  # If end date is invalid, just ignore it
+            
+            # Create the event
+            event = CalendarEvent.objects.create(
+                student=student,
+                title=title,
+                date_time=start_dt,
+                end_time=end_dt,
+                event_type=data.get('event_type', 'personal'),
+                description=data.get('description', ''),
+                notes=data.get('notes', '')
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Event created successfully',
+                'event': {
+                    'id': event.id,
+                    'title': event.title,
+                    'start': event.date_time.isoformat(),
+                    'description': event.description,
+                }
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@login_required
+def api_event_detail(request, event_id):
+    """
+    API endpoint for individual event operations
+    PUT: Update event
+    DELETE: Delete event
+    """
+    try:
+        student = Student.objects.get(user=request.user)
+        event = get_object_or_404(CalendarEvent, id=event_id, student=student)
+    except Student.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Student not found'}, status=404)
+
+    if request.method == 'PUT':
+        try:
+            # Parse JSON data
+            data = json.loads(request.body)
+            
+            # Update event fields if provided
+            if 'title' in data:
+                title = data['title'].strip()
+                if title:
+                    event.title = title
+                else:
+                    return JsonResponse({'success': False, 'message': 'Title cannot be empty'}, status=400)
+            
+            if 'start' in data:
+                try:
+                    start = data['start']
+                    # Handle both datetime-local format and ISO format
+                    if 'T' in start and len(start) == 16:  # datetime-local format YYYY-MM-DDTHH:MM
+                        start_dt = datetime.strptime(start, '%Y-%m-%dT%H:%M')
+                    else:
+                        start_dt = datetime.fromisoformat(start.replace('Z', '+00:00'))
+                    
+                    # Make timezone aware
+                    if timezone.is_naive(start_dt):
+                        start_dt = timezone.make_aware(start_dt)
+                        
+                    event.date_time = start_dt
+                except ValueError:
+                    return JsonResponse({'success': False, 'message': 'Invalid start date format'}, status=400)
+            
+            if 'end' in data:
+                end = data['end']
+                if end:
+                    try:
+                        # Handle both datetime-local format and ISO format
+                        if 'T' in end and len(end) == 16:  # datetime-local format YYYY-MM-DDTHH:MM
+                            end_dt = datetime.strptime(end, '%Y-%m-%dT%H:%M')
+                        else:
+                            end_dt = datetime.fromisoformat(end.replace('Z', '+00:00'))
+                        
+                        # Make timezone aware
+                        if timezone.is_naive(end_dt):
+                            end_dt = timezone.make_aware(end_dt)
+                            
+                        event.end_time = end_dt
+                    except ValueError:
+                        pass  # If end date is invalid, just ignore it
+                else:
+                    event.end_time = None
+            
+            if 'description' in data:
+                event.description = data['description']
+            
+            if 'notes' in data:
+                event.notes = data['notes']
+                
+            if 'event_type' in data:
+                event.event_type = data['event_type']
+            
+            # Save changes
+            event.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Event updated successfully',
+                'event': {
+                    'id': event.id,
+                    'title': event.title,
+                    'start': event.date_time.isoformat(),
+                    'description': event.description,
+                }
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    
+    elif request.method == 'DELETE':
+        try:
+            event.delete()
+            return JsonResponse({'success': True, 'message': 'Event deleted successfully'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)

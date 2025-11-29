@@ -14,11 +14,33 @@ class Student(models.Model):
     notes = models.TextField(blank=True)
 
 class CalendarEvent(models.Model):
+    EVENT_TYPE_CHOICES = [
+        ('study_session', 'Study Session'),
+        ('exam', 'Exam'),
+        ('homework_deadline', 'Homework Deadline'),
+        ('personal', 'Personal Event'),
+    ]
+    
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     title = models.CharField(max_length=128)
     date_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)  # Optional end time for events
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPE_CHOICES, default='personal')
+    color = models.CharField(max_length=7, default='#4285f4')  # Hex color code
     description = models.TextField(blank=True)
     notes = models.TextField(blank=True)
+    
+    def save(self, *args, **kwargs):
+        # Auto-assign color based on event type if not set
+        if not self.color or self.color == '#4285f4':
+            color_mapping = {
+                'study_session': '#4285f4',  # Blue
+                'exam': '#ea4335',           # Red
+                'homework_deadline': '#ff9800',  # Orange
+                'personal': '#34a853',       # Green
+            }
+            self.color = color_mapping.get(self.event_type, '#4285f4')
+        super().save(*args, **kwargs)
 
 class Progress(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)

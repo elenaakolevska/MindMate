@@ -4,17 +4,10 @@ import os
 from typing import Tuple
 import time
 
-try:
-    from .ocr_processor import OCRProcessor
-    from .preprocess_pdf_files import preprocess_pdf
-    from .preprocess_doc_files import preprocess_doc
-    from .text_chunker import process_text_with_chunks
-except ImportError:
-    # Fallback for direct execution
-    from ocr_processor import OCRProcessor
-    from preprocess_pdf_files import preprocess_pdf
-    from preprocess_doc_files import preprocess_doc
-    from text_chunker import process_text_with_chunks
+from .ocr_processor import OCRProcessor
+from .preprocess_pdf_files import preprocess_pdf
+from .preprocess_doc_files import preprocess_doc
+from .text_chunker import process_text_with_chunks
 
 logger = logging.getLogger(__name__)
 

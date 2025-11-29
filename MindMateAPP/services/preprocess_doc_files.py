@@ -112,7 +112,7 @@ def preprocess_doc(file = {}, chunk_size: int = 1000, overlap: int = 200, blob_m
     """
     Main preprocessing function that handles the entire document preprocessing pipeline.
     """
-    print(f"\nStarting document preprocessing: {file["name"]}")
+    print(f"\nStarting document preprocessing: {file['name']}")
     
     if isinstance(file["content"], bytes):
         file["content"] = Document(io.BytesIO(file["content"]))

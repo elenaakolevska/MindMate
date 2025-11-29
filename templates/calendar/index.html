@@ -1,0 +1,1008 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календар - MindMate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fb;
+            min-height: 100vh;
+        }
+
+        /* Sidebar - Same as dashboard */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 24px 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-logo {
+            padding: 0 24px 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .sidebar-logo span {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .sidebar.collapsed .sidebar-logo span {
+            display: none;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 24px;
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background: #f3f4f6;
+            color: #4285f4;
+        }
+
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #4285f4;
+        }
+
+        .sidebar-link i {
+            font-size: 20px;
+            min-width: 20px;
+        }
+
+        .sidebar.collapsed .sidebar-link span {
+            display: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 80px;
+        }
+
+        /* Header - Same as dashboard */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .menu-toggle:hover {
+            background: #f3f4f6;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .user-profile:hover {
+            background: #f3f4f6;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Calendar Content */
+        .calendar-wrapper {
+            padding: 32px;
+        }
+
+        .calendar-header {
+            margin-bottom: 24px;
+        }
+
+        .calendar-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .calendar-subtitle {
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .calendar-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+
+        /* FullCalendar Custom Styles */
+        .fc {
+            font-family: 'Poppins', sans-serif !important;
+        }
+
+        .fc-toolbar {
+            margin-bottom: 20px !important;
+        }
+
+        .fc-toolbar-title {
+            font-size: 24px !important;
+            font-weight: 600 !important;
+            color: #1f2937 !important;
+        }
+
+        .fc-button-primary {
+            background-color: #4285f4 !important;
+            border-color: #4285f4 !important;
+            font-weight: 500 !important;
+            border-radius: 8px !important;
+            padding: 8px 16px !important;
+        }
+
+        .fc-button-primary:hover {
+            background-color: #3367d6 !important;
+            border-color: #3367d6 !important;
+        }
+
+        .fc-button-primary:focus {
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2) !important;
+        }
+
+        .fc-daygrid-day {
+            border-color: #e5e7eb !important;
+        }
+
+        .fc-daygrid-day-frame {
+            min-height: 100px !important;
+        }
+
+        .fc-daygrid-day-number {
+            color: #374151 !important;
+            font-weight: 500 !important;
+        }
+
+        .fc-day-today {
+            background-color: rgba(66, 133, 244, 0.1) !important;
+        }
+
+        .fc-event {
+            border-radius: 6px !important;
+            padding: 2px 6px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            border: none !important;
+        }
+
+        .fc-event .fc-event-main {
+            color: white !important;
+        }
+
+        .fc-event-title {
+            color: white !important;
+        }
+
+        .fc-daygrid-event {
+            border: none !important;
+        }
+
+        .fc-daygrid-event .fc-event-main {
+            color: white !important;
+        }
+
+        /* Force full background colors for all event types */
+        .fc-event[style*="background-color"] {
+            border: none !important;
+        }
+
+        .fc-event[style*="background-color"] .fc-event-main {
+            color: white !important;
+        }
+
+        .fc-event[style*="background-color"] .fc-event-title {
+            color: white !important;
+        }
+
+        /* Override FullCalendar's dot styles */
+        .fc-daygrid-dot-event .fc-event-title {
+            color: white !important;
+        }
+
+        .fc-daygrid-dot-event {
+            border: none !important;
+        }
+
+        .fc-event-title {
+            font-size: 13px !important;
+        }
+
+        /* Event Modal */
+        .event-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .event-modal.active {
+            display: flex;
+        }
+
+        .event-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #9ca3af;
+            padding: 4px;
+        }
+
+        .modal-close:hover {
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4285f4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #4285f4;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3367d6;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* Calendar Legend */
+        .calendar-legend {
+            background: #f8f9fb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .legend-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .legend-label {
+            font-size: 14px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .loading i {
+            font-size: 32px;
+            margin-bottom: 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .calendar-wrapper {
+                padding: 16px;
+            }
+
+            .event-modal-content {
+                width: 95%;
+                padding: 24px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="{% static 'mindLogo.png' %}" alt="MindMate">
+            <span>MindMate</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'mindmate:dashboard' %}" class="sidebar-link">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-robot"></i>
+                <span>Study Agent</span>
+            </a>
+            <a href="{% url 'mindmate:calendar' %}" class="sidebar-link active">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Calendar</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="header-right">
+                <div class="user-profile">
+                    <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ student.full_name }}</div>
+                        <div class="user-role">{{ student.get_study_level_display }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Content -->
+        <div class="calendar-wrapper">
+            <div class="calendar-header">
+                <h1 class="calendar-title">Студиски Календар</h1>
+                <p class="calendar-subtitle">Управувајте го вашиот распред на учење и следете ги важните настани</p>
+            </div>
+
+            <div class="calendar-container">
+                <!-- Color Legend -->
+                <div class="calendar-legend">
+                    <h3 class="legend-title">Типови на Настани</h3>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #4285f4;"></span>
+                            <span class="legend-label">Студиска Сесија</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #ea4335;"></span>
+                            <span class="legend-label">Испит</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #ff9800;"></span>
+                            <span class="legend-label">Рок за Домашна</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #34a853;"></span>
+                            <span class="legend-label">Личен Настан</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="calendar-loading" class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Се вчитува календарот...</p>
+                </div>
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Modal -->
+    <!-- Hidden CSRF Token -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+    <!-- Event Modal -->
+    <div class="event-modal" id="eventModal">
+        <div class="event-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Создади Настан</h2>
+                <button class="modal-close" onclick="closeEventModal()">×</button>
+            </div>
+            
+            <form id="eventForm">
+                <div class="form-group">
+                    <label class="form-label" for="eventTitle">Наслов на Настан *</label>
+                    <input type="text" class="form-input" id="eventTitle" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="eventType">Тип на Настан *</label>
+                    <select class="form-input" id="eventType" name="event_type" required>
+                        <option value="study_session">Студиска Сесија</option>
+                        <option value="exam">Испит</option>
+                        <option value="homework_deadline">Рок за Домашна</option>
+                        <option value="personal">Личен Настан</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="eventStart">Почетен Датум и Време *</label>
+                    <input type="datetime-local" class="form-input" id="eventStart" name="start" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="eventEnd">Краен Датум и Време</label>
+                    <input type="datetime-local" class="form-input" id="eventEnd" name="end">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="eventDescription">Опис</label>
+                    <textarea class="form-input form-textarea" id="eventDescription" name="description" placeholder="Додајте детали за настанот..."></textarea>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeEventModal()">Откажи</button>
+                    <button type="button" class="btn btn-danger" id="deleteEventBtn" onclick="deleteEvent()" style="display: none;">Избриши</button>
+                    <button type="submit" class="btn btn-primary" id="saveEventBtn">Зачувај Настан</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    
+    <script>
+        let calendar;
+        let currentEvent = null;
+
+        // Get CSRF token for AJAX requests
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+        }
+
+        // Date formatting functions
+        function formatDateTimeForServer(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        function formatDateTimeLocal(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        // Initialize calendar when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCalendar();
+        });
+
+        function initializeCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'mk', // Macedonian locale
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                buttonText: {
+                    today: 'Денес',
+                    month: 'Месец',
+                    week: 'Недела', 
+                    day: 'Ден',
+                    list: 'Листа'
+                },
+                height: 'auto',
+                selectable: true,
+                selectMirror: true,
+                editable: true,
+                dayMaxEvents: true,
+                
+                // Ensure colors are applied properly
+                eventDisplay: 'block',
+                
+                // Event sources
+                events: {
+                    url: '{% url "mindmate:api_events" %}',
+                    method: 'GET',
+                    failure: function(error) {
+                        console.error('Error fetching events:', error);
+                        alert('Се случи грешка при вчитување на настаните! Проверете ја конзолата за детали.');
+                    }
+                },
+                
+                // Handle date selection (create new event)
+                select: function(selectInfo) {
+                    // Store the selection range for duration calculation
+                    window.selectedRange = {
+                        start: selectInfo.start,
+                        end: selectInfo.end
+                    };
+                    
+                    openEventModal('create', {
+                        start: selectInfo.start,
+                        end: selectInfo.end
+                    });
+                },
+                
+                // Handle event click (edit event)
+                eventClick: function(clickInfo) {
+                    openEventModal('edit', clickInfo.event);
+                },
+                
+                // Handle event drag and drop
+                eventDrop: function(dropInfo) {
+                    updateEventDateTime(dropInfo.event);
+                },
+                
+                // Handle event resize
+                eventResize: function(resizeInfo) {
+                    updateEventDateTime(resizeInfo.event);
+                },
+                
+                // Loading state
+                loading: function(isLoading) {
+                    const loadingEl = document.getElementById('calendar-loading');
+                    if (isLoading) {
+                        loadingEl.style.display = 'block';
+                    } else {
+                        loadingEl.style.display = 'none';
+                    }
+                },
+                
+                // Ensure event styling is applied
+                eventDidMount: function(info) {
+                    // Force apply the background color
+                    if (info.event.backgroundColor) {
+                        info.el.style.backgroundColor = info.event.backgroundColor;
+                        info.el.style.borderColor = info.event.backgroundColor;
+                        info.el.style.color = 'white';
+                    }
+                }
+            });
+            
+            calendar.render();
+        }
+
+        function openEventModal(mode, eventData) {
+            const modal = document.getElementById('eventModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const deleteBtn = document.getElementById('deleteEventBtn');
+            const form = document.getElementById('eventForm');
+            
+            // Reset form
+            form.reset();
+            currentEvent = null;
+            
+            if (mode === 'create') {
+                modalTitle.textContent = 'Создади Настан';
+                deleteBtn.style.display = 'none';
+                
+                // Set default dates
+                if (eventData.start) {
+                    document.getElementById('eventStart').value = formatDateTimeLocal(eventData.start);
+                }
+                if (eventData.end && eventData.end !== eventData.start) {
+                    document.getElementById('eventEnd').value = formatDateTimeLocal(eventData.end);
+                }
+            } else if (mode === 'edit') {
+                modalTitle.textContent = 'Уреди Настан';
+                deleteBtn.style.display = 'inline-block';
+                currentEvent = eventData;
+                
+                // Populate form with event data
+                document.getElementById('eventTitle').value = eventData.title || '';
+                document.getElementById('eventType').value = eventData.extendedProps.event_type || 'personal';
+                document.getElementById('eventStart').value = formatDateTimeLocal(eventData.start);
+                if (eventData.end) {
+                    document.getElementById('eventEnd').value = formatDateTimeLocal(eventData.end);
+                }
+                document.getElementById('eventDescription').value = eventData.extendedProps.description || '';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeEventModal() {
+            document.getElementById('eventModal').classList.remove('active');
+            currentEvent = null;
+        }
+
+
+
+        // Handle form submission
+        document.getElementById('eventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                title: document.getElementById('eventTitle').value,
+                event_type: document.getElementById('eventType').value,
+                start: document.getElementById('eventStart').value,
+                end: document.getElementById('eventEnd').value || null,
+                description: document.getElementById('eventDescription').value
+            };
+            
+            // If end time is empty but we have a selection range, calculate duration
+            if (!formData.end && currentEvent === null && window.selectedRange) {
+                const start = new Date(formData.start);
+                const duration = window.selectedRange.end - window.selectedRange.start;
+                const end = new Date(start.getTime() + duration);
+                formData.end = formatDateTimeLocal(end);
+            }
+            
+            if (currentEvent) {
+                // Update existing event
+                updateEvent(currentEvent.id, formData);
+            } else {
+                // Create new event
+                createEvent(formData);
+            }
+        });
+
+        function createEvent(eventData) {
+            fetch('{% url "mindmate:api_events" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(eventData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    calendar.refetchEvents();
+                    closeEventModal();
+                } else {
+                    alert('Грешка при креирање на настан: ' + (data.message || 'Непозната грешка'));
+                }
+            })
+            .catch(error => {
+                console.error('Error creating event:', error);
+                alert('Грешка при креирање на настан: ' + error.message);
+            });
+        }
+
+        function updateEvent(eventId, eventData) {
+            fetch(`{% url "mindmate:api_events" %}${eventId}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(eventData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    calendar.refetchEvents();
+                    closeEventModal();
+                } else {
+                    alert('Error updating event: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating event. Please try again.');
+            });
+        }
+
+        function updateEventDateTime(event) {
+            console.log('Updating event:', event.id, 'Title:', event.title);
+            const eventData = {
+                start: formatDateTimeForServer(event.start),
+                end: event.end ? formatDateTimeForServer(event.end) : null
+            };
+            console.log('Sending data:', eventData);
+            
+            fetch(`{% url "mindmate:api_events" %}${event.id}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(eventData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Update response:', data);
+                if (!data.success) {
+                    alert('Error updating event: ' + (data.message || 'Unknown error'));
+                    calendar.refetchEvents(); // Revert changes
+                } else {
+                    console.log('Event updated successfully');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating event. Please try again.');
+                calendar.refetchEvents(); // Revert changes
+            });
+        }
+
+        function deleteEvent() {
+            if (!currentEvent) return;
+            
+            if (confirm('Дали сте сигурни дека сакате да го избришете овој настан?')) {
+                fetch(`{% url "mindmate:api_events" %}${currentEvent.id}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        calendar.refetchEvents();
+                        closeEventModal();
+                    } else {
+                        alert('Грешка при бришење на настан: ' + (data.message || 'Непозната грешка'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting event. Please try again.');
+                });
+            }
+        }
+
+        // Sidebar toggle function
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+
+        // Mobile sidebar toggle
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

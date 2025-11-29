@@ -6,58 +6,13 @@ body, .module, .dashboard, .admin-interface {
     font-family: 'Poppins', Arial, sans-serif !important;
 }
 
-
-/* Header and navigation */
-#header, .module caption, .breadcrumbs, .dashboard-module h2, .login #header, .login .module caption, .login .breadcrumbs {
+#header, .module caption, .breadcrumbs, .dashboard-module h2 {
     background-color: #6c47ff !important;
     color: #fff !important;
 }
 
-#header, .login #header {
-    border-bottom: 4px solid #8c5dff !important;
-}
-
-/* Login form background and box */
-.login, .login #content, .login .form-row, .login .form-row input, .login .form-row label {
-    background: #f6f1ff !important;
-    color: #4b2996 !important;
-}
-
-.login .form-row input[type="text"],
-.login .form-row input[type="password"] {
-    background: #fff !important;
-    border: 1.5px solid #8c5dff !important;
-    color: #4b2996 !important;
-    border-radius: 6px !important;
-    font-family: 'Poppins', Arial, sans-serif !important;
-}
-
-.login .submit-row input[type="submit"] {
-    background-color: #6c47ff !important;
-    color: #fff !important;
-    border: 2px solid #8c5dff !important;
-    font-family: 'Poppins', Arial, sans-serif !important;
-    border-radius: 6px !important;
-    font-weight: 600;
-    box-shadow: 0 2px 8px #e6d6ff44;
-    transition: background 0.2s;
-}
-.login .submit-row input[type="submit"]:hover {
-    background-color: #8c5dff !important;
-    color: #fff !important;
-}
-
-/* Login box shadow and border */
-.login #content {
-    border-radius: 12px !important;
-    box-shadow: 0 8px 32px #6c47ff22 !important;
-    border: 1.5px solid #8c5dff !important;
-    padding: 2em 2em 1.5em 2em !important;
-}
-
-/* General admin background */
-body, .dashboard, .admin-interface, .login {
-    background: #f6f1ff !important;
+#header {
+    border-bottom: 4px solid #8c5dff;
 }
 
 #nav-sidebar a,
