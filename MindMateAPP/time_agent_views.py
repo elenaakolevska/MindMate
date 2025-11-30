@@ -24,6 +24,7 @@ from .models import (
 )
 from .services.task_estimator import TaskEstimatorService, TaskEstimate
 from .services.llama_estimator import LlamaTaskEstimator, AIEstimationContext
+from .services.slot_finder import SlotFinder, SlotRequest, TimeSlot
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,8 @@ def estimate_task_time(request):
             }, status=400)
         
         # Extract optional parameters
-        subject_area = data.get('subject_area', '').strip()
+        subject_area = data.get('subject_area') or ''
+        subject_area = subject_area.strip() if subject_area else ''
         difficulty = data.get('difficulty', 'moderate')
         deadline_str = data.get('deadline')
         context = data.get('context', {})
@@ -505,6 +507,150 @@ def suggest_study_schedule(request):
         }, status=500)
 
 
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def suggest_time_slots(request):
+    """
+    Find available time slots in student's calendar for scheduling study sessions
+    
+    POST /api/time-agent/suggest-slots/
+    Body: {
+        "duration_hours": 2.0,
+        "subject": "mathematics",           # optional
+        "difficulty": "hard",              # easy|moderate|hard|very_hard
+        "task_type": "exam",               # study|exam|homework|assignment
+        "deadline": "2023-12-20T10:00:00Z", # optional ISO datetime
+        "preferred_times": ["morning"],     # optional: morning|afternoon|evening
+        "allow_splitting": true,           # optional: allow splitting into multiple sessions
+        "min_session_duration": 0.5       # optional: minimum session length in hours
+    }
+    
+    Returns 3 best available slots with quality scores and reasoning
+    """
+    try:
+        # Get student
+        student = get_object_or_404(Student, user=request.user)
+        
+        # Parse request data
+        data = json.loads(request.body)
+        duration_hours = data.get('duration_hours')
+        
+        if not duration_hours or duration_hours <= 0:
+            return JsonResponse({
+                'success': False,
+                'error': 'Valid duration_hours is required (must be > 0)'
+            }, status=400)
+        
+        # Extract optional parameters
+        subject = data.get('subject')
+        if subject:
+            subject = subject.strip() or None
+        else:
+            subject = None
+        difficulty = data.get('difficulty', 'moderate')
+        task_type = data.get('task_type', 'study')
+        deadline_str = data.get('deadline')
+        preferred_times = data.get('preferred_times', [])
+        allow_splitting = data.get('allow_splitting', True)
+        min_session_duration = data.get('min_session_duration', 0.5)
+        
+        # Validate difficulty
+        valid_difficulties = ['easy', 'moderate', 'hard', 'very_hard']
+        if difficulty not in valid_difficulties:
+            difficulty = 'moderate'
+        
+        # Parse deadline if provided
+        deadline = None
+        if deadline_str:
+            try:
+                deadline = datetime.fromisoformat(deadline_str.replace('Z', '+00:00'))
+            except ValueError:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid deadline format. Use ISO format: 2023-12-20T10:00:00Z'
+                }, status=400)
+        
+        # Create slot request
+        slot_request = SlotRequest(
+            duration_hours=duration_hours,
+            subject=subject,
+            difficulty=difficulty,
+            task_type=task_type,
+            deadline=deadline,
+            preferred_times=preferred_times if preferred_times else None,
+            allow_splitting=allow_splitting,
+            min_session_duration=min_session_duration
+        )
+        
+        # Find available slots
+        slot_finder = SlotFinder(student)
+        suggested_slots = slot_finder.find_slots(slot_request, max_suggestions=3)
+        
+        # Format response
+        slots_data = []
+        for slot in suggested_slots:
+            # Format time in user-friendly way
+            start_time_formatted = slot.start_time.strftime("%A, %B %d at %I:%M %p")
+            duration_formatted = _format_duration(slot.duration_hours)
+            
+            slot_data = {
+                'start_time': slot.start_time.isoformat(),
+                'end_time': slot.end_time.isoformat(),
+                'start_time_formatted': start_time_formatted,
+                'duration_hours': slot.duration_hours,
+                'duration_formatted': duration_formatted,
+                'quality_score': round(slot.quality_score, 2),
+                'reasons': slot.reasons,
+                'is_split_session': slot.is_split,
+                'original_duration': slot.original_duration if slot.is_split else None,
+                'recommendation': _generate_slot_recommendation(slot, slot_request)
+            }
+            slots_data.append(slot_data)
+        
+        # Generate summary message
+        if not suggested_slots:
+            summary_message = "Не се пронајдени достапни термини за бараното време."
+            if deadline:
+                summary_message += " Обидете се со помал временски период или продолжете го крајниот рок."
+        elif len(suggested_slots) == 1 and suggested_slots[0].is_split:
+            summary_message = f"Препорачувам поделба на задачата во {len([s for s in suggested_slots if s.is_split and s.original_duration == duration_hours])} сесии."
+        else:
+            summary_message = f"Пронајдени се {len(suggested_slots)} оптимални термини за вашата задача."
+        
+        response_data = {
+            'success': True,
+            'requested_duration': duration_hours,
+            'requested_duration_formatted': _format_duration(duration_hours),
+            'suggested_slots': slots_data,
+            'total_suggestions': len(suggested_slots),
+            'summary_message': summary_message,
+            'search_criteria': {
+                'subject': subject,
+                'difficulty': difficulty,
+                'task_type': task_type,
+                'deadline': deadline.isoformat() if deadline else None,
+                'preferred_times': preferred_times,
+                'allow_splitting': allow_splitting
+            },
+            'tips': _generate_scheduling_tips(suggested_slots, slot_request, student)
+        }
+        
+        return JsonResponse(response_data)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        logger.error(f"Error suggesting time slots: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Internal server error'
+        }, status=500)
+
+
 # Helper functions
 
 def _get_ai_enhancement(student: Student, task_description: str, estimate: TaskEstimate, context: Dict) -> Dict:
@@ -778,3 +924,498 @@ def _generate_study_schedule(tasks: List[Dict], preferences: Dict, existing_even
         schedule['notes'].append(f"Found {len(schedule['conflicts'])} scheduling conflicts")
     
     return schedule
+
+
+def _format_duration(hours: float) -> str:
+    """Format duration in hours to user-friendly string"""
+    if hours >= 1:
+        if hours == 1:
+            return "1 час"
+        elif hours == int(hours):
+            return f"{int(hours)} часа"
+        else:
+            return f"{hours:.1f} часа"
+    else:
+        minutes = int(hours * 60)
+        return f"{minutes} минути"
+
+
+def _generate_slot_recommendation(slot: TimeSlot, request: SlotRequest) -> str:
+    """Generate recommendation text for a specific slot"""
+    start_time = slot.start_time.strftime("%A, %d.%m во %H:%M")
+    duration = _format_duration(slot.duration_hours)
+    
+    if slot.is_split:
+        return f"Препорачувам сесија од {duration} на {start_time} (дел од поголема задача)"
+    elif slot.quality_score >= 0.8:
+        return f"Одличен термин: {duration} на {start_time}"
+    elif slot.quality_score >= 0.6:
+        return f"Добар термин: {duration} на {start_time}"
+    else:
+        return f"Достапен термин: {duration} на {start_time}"
+
+
+def _generate_scheduling_tips(slots: List[TimeSlot], request: SlotRequest, student: Student) -> List[str]:
+    """Generate helpful scheduling tips based on the results"""
+    tips = []
+    
+    if not slots:
+        tips.append("Обидете се со пократок временски период или променете ги префериранците за време")
+        tips.append("Проверете дали има конфликти во календарот што можат да се преместат")
+        return tips
+    
+    # Check if morning slots are available for hard subjects
+    if request.difficulty in ['hard', 'very_hard']:
+        morning_slots = [s for s in slots if 6 <= s.start_time.hour < 12]
+        if morning_slots:
+            tips.append("Утринските термини се најдобри за тешки предмети како што е овој")
+        else:
+            tips.append("Обидете се да најдете утринско време за потешки задачи")
+    
+    # Check for split sessions
+    split_sessions = [s for s in slots if s.is_split]
+    if split_sessions:
+        tips.append("Поделбата на долги задачи во помали сесии го подобрува фокусот")
+        tips.append("Направете паузи од 15-30 минути меѓу сесиите")
+    
+    # Check quality scores
+    high_quality_slots = [s for s in slots if s.quality_score >= 0.8]
+    if high_quality_slots:
+        tips.append("Препорачувам да го изберете терминот с највисок резултат за квалитет")
+    
+    # Check timing
+    weekend_slots = [s for s in slots if s.start_time.weekday() >= 5]
+    if weekend_slots:
+        tips.append("Викендите се добри за подолги сесии на учење без прекини")
+    
+    # Daily study limit tip
+    if hasattr(student, 'preferences') and student.preferences:
+        daily_hours = getattr(student.preferences, 'daily_study_hours', 4.0)
+        if request.duration_hours > daily_hours * 0.8:
+            tips.append(f"Задачата е долга за дневниот лимит од {daily_hours} часа - разгледајте поделба")
+    
+    return tips[:4]  # Limit to 4 tips
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def test_ollama_connection(request):
+    """Test endpoint to check Ollama connectivity"""
+    try:
+        import requests
+        
+        # Test multiple possible URLs
+        urls_to_test = [
+            "http://host.docker.internal:11434",
+            "http://localhost:11434", 
+            "http://172.17.0.1:11434",  # Docker bridge IP
+            "http://192.168.65.2:11434"  # Docker Desktop IP on macOS
+        ]
+        
+        for url in urls_to_test:
+            try:
+                response = requests.get(f"{url}/api/tags", timeout=5)
+                if response.status_code == 200:
+                    return JsonResponse({
+                        'success': True,
+                        'ollama_url': url,
+                        'models': response.json()
+                    })
+            except:
+                continue
+        
+        return JsonResponse({
+            'success': False, 
+            'error': 'Could not connect to Ollama on any tested URL',
+            'tested_urls': urls_to_test
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def chat_with_agent(request):
+    """
+    Intelligent conversational endpoint using Llama3
+    
+    POST /api/time-agent/chat/
+    Body: {
+        "message": "user message in natural language",
+        "conversation_id": "optional_conversation_id"  
+    }
+    
+    Returns conversational response with intent routing
+    """
+    import time
+    
+    try:
+        # Get student
+        student = get_object_or_404(Student, user=request.user)
+        
+        # Parse request
+        data = json.loads(request.body)
+        message = data.get('message', '').strip()
+        conversation_id = data.get('conversation_id', f"conv_{student.id}_{int(time.time())}")
+        
+        if not message:
+            return JsonResponse({
+                'success': False,
+                'error': 'Message is required'
+            }, status=400)
+        
+        # Initialize conversational agent  
+        try:
+            from .services.conversational_agent import ConversationalTimeAgent, ConversationContext, IntentRouter
+            
+            # Try to create agent (this will test Ollama connectivity)
+            agent = ConversationalTimeAgent()
+            router = IntentRouter()
+            
+            # Test connectivity by making a simple request
+            test_response = agent._query_ollama("test")
+            if not test_response:
+                # Fall back to smart keyword processing
+                return _handle_message_with_fallback(student, message, conversation_id)
+                
+        except ImportError:
+            # Fallback if conversational agent is not available
+            return _handle_message_with_fallback(student, message, conversation_id)
+        except Exception as e:
+            logger.warning(f"Conversational agent failed, using fallback: {e}")
+            return _handle_message_with_fallback(student, message, conversation_id)
+        
+        agent = ConversationalTimeAgent()
+        router = IntentRouter()
+        
+        # Get or create conversation context (in production, store in session/cache)
+        context = ConversationContext(
+            student_id=student.id,
+            conversation_history=request.session.get(f'chat_history_{conversation_id}', [])
+        )
+        
+        # Process message with conversational agent
+        agent_response = agent.process_message(message, context)
+        
+        # Store updated conversation history in session
+        request.session[f'chat_history_{conversation_id}'] = context.conversation_history
+        
+        # Route intent to appropriate service
+        if agent_response['intent'] in ['time_estimation', 'slot_finding']:
+            routing_result = router.route_intent(
+                agent_response['intent'], 
+                agent_response['parameters'], 
+                student
+            )
+            
+            if routing_result['success']:
+                # Execute the routed action
+                if routing_result['action'] == 'time_estimation':
+                    # Call time estimation
+                    try:
+                        # Build mock request for time estimation
+                        mock_data = routing_result['data']
+                        estimation_result = _execute_time_estimation(student, mock_data)
+                        
+                        return JsonResponse({
+                            'success': True,
+                            'type': 'time_estimation',
+                            'conversation_response': agent_response['response'],
+                            'estimation_data': estimation_result,
+                            'conversation_id': conversation_id,
+                            'follow_up_questions': agent_response.get('follow_up_questions', []),
+                            'suggestions': agent_response.get('suggestions', [])
+                        })
+                        
+                    except Exception as e:
+                        logger.error(f"Time estimation execution error: {e}")
+                        
+                elif routing_result['action'] == 'slot_finding':
+                    # Call slot finding
+                    try:
+                        mock_data = routing_result['data']
+                        slots_result = _execute_slot_finding(student, mock_data)
+                        
+                        return JsonResponse({
+                            'success': True,
+                            'type': 'slot_finding',
+                            'conversation_response': agent_response['response'],
+                            'slots_data': slots_result,
+                            'conversation_id': conversation_id,
+                            'follow_up_questions': agent_response.get('follow_up_questions', []),
+                            'suggestions': agent_response.get('suggestions', [])
+                        })
+                        
+                    except Exception as e:
+                        logger.error(f"Slot finding execution error: {e}")
+        
+        # For general chat or if routing fails, return conversational response
+        return JsonResponse({
+            'success': True,
+            'type': 'conversation',
+            'response': agent_response['response'],
+            'conversation_id': conversation_id,
+            'intent': agent_response['intent'],
+            'confidence': agent_response['confidence'],
+            'follow_up_questions': agent_response.get('follow_up_questions', []),
+            'suggestions': agent_response.get('suggestions', [])
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in chat endpoint: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Се случи грешка при обработка на пораката'
+        }, status=500)
+
+
+def _execute_time_estimation(student, data):
+    """Execute time estimation with given parameters"""
+    # Create estimator
+    estimator = TaskEstimatorService(student)
+    
+    # Prepare estimation context
+    estimation_context = {
+        'academic_level': 'college',  # Could be from student profile
+        'subject_area': data.get('subject_area', ''),
+        'urgency': 'medium',
+        'complexity': data.get('difficulty', 'moderate')
+    }
+    
+    # Get base estimate
+    estimate = estimator.estimate_task_time(
+        data.get('task_description', ''), 
+        estimation_context
+    )
+    
+    # Format response similar to existing estimation endpoint
+    hours = estimate.estimated_hours
+    if hours >= 1:
+        if hours == 1:
+            time_text = "1 час"
+        elif hours < 2:
+            time_text = f"{hours:.1f} часа" if hours != int(hours) else f"{int(hours)} часа"
+        else:
+            time_text = f"{hours:.1f} часа" if hours != int(hours) else f"{int(hours)} часа"
+    else:
+        minutes = int(hours * 60)
+        time_text = f"{minutes} минути"
+    
+    return {
+        'estimated_hours': hours,
+        'time_text': time_text,
+        'confidence': estimate.confidence_score,
+        'difficulty': estimate.difficulty_level,
+        'reasoning': estimate.reasoning,
+        'breakdown': {
+            'preparation': estimate.estimated_hours * 0.2,
+            'main_work': estimate.estimated_hours * 0.7, 
+            'review': estimate.estimated_hours * 0.1
+        }
+    }
+
+
+def _execute_slot_finding(student, data):
+    """Execute slot finding with given parameters"""
+    # Create slot finder
+    slot_finder = SlotFinder(student)
+    
+    # Create slot request
+    slot_request = SlotRequest(
+        duration_hours=data.get('duration_hours', 2.0),
+        subject=data.get('subject'),
+        difficulty=data.get('difficulty', 'moderate'),
+        task_type=data.get('task_type', 'study'),
+        preferred_times=data.get('preferred_times'),
+        allow_splitting=data.get('allow_splitting', True)
+    )
+    
+    # Find slots
+    slots = slot_finder.find_slots(slot_request, max_suggestions=3)
+    
+    # Format slots for response
+    formatted_slots = []
+    for slot in slots:
+        formatted_slots.append({
+            'start_time': slot.start_time.isoformat(),
+            'end_time': slot.end_time.isoformat(),
+            'duration_hours': slot.duration_hours,
+            'quality_score': slot.quality_score,
+            'reasons': slot.reasons,
+            'formatted_date': slot.start_time.strftime('%A, %B %d'),
+            'formatted_time': slot.start_time.strftime('%I:%M %p')
+        })
+    
+    return {
+        'slots': formatted_slots,
+        'count': len(formatted_slots),
+        'request_duration': data.get('duration_hours', 2.0)
+    }
+
+
+def _handle_message_with_fallback(student, message, conversation_id):
+    """Smart fallback message handler when Ollama is not available"""
+    
+    message_lower = message.lower()
+    
+    # Detect intent using keywords
+    intent = 'general_chat'
+    parameters = {}
+    
+    # Slot finding keywords
+    slot_keywords = [
+        'термин', 'време', 'слот', 'најди', 'слободно', 'календар',
+        'попладне', 'утро', 'вечер', 'кога можам', 'кога е најдобро'
+    ]
+    
+    # Time estimation keywords  
+    time_keywords = [
+        'колку време', 'проценка', 'треба ми', 'за колку', 'времетраење'
+    ]
+    
+    if any(keyword in message_lower for keyword in slot_keywords):
+        intent = 'slot_finding'
+        # Extract parameters
+        import re
+        
+        # Extract duration
+        duration_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:час|hour|h)', message_lower)
+        if duration_match:
+            parameters['duration_hours'] = float(duration_match.group(1))
+        else:
+            parameters['duration_hours'] = 2.0  # Default
+        
+        # Extract time preference
+        if 'попладне' in message_lower or 'afternoon' in message_lower:
+            parameters['preferred_time'] = 'afternoon'
+        elif 'утро' in message_lower or 'morning' in message_lower:
+            parameters['preferred_time'] = 'morning'
+        elif 'вечер' in message_lower or 'evening' in message_lower:
+            parameters['preferred_time'] = 'evening'
+        
+        # Extract subject
+        subjects = ['математика', 'физика', 'хемија', 'биологија', 'историја', 'англиски']
+        for subject in subjects:
+            if subject in message_lower:
+                parameters['subject'] = subject
+                break
+        
+        # Determine difficulty and response
+        if 'математика' in message_lower or 'math' in message_lower:
+            parameters['difficulty'] = 'challenging'
+            response_msg = "🔢 Математиката бара концентрација! Ќе ви најдам оптимални термини за учење математика."
+        elif any(word in message_lower for word in ['кога е најдобро', 'најдобро време']):
+            response_msg = "🕐 За најдобри резултати, препорачувам утринско време кога умот е најсвеж. Ќе ви најдам термини!"
+        else:
+            response_msg = "🗓️ Ќе ви помогнам да најдете одличен термин за учење. Барам слободно време во вашиот календар..."
+        
+        # Execute slot finding
+        try:
+            mock_data = {
+                'duration_hours': parameters.get('duration_hours', 2.0),
+                'subject': parameters.get('subject'),
+                'difficulty': parameters.get('difficulty', 'moderate'),
+                'task_type': 'study',
+                'preferred_times': [parameters['preferred_time']] if parameters.get('preferred_time') else None,
+                'allow_splitting': True
+            }
+            
+            slots_result = _execute_slot_finding(student, mock_data)
+            
+            return JsonResponse({
+                'success': True,
+                'type': 'slot_finding',
+                'conversation_response': response_msg,
+                'slots_data': slots_result,
+                'conversation_id': conversation_id,
+                'follow_up_questions': [
+                    "Дали сакате различно време од денот?",
+                    "Треба ли подолг или покус термин?"
+                ],
+                'suggestions': [
+                    "Утринските часови се најдобри за тешки предмети",
+                    "Поделете долги сесии во помали блокови"
+                ]
+            })
+            
+        except Exception as e:
+            logger.error(f"Slot finding error: {e}")
+    
+    elif any(keyword in message_lower for keyword in time_keywords):
+        intent = 'time_estimation'
+        
+        # Extract task description
+        task_desc = message
+        for keyword in time_keywords:
+            task_desc = task_desc.lower().replace(keyword, '').strip()
+        
+        parameters['task_description'] = task_desc or 'Општа задача'
+        
+        response_msg = "⏱️ Ќе направам проценка за потребното време врз основа на сложеноста на задачата."
+        
+        # Execute time estimation
+        try:
+            mock_data = {
+                'task_description': parameters['task_description'],
+                'subject_area': '',
+                'difficulty': 'moderate'
+            }
+            
+            estimation_result = _execute_time_estimation(student, mock_data)
+            
+            return JsonResponse({
+                'success': True,
+                'type': 'time_estimation', 
+                'conversation_response': response_msg,
+                'estimation_data': estimation_result,
+                'conversation_id': conversation_id,
+                'follow_up_questions': [
+                    "Дали сакате да најдеме термин за оваа задача?",
+                    "Има ли краен рок за задачата?"
+                ],
+                'suggestions': [
+                    "Планирајте 20% дополнително време за непредвидени проблеми",
+                    "Поделете ја задачата во помали делови"
+                ]
+            })
+            
+        except Exception as e:
+            logger.error(f"Time estimation error: {e}")
+    
+    # General chat responses for common questions
+    general_responses = {
+        'кога е најдобро': "🌅 Најдобро време за учење е утрински (6-10 часот) кога концентрацијата е на врв. За математика и науки препорачувам 8-10 часот.",
+        'како да учам': "📚 Совети за ефикасно учење:\n• Користете Pomodoro техника (25 мин работа, 5 мин пауза)\n• Најдете тивко место без одвлекувања\n• Правете активни белешки\n• Повторувајте материјата редовно",
+        'планирање': "📅 За добро планирање:\n• Поставете јасни цели\n• Приоритизирајте задачи\n• Оставете простор за непредвидени работи\n• Направете дневен распоред и придржувајте се кон него",
+        'организација': "🗂️ Организирајте се така што ќе:\n• Направите листа на задачи\n• Користите календар за важни датуми\n• Подгответе си работно место\n• Чувајте ги материјалите на едно место"
+    }
+    
+    response_text = "💡 Како можам да ви помогнам денес? Можете да прашате за:\n• Проценка на време за задачи\n• Наоѓање слободни термини\n• Совети за учење и организација"
+    
+    # Check for general topics
+    for topic, response in general_responses.items():
+        if topic in message_lower:
+            response_text = response
+            break
+    
+    return JsonResponse({
+        'success': True,
+        'type': 'conversation',
+        'response': response_text,
+        'conversation_id': conversation_id,
+        'intent': intent,
+        'confidence': 75,
+        'follow_up_questions': [
+            "Колку време треба за математика?",
+            "Најди ми термин за учење 2 часа",
+            "Кога е најдобро да учам?"
+        ],
+        'suggestions': [
+            "Поставете конкретни прашања за подобри одговори",
+            "Споменете го предметот за персонализирани совети"
+        ]
+    })
