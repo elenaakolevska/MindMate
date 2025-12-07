@@ -10,6 +10,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from datetime import datetime, timedelta
 import json
+import logging
+
+logger = logging.getLogger(__name__)
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from datetime import datetime, timedelta
+import json
 from .forms import StudentRegistrationForm
 from .preference_forms import StudentPreferencesForm
 from .login_forms import StudentLoginForm
@@ -283,6 +291,13 @@ def upload_document(request):
             student = Student.objects.get(user=request.user)
             uploaded_file = request.FILES['file']
 
+            # Validate file size (50MB limit)
+            if uploaded_file.size > 50 * 1024 * 1024:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'File size exceeds 50MB limit'
+                }, status=400)
+
             # Determine file type
             file_extension = uploaded_file.name.split('.')[-1].lower()
             file_type_map = {
@@ -292,31 +307,55 @@ def upload_document(request):
                 'txt': 'text',
                 'jpg': 'image',
                 'jpeg': 'image',
-                'png': 'image'
+                'png': 'image',
+                'ppt': 'presentation',
+                'pptx': 'presentation'
             }
             file_type = file_type_map.get(file_extension, 'text')
+
+            # Create uploads directory if it doesn't exist
+            import os
+            from django.conf import settings
+            upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads', str(student.id))
+            os.makedirs(upload_dir, exist_ok=True)
+
+            # Save file to disk
+            file_path = os.path.join(upload_dir, uploaded_file.name)
+            with open(file_path, 'wb+') as destination:
+                for chunk in uploaded_file.chunks():
+                    destination.write(chunk)
 
             # Create study material
             material = StudyMaterial.objects.create(
                 student=student,
                 type=file_type,
-                title=uploaded_file.name,
+                title=uploaded_file.name.rsplit('.', 1)[0],  # Remove extension from title
                 original_filename=uploaded_file.name,
-                file_path=f'uploads/{uploaded_file.name}',
+                file_path=f'uploads/{student.id}/{uploaded_file.name}',
                 content='',  # TODO: Extract text content using OCR
-                subject=''  # TODO: Classify subject using AI
+                subject='',  # TODO: Classify subject using AI
+                processing_status='pending'
             )
+
+            # TODO: Queue OCR processing task here
+            # process_document_async.delay(material.id)
 
             return JsonResponse({
                 'success': True,
                 'message': 'Document uploaded successfully',
-                'material_id': material.id
+                'material_id': material.id,
+                'file_name': uploaded_file.name,
+                'file_size': uploaded_file.size,
+                'file_type': file_type
             })
         except Exception as e:
+            import traceback
+            logger.error(f"Document upload error: {e}")
+            logger.error(traceback.format_exc())
             return JsonResponse({
                 'success': False,
-                'message': str(e)
-            }, status=400)
+                'message': f'Upload failed: {str(e)}'
+            }, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
 
@@ -570,3 +609,172 @@ def api_event_detail(request, event_id):
             return JsonResponse({'success': True, 'message': 'Event deleted successfully'})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@login_required
+def study_agent_view(request):
+    """Display the Study Agent interface"""
+    try:
+        student = Student.objects.get(user=request.user)
+        
+        # Get student's recent documents
+        recent_documents = StudyMaterial.objects.filter(
+            student=student
+        ).order_by('-upload_date')[:10]
+        
+        context = {
+            'student': student,
+            'recent_documents': recent_documents,
+        }
+        
+        return render(request, 'study_agent/index.html', context)
+        
+    except Student.DoesNotExist:
+        # Redirect to preferences if student profile not found
+        return redirect('mindmate:student_preferences')
+
+
+@login_required
+def get_recent_documents(request):
+    """Get recent documents for Study Agent interface"""
+    try:
+        student = Student.objects.get(user=request.user)
+        
+        # Get recent documents
+        documents = StudyMaterial.objects.filter(
+            student=student
+        ).order_by('-upload_date')[:20]
+        
+        documents_data = []
+        for doc in documents:
+            documents_data.append({
+                'id': doc.id,
+                'name': doc.original_filename or doc.title,
+                'title': doc.title,
+                'subject': doc.subject or 'Uncategorized',
+                'type': doc.type,
+                'upload_date': doc.upload_date.isoformat(),
+                'processing_status': doc.processing_status,
+                'file_size': getattr(doc, 'file_size', 0)
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'documents': documents_data
+        })
+        
+    except Student.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Student not found'
+        }, status=404)
+    except Exception as e:
+        logger.error(f"Error getting recent documents: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Internal server error'
+        }, status=500)
+
+
+@login_required 
+@require_http_methods(["GET"])
+def get_recent_documents(request):
+    """API endpoint to get recent documents for the Study Agent"""
+    try:
+        student = Student.objects.get(user=request.user)
+        
+        documents = StudyMaterial.objects.filter(
+            student=student
+        ).order_by('-upload_date')[:20]
+        
+        document_list = []
+        for doc in documents:
+            # Calculate time ago
+            now = timezone.now()
+            time_diff = now - doc.upload_date
+            
+            if time_diff.days > 0:
+                time_ago = f"{time_diff.days} day{'s' if time_diff.days > 1 else ''} ago"
+            elif time_diff.seconds > 3600:
+                hours = time_diff.seconds // 3600
+                time_ago = f"{hours} hour{'s' if hours > 1 else ''} ago"
+            else:
+                minutes = time_diff.seconds // 60
+                time_ago = f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+            
+            document_list.append({
+                'id': doc.id,
+                'name': doc.original_filename,
+                'title': doc.title or doc.original_filename,
+                'type': doc.type,
+                'subject': doc.subject or 'General',
+                'upload_date': doc.upload_date.isoformat(),
+                'time_ago': time_ago,
+                'processing_status': doc.processing_status,
+                'file_size': None  # We don't store file size currently
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'documents': document_list,
+            'total_count': documents.count()
+        })
+        
+    except Student.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Student not found'
+        }, status=404)
+    except Exception as e:
+        logger.error(f"Error getting recent documents: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Internal server error'
+        }, status=500)
+
+
+@login_required
+@csrf_exempt  
+@require_http_methods(["DELETE"])
+def delete_document(request, document_id):
+    """Delete a document"""
+    try:
+        student = Student.objects.get(user=request.user)
+        
+        try:
+            document = StudyMaterial.objects.get(id=document_id, student=student)
+        except StudyMaterial.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Document not found'
+            }, status=404)
+        
+        if document.file_path:
+            import os
+            from django.conf import settings
+            full_path = os.path.join(settings.MEDIA_ROOT, document.file_path)
+            if os.path.exists(full_path):
+                try:
+                    os.remove(full_path)
+                except Exception as e:
+                    logger.warning(f"Could not delete file {full_path}: {e}")
+        
+        document_name = document.original_filename or document.title
+        document.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Document "{document_name}" deleted successfully'
+        })
+        
+    except Student.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Student not found'
+        }, status=404)
+    except Exception as e:
+        logger.error(f"Error deleting document: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Internal server error'
+        }, status=500)

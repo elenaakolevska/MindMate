@@ -24,6 +24,15 @@ weaviate-client>=3.6.0
 torch>=2.1.0
 
 
+# OCR & Image Processing
+pytesseract>=0.3.10
+Pillow>=10.0.0
+
+# Document Processing  
+python-docx>=1.1.0
+pdfplumber>=0.10.3
+PyMuPDF>=1.23.0
+
 # Utilities
 python-dotenv>=1.0.0
 requests>=2.31.0
@@ -31,9 +40,6 @@ httpx>=0.26.0
 numpy>=1.25.0
 pandas>=2.1.0
 pytest>=7.4.0
-pdfplumber>=0.10.3
-PyMuPDF>=1.23.0
-python-docx>=1.1.0
 
 # PostgreSQL driver
 psycopg2-binary>=2.9.7
