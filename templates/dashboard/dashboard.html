@@ -681,7 +681,7 @@
                 <i class="fas fa-th-large"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="#" class="sidebar-link">
+            <a href="{% url 'mindmate:study_agent' %}" class="sidebar-link">
                 <i class="fas fa-robot"></i>
                 <span>Study Agent</span>
             </a>
@@ -743,18 +743,18 @@
                             <div class="card-title">Study Agent Quick Access</div>
                             <div class="card-subtitle">Interact with your AI study assistant.</div>
                             <div class="action-buttons" style="margin-top: 16px;">
-                                <button class="btn btn-primary" onclick="openUploadModal()">
+                                <a href="{% url 'mindmate:study_agent' %}" class="btn btn-primary">
+                                    <i class="fas fa-robot"></i>
+                                    Open Study Agent
+                                </a>
+                                <button class="btn btn-secondary" onclick="openUploadModal()">
                                     <i class="fas fa-upload"></i>
                                     Upload Document
                                 </button>
-                                <button class="btn btn-secondary">
-                                    <i class="fas fa-question-circle"></i>
-                                    Ask Q&A
-                                </button>
-                                <button class="btn btn-secondary">
+                                <a href="{% url 'mindmate:study_agent' %}" class="btn btn-secondary">
                                     <i class="fas fa-clipboard-list"></i>
                                     Generate Quiz
-                                </button>
+                                </a>
                             </div>
                         </div>
 
@@ -798,7 +798,7 @@
                             <span class="progress-value">{{ accuracy_percentage }}%</span>
                         </div>
                         <div class="progress-bar-container">
-                            <div class="progress-bar-fill" style="width: {{ accuracy_percentage }}%"></div>
+                            <div class="progress-bar-fill" data-width="{{ accuracy_percentage|default:0 }}"></div>
                         </div>
                         <div class="quiz-count">
                             Completed Quizzes: <strong>{{ completed_quizzes }}</strong>
@@ -1030,6 +1030,19 @@
                 document.getElementById('sidebar').classList.remove('active');
             }
         });
+
+        // Apply progress bar widths from data attributes to avoid template + % parsing issues
+        function applyProgressBarWidths() {
+            document.querySelectorAll('.progress-bar-fill').forEach(el => {
+                const w = el.getAttribute('data-width');
+                if (w !== null) {
+                    const numeric = Number(w);
+                    el.style.width = (isNaN(numeric) ? 0 : numeric) + '%';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', applyProgressBarWidths);
     </script>
 </body>
 </html>

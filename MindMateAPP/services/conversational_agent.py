@@ -32,7 +32,7 @@ class ConversationalTimeAgent:
     
     def __init__(self, ollama_url: str = "http://host.docker.internal:11434"):
         self.ollama_url = ollama_url
-        self.model_name = "llama3:8b"
+        self.model_name = "llama3.1:8b"  # Better multilingual support including Macedonian
         
     def process_message(
         self, 
@@ -79,56 +79,58 @@ class ConversationalTimeAgent:
         # Get recent conversation history (last 3 exchanges)
         recent_history = context.conversation_history[-6:] if context.conversation_history else []
         
-        prompt = f"""Ти си Time Agent, паметен асистент за планирање на времето кој помага на студенти. Твоја задача е да разбереш што сака корисникот и да одговориш соодветно.
+        prompt = f"""You are Time Agent, an intelligent assistant for time planning that helps students. Your task is to understand what the user wants and respond appropriately.
 
-МОЖНОСТИ ШТО ГИ ИМАШ:
-1. ПРОЦЕНКА НА ВРЕМЕ - кога корисникот пита колку време треба за некоја задача
-2. НАОЃАЊЕ ТЕРМИНИ - кога корисникот сака да најде слободни термини во календарот  
-3. ОПШТ РАЗГОВОР - кога корисникот има прашања за учење, организација, совети
+YOUR CAPABILITIES:
+1. TIME ESTIMATION - when user asks how much time is needed for a task
+2. FINDING TIME SLOTS - when user wants to find free time slots in calendar  
+3. GENERAL CHAT - when user has questions about learning, organization, advice
 
-ПРАВИЛА:
-- Секогаш одговарај на македонски јазик
-- Биди пријателски и помошен
-- Ако не си сигурен што сака корисникот, прашај за појаснување
-- За проценка на време, извлечи ја задачата и предметот
-- За наоѓање термини, извлечи време, предмет, тежина
-- За општ разговор, дај корисни совети
+RULES:
+- Always respond in Macedonian language (using Latin script)
+- Be friendly and helpful
+- If you're not sure what the user wants, ask for clarification
+- For time estimation, extract the task and subject
+- For finding slots, extract time, subject, difficulty
+- For general chat, give useful advice
+- Keep responses natural and conversational in Macedonian
 
-ИСТОРИЈА НА РАЗГОВОР:"""
+CONVERSATION HISTORY:"""
 
         # Add conversation history
         for entry in recent_history:
-            role = "Корисник" if entry.get('role') == 'user' else "Time Agent"
+            role = "User" if entry.get('role') == 'user' else "Time Agent"
             prompt += f"\n{role}: {entry.get('message', '')}"
         
         prompt += f"""
 
-ТЕКОВНА ПОРАКА ОД КОРИСНИКОТ: "{message}"
+CURRENT USER MESSAGE: "{message}"
 
-ОДГОВОР ФОРМАТ (ЗАДОЛЖИТЕЛНО JSON):
+RESPONSE FORMAT (REQUIRED JSON):
 {{
     "intent": "time_estimation|slot_finding|general_chat",
-    "response": "твојот одговор на македонски",
+    "response": "your response in Macedonian using Latin script",
     "confidence": 85,
     "parameters": {{
-        "task_description": "опис на задачата (ако има)",
-        "subject": "предмет (ако има)", 
-        "duration_hours": 2.0,
+        "task_description": "task description (if any)",
+        "subject": "subject (if any)", 
+        "duration_hours": how many hours (for slot finding),
         "difficulty": "easy|moderate|hard|challenging",
-        "preferred_time": "morning|afternoon|evening (ако има)",
+        "preferred_time": "morning|afternoon|evening (if any)",
         "urgency": "high|medium|low"
     }},
-    "follow_up_questions": ["прашање1", "прашање2"],
-    "suggestions": ["совет1", "совет2"]
+    "follow_up_questions": ["question1", "question2"],
+    "suggestions": ["advice1", "advice2"]
 }}
 
-ВАЖНО: 
-- За "попладне некој термин" -> intent: "slot_finding", извлечи параметри за наоѓање термини
-- За "колку време треба за математика" -> intent: "time_estimation"
-- За "како да учам подобро" -> intent: "general_chat"
-- Секогаш вратете валиден JSON!
+IMPORTANT: 
+- For "popladne nekoj termin" -> intent: "slot_finding", extract parameters for finding slots
+- For "kolku vreme treba za matematika" -> intent: "time_estimation"
+- For "kako da ucham podobro" -> intent: "general_chat"
+- Always return valid JSON!
+- Respond in natural Macedonian using Latin script (e.g., "Zdravo, kako mozham da vi pomognam?")
 
-Твој одговор:"""
+Your response:"""
 
         return prompt
     
@@ -149,7 +151,7 @@ class ConversationalTimeAgent:
                         "stop": ["\n\nКорисник:", "\n\nTime Agent:"]
                     }
                 },
-                timeout=30
+                timeout=60  # Increased timeout for larger models like Qwen2.5
             )
             
             if response.status_code == 200:
@@ -163,6 +165,29 @@ class ConversationalTimeAgent:
                 
         except requests.RequestException as e:
             logger.error(f"Request to Ollama failed: {e}")
+            # Try fallback to smaller model if Llama3.1 fails
+            if self.model_name == "llama3.1:8b":
+                logger.info("Trying fallback to llama3.2:3b model")
+                try:
+                    fallback_response = requests.post(
+                        f"{self.ollama_url}/api/generate",
+                        json={
+                            "model": "llama3.2:3b",
+                            "prompt": prompt,
+                            "stream": False,
+                            "options": {
+                                "temperature": 0.7,
+                                "top_p": 0.9,
+                                "num_predict": 300,
+                            }
+                        },
+                        timeout=30
+                    )
+                    if fallback_response.status_code == 200:
+                        result = fallback_response.json()
+                        return result.get('response', '').strip()
+                except Exception as fallback_error:
+                    logger.error(f"Fallback model also failed: {fallback_error}")
             return ""
         except Exception as e:
             logger.error(f"Unexpected error querying Ollama: {e}")
@@ -371,7 +396,7 @@ class IntentRouter:
     
     def _route_time_estimation(self, parameters: Dict, student) -> Dict:
         """Route to time estimation service"""
-        from . import time_agent_views
+        from .. import time_agent_views
         
         # Build request data for time estimation
         request_data = {
