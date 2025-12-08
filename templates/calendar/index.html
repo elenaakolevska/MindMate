@@ -1030,6 +1030,9 @@
                             <button class="suggestion-btn" onclick="sendQuickMessage('Колку време треба за читање на 50 страници?')">
                                 Читање
                             </button>
+                            <button class="suggestion-btn" onclick="sendQuickMessage('Најди термини за учење математика 2 часа')">
+                                Најди термини
+                            </button>
                             <button class="suggestion-btn" onclick="sendQuickMessage('Кога е најдобро време за учење?')">
                                 Најдобро време
                             </button>
@@ -1471,8 +1474,140 @@
             // Show typing indicator
             showTyping();
             
-            // Send to Time Agent API
-            requestTimeEstimation(message);
+            // Use conversational AI to process message
+            sendToConversationalAgent(message);
+        }
+
+        function sendToConversationalAgent(message) {
+            // Send message to intelligent conversational agent
+            fetch('/api/time-agent/chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({
+                    message: message,
+                    conversation_id: getConversationId()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideTyping();
+                
+                if (data.success) {
+                    if (data.type === 'time_estimation') {
+                        // Handle time estimation response
+                        handleTimeEstimationResponse(data);
+                    } else if (data.type === 'slot_finding') {
+                        // Handle slot finding response
+                        handleSlotFindingResponse(data);
+                    } else {
+                        // Handle general conversation response
+                        handleConversationResponse(data);
+                    }
+                } else {
+                    addMessage('Извинете, се случи грешка при обработка на вашата порака. Обидете се повторно.', 'agent');
+                }
+            })
+            .catch(error => {
+                hideTyping();
+                console.error('Error:', error);
+                addMessage('Се случи грешка при комуникацијата со серверот. Обидете се повторно.', 'agent');
+            });
+        }
+        
+        function getConversationId() {
+            // Get or create conversation ID for session continuity
+            if (!window.conversationId) {
+                window.conversationId = 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+            return window.conversationId;
+        }
+        
+        function handleTimeEstimationResponse(data) {
+            // Show conversational response first
+            if (data.conversation_response) {
+                addMessage(data.conversation_response, 'agent');
+            }
+            
+            // Then show estimation data in the existing format
+            const estimationData = data.estimation_data;
+            const responseMessage = generateTimeEstimationResponse(estimationData);
+            addMessage(responseMessage, 'agent', estimationData);
+            
+            // Add follow-up questions if any
+            if (data.follow_up_questions && data.follow_up_questions.length > 0) {
+                setTimeout(() => {
+                    addMessage("💡 Дополнителни прашања:\n" + data.follow_up_questions.map(q => "• " + q).join("\n"), 'agent');
+                }, 1000);
+            }
+        }
+        
+        function handleSlotFindingResponse(data) {
+            // Show conversational response first
+            if (data.conversation_response) {
+                addMessage(data.conversation_response, 'agent');
+            }
+            
+            // Then show slot data in the existing format
+            const slotsData = data.slots_data;
+            // Fix data structure for compatibility with existing function
+            const compatibleData = {
+                suggested_slots: slotsData.slots || [],
+                request_duration: slotsData.request_duration || 2.0
+            };
+            const responseMessage = generateSlotSuggestionResponse(compatibleData);
+            addMessage(responseMessage, 'agent', compatibleData);
+            
+            // Add follow-up questions if any
+            if (data.follow_up_questions && data.follow_up_questions.length > 0) {
+                setTimeout(() => {
+                    addMessage("💡 " + data.follow_up_questions.join(" "), 'agent');
+                }, 1000);
+            }
+        }
+        
+        function handleConversationResponse(data) {
+            // Show the conversational response
+            addMessage(data.response, 'agent');
+            
+            // Add suggestions if any
+            if (data.suggestions && data.suggestions.length > 0) {
+                setTimeout(() => {
+                    const suggestionsText = "💡 Совети:\n" + data.suggestions.map(s => "• " + s).join("\n");
+                    addMessage(suggestionsText, 'agent');
+                }, 500);
+            }
+            
+            // Add follow-up questions as quick action buttons
+            if (data.follow_up_questions && data.follow_up_questions.length > 0) {
+                setTimeout(() => {
+                    const buttonsHtml = data.follow_up_questions.map(q => 
+                        `<button class="quick-action-btn" onclick="sendQuickMessage('${q}')">${q}</button>`
+                    ).join(' ');
+                    
+                    addMessage(`🤔 Можете да прашате:\n<div class="quick-actions">${buttonsHtml}</div>`, 'agent');
+                }, 1000);
+            }
+        }
+        
+        // Helper function to generate time estimation response (reuse existing logic)
+        function generateTimeEstimationResponse(estimationData) {
+            const timeText = estimationData.time_text;
+            const confidence = estimationData.confidence;
+            const difficulty = estimationData.difficulty;
+            
+            let response = `За вашата задача проценувам дека ќе ви требаат околу **${timeText}**.\\n\\n`;
+            response += `Проценката е направена врз основа на сложеноста на задачата и вашите претходни перформанси.`;
+            
+            return response;
+        }
+        
+        // Keep the old function for backwards compatibility but make it simpler
+        function isSlotFindingRequest(message) {
+            // This is now just a fallback - the AI will handle intent detection
+            return false;
         }
 
         function sendQuickMessage(message) {
@@ -1498,8 +1633,12 @@
             const avatarInitial = sender === 'user' ? '{{ student.full_name|slice:":1"|upper }}' : '🤖';
             
             let messageContent = content;
-            if (sender === 'agent' && data && data.estimated_hours) {
-                messageContent += generateEstimationResult(data);
+            if (sender === 'agent' && data) {
+                if (data.estimated_hours) {
+                    messageContent += generateEstimationResult(data);
+                } else if (data.suggested_slots) {
+                    messageContent += generateSlotActionsResult(data);
+                }
             }
             
             messageDiv.innerHTML = `
@@ -1551,6 +1690,9 @@
                     <div class="quick-actions">
                         <button class="quick-action-btn" onclick="addToCalendar('${data.task_description || ''}', ${data.estimated_hours})">
                             📅 Додај во календар
+                        </button>
+                        <button class="quick-action-btn" onclick="findSlotsForEstimate('${data.task_description || ''}', ${data.estimated_hours}, '${data.difficulty_assessment || 'moderate'}')">
+                            🔍 Најди термини
                         </button>
                         <button class="quick-action-btn" onclick="askForMoreDetails()">
                             💡 Повеќе детали
@@ -1759,6 +1901,169 @@
             };
         }
 
+        function requestSlotSuggestions(message) {
+            // Parse the message to extract task details
+            const taskDetails = parseSlotRequest(message);
+            
+            fetch('/api/time-agent/suggest-slots/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(taskDetails)
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideTyping();
+                
+                if (data.success) {
+                    const responseMessage = generateSlotSuggestionResponse(data);
+                    addMessage(responseMessage, 'agent', data);
+                } else {
+                    addMessage('Извинете, не можев да најдам достапни термини. Обидете се со помал временски период или проверете го календарот.', 'agent');
+                }
+            })
+            .catch(error => {
+                hideTyping();
+                console.error('Error:', error);
+                addMessage('Се случи грешка при барањето термини. Обидете се повторно.', 'agent');
+            });
+        }
+
+        function parseSlotRequest(message) {
+            const messageLC = message.toLowerCase();
+            
+            // Extract duration (default 2 hours)
+            let duration = 2.0;
+            const durationMatch = messageLC.match(/(\d+(?:\.\d+)?)\s*(?:час|hour|h)/);
+            if (durationMatch) {
+                duration = parseFloat(durationMatch[1]);
+            }
+            
+            // Extract subject
+            let subject = null;
+            const subjects = [
+                'математика', 'математике', 'math', 'mathematics',
+                'физика', 'physics', 'биологија', 'biology',
+                'хемија', 'chemistry', 'програмирање', 'programming',
+                'историја', 'history', 'македонски', 'macedonian',
+                'англиски', 'english'
+            ];
+            
+            for (const sub of subjects) {
+                if (messageLC.includes(sub)) {
+                    subject = sub;
+                    break;
+                }
+            }
+            
+            // Extract difficulty
+            let difficulty = 'moderate';
+            if (messageLC.includes('тешк') || messageLC.includes('сложен') || messageLC.includes('hard')) {
+                difficulty = 'hard';
+            } else if (messageLC.includes('лесн') || messageLC.includes('easy')) {
+                difficulty = 'easy';
+            }
+            
+            // Extract task type
+            let taskType = 'study';
+            if (messageLC.includes('испит') || messageLC.includes('exam')) {
+                taskType = 'exam';
+                difficulty = 'hard'; // Exams are typically harder
+            } else if (messageLC.includes('домашна') || messageLC.includes('homework')) {
+                taskType = 'homework';
+            } else if (messageLC.includes('читање') || messageLC.includes('read')) {
+                taskType = 'reading';
+            } else if (messageLC.includes('проект') || messageLC.includes('project')) {
+                taskType = 'project';
+            }
+            
+            // Extract preferred times
+            let preferredTimes = [];
+            if (messageLC.includes('утро') || messageLC.includes('morning')) {
+                preferredTimes.push('morning');
+            }
+            if (messageLC.includes('попладне') || messageLC.includes('afternoon')) {
+                preferredTimes.push('afternoon');
+            }
+            if (messageLC.includes('вечер') || messageLC.includes('evening')) {
+                preferredTimes.push('evening');
+            }
+            
+            return {
+                duration_hours: duration,
+                subject: subject,
+                difficulty: difficulty,
+                task_type: taskType,
+                preferred_times: preferredTimes.length > 0 ? preferredTimes : null,
+                allow_splitting: duration > 4.0 // Allow splitting for long sessions
+            };
+        }
+
+        function generateSlotSuggestionResponse(data) {
+            if (!data.suggested_slots || data.suggested_slots.length === 0) {
+                return 'Не пронајдов достапни термини за бараното време. Обидете се со пократок период или променете ги преференците.';
+            }
+            
+            let response = `🗓️ **Пронајдов ${data.suggested_slots.length} одлични термини за вашата задача:**\\n\\n`;
+            
+            data.suggested_slots.forEach((slot, index) => {
+                const quality = slot.quality_score >= 0.8 ? '🌟' : slot.quality_score >= 0.6 ? '⭐' : '✨';
+                const splitInfo = slot.is_split_session ? ' (сесија во серија)' : '';
+                
+                response += `${quality} **Термин ${index + 1}${splitInfo}:**\\n`;
+                response += `📅 ${slot.start_time_formatted}\\n`;
+                response += `⏱️ Времетраење: ${slot.duration_formatted}\\n`;
+                response += `💯 Квалитет: ${Math.round(slot.quality_score * 100)}%\\n`;
+                
+                if (slot.reasons && slot.reasons.length > 0) {
+                    response += `💡 ${slot.reasons[0]}\\n`;
+                }
+                response += '\\n';
+            });
+            
+            response += data.summary_message + '\\n\\n';
+            
+            if (data.tips && data.tips.length > 0) {
+                response += '**💡 Савети:**\\n';
+                data.tips.slice(0, 2).forEach(tip => {
+                    response += `• ${tip}\\n`;
+                });
+            }
+            
+            return response;
+        }
+
+        function addSlotToCalendar(slotData) {
+            const startTime = new Date(slotData.start_time);
+            const endTime = new Date(slotData.end_time);
+            
+            // Open event modal with pre-filled data
+            openEventModal('create', {
+                start: startTime,
+                end: endTime
+            });
+            
+            // Pre-fill the title
+            setTimeout(() => {
+                const title = slotData.task_description || 'Студиска сесија';
+                document.getElementById('eventTitle').value = title;
+                document.getElementById('eventDescription').value = `Time Agent препорака\\nКвалитет: ${Math.round(slotData.quality_score * 100)}%\\nВреметраење: ${slotData.duration_formatted}`;
+                
+                // Set appropriate event type based on task
+                const taskType = slotData.task_type || 'study';
+                const eventTypeMapping = {
+                    'exam': 'study_session',
+                    'homework': 'homework_deadline', 
+                    'project': 'study_session',
+                    'reading': 'study_session',
+                    'study': 'study_session'
+                };
+                document.getElementById('eventType').value = eventTypeMapping[taskType] || 'study_session';
+            }, 100);
+        }
+
         function addToCalendar(taskDescription, estimatedHours) {
             // Calculate suggested end time (estimated hours from now)
             const now = new Date();
@@ -1778,6 +2083,74 @@
             }, 100);
         }
 
+        function generateSlotActionsResult(data) {
+            if (!data.suggested_slots || data.suggested_slots.length === 0) {
+                return `
+                    <div class="estimation-result" style="border-color: #f59e0b; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                        <h4>⚠️ Нема достапни термини</h4>
+                        <p style="margin: 8px 0; font-size: 13px;">${data.summary_message || 'Нема слободни термини за бараното време.'}</p>
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" onclick="sendQuickMessage('Најди термини за помал период')">
+                                🔍 Побарај пократко
+                            </button>
+                            <button class="quick-action-btn" onclick="sendQuickMessage('Кога имам најмногу слободно време?')">
+                                📊 Слободно време
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            let result = `
+                <div class="estimation-result" style="border-color: #10b981; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+                    <h4>🗓️ Достапни Термини</h4>
+                    <div style="margin: 12px 0; font-size: 13px;">
+                        <strong>Најдени ${data.suggested_slots.length} термини за ${data.requested_duration_formatted || data.requested_duration + 'ч'}</strong>
+                    </div>
+            `;
+
+            data.suggested_slots.forEach((slot, index) => {
+                const quality = slot.quality_score >= 0.8 ? '🌟' : slot.quality_score >= 0.6 ? '⭐' : '✨';
+                const splitInfo = slot.is_split_session ? ' (сесија во серија)' : '';
+                
+                result += `
+                    <div style="background: white; border-radius: 8px; padding: 12px; margin: 8px 0; border-left: 4px solid #10b981;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong style="color: #065f46;">${quality} Термин ${index + 1}${splitInfo}</strong>
+                            <span style="font-size: 12px; color: #6b7280;">Квалитет: ${Math.round(slot.quality_score * 100)}%</span>
+                        </div>
+                        <div style="font-size: 13px; color: #374151; margin-bottom: 8px;">
+                            📅 ${slot.start_time_formatted}<br>
+                            ⏱️ ${slot.duration_formatted}
+                        </div>
+                        ${slot.reasons && slot.reasons.length > 0 ? `<div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">💡 ${slot.reasons[0]}</div>` : ''}
+                        <button class="quick-action-btn" onclick='addSlotToCalendar(${JSON.stringify(slot).replace(/'/g, "\\'")})' style="font-size: 11px; padding: 4px 8px;">
+                            📅 Додај во календар
+                        </button>
+                    </div>
+                `;
+            });
+
+            result += `
+                    <div class="quick-actions" style="margin-top: 12px;">
+                        <button class="quick-action-btn" onclick="sendQuickMessage('Најdi други термини за истата задача')">
+                            🔄 Други термини
+                        </button>
+                        <button class="quick-action-btn" onclick="sendQuickMessage('Кои се најдобрите времиња за учење?')">
+                            💡 Совети
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            return result;
+        }
+
+        function findSlotsForEstimate(taskDescription, estimatedHours, difficulty) {
+            const message = `Најди термини за ${taskDescription} ${estimatedHours} часа тежина ${difficulty}`;
+            sendQuickMessage(message);
+        }
+
         function askForMoreDetails() {
             const suggestions = [
                 'Кои фактори влијаат на проценката?',
@@ -1793,7 +2166,7 @@
         // Initialize chat with welcome message after a short delay
         setTimeout(() => {
             if (chatMessages.length === 0) {
-                addMessage('Здраво! Јас сум Time Agent, вашиот асистент за планирање на времето. Прашајте ме за било која задача и јас ќе ви дадам реална проценка за потребното време. 😊', 'agent');
+                addMessage('Здраво! Јас сум Time Agent, вашиот асистент за планирање на времето. 🤖\\n\\n**Што можам да направам:**\\n• 📊 Проценка на време за задачи\\n• 🗓️ Наоѓање слободни термини\\n• ⏰ Препораки за оптимално планирање\\n\\nПрашајте ме нешто како "Колку време треба за математика?" или "Најди ми термин за учење 2 часа"! 😊', 'agent');
             }
         }, 1000);
     </script>

@@ -91,8 +91,27 @@ def process_document(file_path: str):
             print(chunks[0])
             return chunks
             
+        elif file_path.lower().endswith('.txt'):
+            # Process plain text file
+            print("Processing text file...")
+            with open(file_path, 'r', encoding='utf-8') as f:
+                text_content = f.read()
+            
+            if not text_content.strip():
+                print("Text file is empty")
+                return None
+            
+            chunks = process_text_with_chunks(text_content)
+            print(f"Text file processed successfully!")
+            print(f"Number of chunks: {len(chunks)}")
+            print(f"Total characters: {len(text_content)}")
+            print("-" * 40)
+            print("First chunk:")
+            print(chunks[0] if chunks else "No chunks created")
+            return chunks
+            
         else:
-            print(f"Unsupported file type. Supported: PDF, DOCX, PNG, JPG, JPEG, TIFF, BMP")
+            print(f"Unsupported file type. Supported: PDF, DOCX, TXT, PNG, JPG, JPEG, TIFF, BMP")
             return None
             
     except Exception as e:

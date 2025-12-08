@@ -146,6 +146,9 @@ class StudyMaterial(models.Model):
     processing_error = models.TextField(blank=True)  # Store error messages
     processing_date = models.DateTimeField(null=True, blank=True)  # When OCR was completed
     
+    # Vector Store fields
+    vector_collection_name = models.CharField(max_length=64, blank=True, null=True)  # Random collection name for this document
+    
     # File metadata
     file_size = models.PositiveIntegerField(default=0)  # File size in bytes
     

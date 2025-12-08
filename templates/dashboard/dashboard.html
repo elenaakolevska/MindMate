@@ -681,7 +681,7 @@
                 <i class="fas fa-th-large"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{% url 'mindmate:study_agent_chat' %}" class="sidebar-link">
+            <a href="{% url 'mindmate:study_agent' %}" class="sidebar-link">
                 <i class="fas fa-robot"></i>
                 <span>Study Agent</span>
             </a>
@@ -743,22 +743,18 @@
                             <div class="card-title">Study Agent Quick Access</div>
                             <div class="card-subtitle">Interact with your AI study assistant.</div>
                             <div class="action-buttons" style="margin-top: 16px;">
-                                <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary" style="text-decoration: none;">
+                                <a href="{% url 'mindmate:study_agent' %}" class="btn btn-primary">
                                     <i class="fas fa-robot"></i>
                                     Open Study Agent
                                 </a>
-                                <button class="btn btn-secondary" onclick="openStudyAgentWithAction('quiz')">
+                                <button class="btn btn-secondary" onclick="openUploadModal()">
+                                    <i class="fas fa-upload"></i>
+                                    Upload Document
+                                </button>
+                                <a href="{% url 'mindmate:study_agent' %}" class="btn btn-secondary">
                                     <i class="fas fa-clipboard-list"></i>
                                     Generate Quiz
-                                </button>
-                                <button class="btn btn-secondary" onclick="openStudyAgentWithAction('question')">
-                                    <i class="fas fa-question-circle"></i>
-                                    Ask Question
-                                </button>
-                                <button class="btn btn-secondary" onclick="openStudyAgentWithAction('summary')">
-                                    <i class="fas fa-file-alt"></i>
-                                    Summarize Content
-                                </button>
+                                </a>
                             </div>
                         </div>
 
@@ -802,7 +798,7 @@
                             <span class="progress-value">{{ accuracy_percentage }}%</span>
                         </div>
                         <div class="progress-bar-container">
-                            <div class="progress-bar-fill" style="width: {{ accuracy_percentage }}%"></div>
+                            <div class="progress-bar-fill" data-width="{{ accuracy_percentage|default:0 }}"></div>
                         </div>
                         <div class="quiz-count">
                             Completed Quizzes: <strong>{{ completed_quizzes }}</strong>
@@ -1035,20 +1031,18 @@
             }
         });
 
-        // Study Agent quick actions
-        function openStudyAgentWithAction(action) {
-            const messages = {
-                'quiz': 'Креирај квиз',
-                'question': 'Одговори на прашање',
-                'summary': 'Резимирај ми го материјалот'
-            };
-
-            // Store the action in sessionStorage so Study Agent can pick it up
-            sessionStorage.setItem('studyAgentAction', messages[action] || '');
-
-            // Navigate to Study Agent
-            window.location.href = "{% url 'mindmate:study_agent_chat' %}";
+        // Apply progress bar widths from data attributes to avoid template + % parsing issues
+        function applyProgressBarWidths() {
+            document.querySelectorAll('.progress-bar-fill').forEach(el => {
+                const w = el.getAttribute('data-width');
+                if (w !== null) {
+                    const numeric = Number(w);
+                    el.style.width = (isNaN(numeric) ? 0 : numeric) + '%';
+                }
+            });
         }
+
+        document.addEventListener('DOMContentLoaded', applyProgressBarWidths);
     </script>
 </body>
 </html>
