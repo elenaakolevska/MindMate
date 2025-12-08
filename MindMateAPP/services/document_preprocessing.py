@@ -4,10 +4,18 @@ import os
 from typing import Tuple
 import time
 
-from .ocr_processor import OCRProcessor
-from .preprocess_pdf_files import preprocess_pdf
-from .preprocess_doc_files import preprocess_doc
-from .text_chunker import process_text_with_chunks
+try:
+    from .ocr_processor import OCRProcessor
+    from .preprocess_pdf_files import preprocess_pdf
+    from .preprocess_doc_files import preprocess_doc
+    from .text_chunker import process_text_with_chunks
+except ImportError as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Could not import document processing modules: {e}. Document processing features may be limited.")
+    OCRProcessor = None
+    preprocess_pdf = None
+    preprocess_doc = None
+    process_text_with_chunks = None
 
 logger = logging.getLogger(__name__)
 

@@ -681,7 +681,7 @@
                 <i class="fas fa-th-large"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="#" class="sidebar-link">
+            <a href="{% url 'mindmate:study_agent_chat' %}" class="sidebar-link">
                 <i class="fas fa-robot"></i>
                 <span>Study Agent</span>
             </a>
@@ -743,17 +743,21 @@
                             <div class="card-title">Study Agent Quick Access</div>
                             <div class="card-subtitle">Interact with your AI study assistant.</div>
                             <div class="action-buttons" style="margin-top: 16px;">
-                                <button class="btn btn-primary" onclick="openUploadModal()">
-                                    <i class="fas fa-upload"></i>
-                                    Upload Document
-                                </button>
-                                <button class="btn btn-secondary">
-                                    <i class="fas fa-question-circle"></i>
-                                    Ask Q&A
-                                </button>
-                                <button class="btn btn-secondary">
+                                <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary" style="text-decoration: none;">
+                                    <i class="fas fa-robot"></i>
+                                    Open Study Agent
+                                </a>
+                                <button class="btn btn-secondary" onclick="openStudyAgentWithAction('quiz')">
                                     <i class="fas fa-clipboard-list"></i>
                                     Generate Quiz
+                                </button>
+                                <button class="btn btn-secondary" onclick="openStudyAgentWithAction('question')">
+                                    <i class="fas fa-question-circle"></i>
+                                    Ask Question
+                                </button>
+                                <button class="btn btn-secondary" onclick="openStudyAgentWithAction('summary')">
+                                    <i class="fas fa-file-alt"></i>
+                                    Summarize Content
                                 </button>
                             </div>
                         </div>
@@ -1030,6 +1034,21 @@
                 document.getElementById('sidebar').classList.remove('active');
             }
         });
+
+        // Study Agent quick actions
+        function openStudyAgentWithAction(action) {
+            const messages = {
+                'quiz': 'Креирај квиз',
+                'question': 'Одговори на прашање',
+                'summary': 'Резимирај ми го материјалот'
+            };
+
+            // Store the action in sessionStorage so Study Agent can pick it up
+            sessionStorage.setItem('studyAgentAction', messages[action] || '');
+
+            // Navigate to Study Agent
+            window.location.href = "{% url 'mindmate:study_agent_chat' %}";
+        }
     </script>
 </body>
 </html>

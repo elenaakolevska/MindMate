@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, time_agent_views
+from . import views, time_agent_views, study_agent_chat_views
 
 app_name = 'mindmate'
 
@@ -24,4 +24,11 @@ urlpatterns = [
     path('api/time-agent/history/', time_agent_views.get_estimation_history, name='time_agent_history'),
     path('api/time-agent/analytics/', time_agent_views.get_performance_analytics, name='time_agent_analytics'),
     path('api/time-agent/schedule/', time_agent_views.suggest_study_schedule, name='time_agent_schedule'),
+
+    # Study Agent Chat URLs
+    path('study-agent/', study_agent_chat_views.study_agent_chat_view, name='study_agent_chat'),
+    path('study-agent/chat/', study_agent_chat_views.study_agent_chat_api, name='study_agent_chat_api'),
+    path('study-agent/stream/', study_agent_chat_views.study_agent_stream_api, name='study_agent_stream'),
+    path('study-agent/history/', study_agent_chat_views.chat_history_api, name='study_agent_history'),
+    path('study-agent/clear/', study_agent_chat_views.clear_chat_history_api, name='study_agent_clear'),
 ]
