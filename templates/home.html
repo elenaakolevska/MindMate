@@ -919,6 +919,8 @@
         </div>
         <div class="navbar-links">
             {% if user.is_authenticated %}
+                <a href="{% url 'mindmate:dashboard' %}">Dashboard</a>
+                <a href="{% url 'mindmate:study_agent_chat' %}">🤖 Study Agent</a>
                 <a href="{% url 'mindmate:logout' %}">Одјави се</a>
             {% else %}
                 <a href="{% url 'mindmate:login' %}">Најави се</a>

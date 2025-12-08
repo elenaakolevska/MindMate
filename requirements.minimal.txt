@@ -1,0 +1,9 @@
+# Minimal requirements for getting Django + DB running
+Django>=4.2,<5
+djangorestframework>=3.14
+django-cors-headers>=4.0
+gunicorn>=20.1.0
+python-dotenv>=1.0.0
+psycopg2-binary>=2.9.7
+requests>=2.31.0
+
