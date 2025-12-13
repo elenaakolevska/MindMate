@@ -17,7 +17,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile.simple
+      dockerfile: Dockerfile
     volumes:
       - .:/app
     ports:

@@ -911,7 +911,7 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-logo">
-            <img src="{% static 'mindLogo.png' %}" alt="MindMate">
+            <img src="{% static 'logo.png' %}" alt="MindMate">
             <span>MindMate</span>
         </div>
         <nav class="sidebar-nav">
@@ -928,6 +928,13 @@
                 <span>Calendar</span>
             </a>
         </nav>
+                <!-- Log Out button at the bottom -->
+        <div class="sidebar-logout" style="position: absolute; bottom: 30px; width: 100%;">
+            <a href="{% url 'mindmate:logout' %}" class="sidebar-link" style="color: #e53e3e;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Одјави се</span>
+            </a>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -2172,3 +2179,4 @@
     </script>
 </body>
 </html>
+

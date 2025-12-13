@@ -35,11 +35,11 @@
         }
 
         .sidebar.collapsed {
-            width: 80px;
+            width: 85px;
         }
 
         .sidebar-logo {
-            padding: 0 24px 32px;
+            padding: -10px 24px 32px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -85,11 +85,14 @@
         .sidebar-link.active::before {
             content: '';
             position: absolute;
-            left: 0;
+            left: 10px;
             top: 0;
             bottom: 0;
             width: 3px;
             background: #4285f4;
+        }
+        .sidebar.collapsed .sidebar-link.active::before {
+            left: 18px;
         }
 
         .sidebar-link i {
@@ -673,7 +676,7 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-logo">
-            <img src="{% static 'mindLogo.png' %}" alt="MindMate">
+            <img src="{% static 'logo.png' %}" alt="MindMate">
             <span>MindMate</span>
         </div>
         <nav class="sidebar-nav">
@@ -681,7 +684,7 @@
                 <i class="fas fa-th-large"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{% url 'mindmate:study_agent' %}" class="sidebar-link">
+            <a href="{% url 'mindmate:study_agent_chat' %}" class="sidebar-link">
                 <i class="fas fa-robot"></i>
                 <span>Study Agent</span>
             </a>
@@ -690,6 +693,13 @@
                 <span>Calendar</span>
             </a>
         </nav>
+        <!-- Log Out button at the bottom -->
+        <div class="sidebar-logout" style="position: absolute; bottom: 30px; width: 100%;">
+            <a href="{% url 'mindmate:logout' %}" class="sidebar-link" style="color: #e53e3e;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Одјави се</span>
+            </a>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -743,7 +753,7 @@
                             <div class="card-title">Study Agent Quick Access</div>
                             <div class="card-subtitle">Interact with your AI study assistant.</div>
                             <div class="action-buttons" style="margin-top: 16px;">
-                                <a href="{% url 'mindmate:study_agent' %}" class="btn btn-primary">
+                                <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary">
                                     <i class="fas fa-robot"></i>
                                     Open Study Agent
                                 </a>
@@ -751,7 +761,7 @@
                                     <i class="fas fa-upload"></i>
                                     Upload Document
                                 </button>
-                                <a href="{% url 'mindmate:study_agent' %}" class="btn btn-secondary">
+                                <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-secondary">
                                     <i class="fas fa-clipboard-list"></i>
                                     Generate Quiz
                                 </a>
