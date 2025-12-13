@@ -301,7 +301,7 @@
                 
                 <div class="two-column">
                     <div class="mb-3">
-                        <label for="{{ form.major_field_of_study.id_for_label }}" class="form-label">{{ form.major_field_of_study.label }}</label>
+                        <label class="form-label">{{ form.major_field_of_study.label }}</label>
                         {{ form.major_field_of_study }}
                         {% if form.major_field_of_study.errors %}
                             <div class="text-danger small mt-1">{{ form.major_field_of_study.errors.0 }}</div>
@@ -309,7 +309,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="{{ form.current_courses.id_for_label }}" class="form-label">{{ form.current_courses.label }}</label>
+                        <label class="form-label">{{ form.current_courses.label }}</label>
                         {{ form.current_courses }}
                         {% if form.current_courses.errors %}
                             <div class="text-danger small mt-1">{{ form.current_courses.errors.0 }}</div>
@@ -325,19 +325,17 @@
                         <label class="form-label">{{ form.preferred_learning_style.label }}</label>
                         <div class="learning-style-options">
                             {% for choice in form.preferred_learning_style %}
-                                <div class="learning-btn">
+                                <label class="learning-btn">
                                     {{ choice.tag }}
-                                    <label class="learning-label" for="{{ choice.id_for_label }}">
-                                        <div class="learning-title">
-                                            {% if choice.choice_value == 'visual' %}Визуелно
-                                            {% elif choice.choice_value == 'auditory' %}Аудитивно
-                                            {% elif choice.choice_value == 'kinesthetic' %}Кинестетичко
-                                            {% elif choice.choice_value == 'reading_writing' %}Читање/Пишување
-                                            {% endif %}
-                                        </div>
-                                        <div class="learning-description">{{ choice.choice_label }}</div>
-                                    </label>
-                                </div>
+                                    <span class="learning-title">
+                                        {% if choice.choice_value == 'visual' %}Визуелно
+                                        {% elif choice.choice_value == 'auditory' %}Аудитивно
+                                        {% elif choice.choice_value == 'kinesthetic' %}Кинестетичко
+                                        {% elif choice.choice_value == 'reading_writing' %}Читање/Пишување
+                                        {% endif %}
+                                    </span>
+                                    <span class="learning-description">{{ choice.choice_label }}</span>
+                                </label>
                             {% endfor %}
                         </div>
                         {% if form.preferred_learning_style.errors %}
@@ -361,7 +359,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="{{ form.learning_goals.id_for_label }}" class="form-label">Цели за учење</label>
+                    <label class="form-label">Цели за учење</label>
                     {{ form.learning_goals }}
                     {% if form.learning_goals.errors %}
                         <div class="text-danger small mt-1">{{ form.learning_goals.errors.0 }}</div>
