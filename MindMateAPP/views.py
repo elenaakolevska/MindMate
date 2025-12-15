@@ -21,6 +21,9 @@ import json
 from .forms import StudentRegistrationForm
 from .preference_forms import StudentPreferencesForm
 from .login_forms import StudentLoginForm
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import os
 from .models import (
     Student, StudentPreferences, CalendarEvent, Progress, Streak,
     Accuracy, Badge, Quiz, QuizResult, StudyMaterial, ChatbotInteraction,
@@ -447,7 +450,8 @@ def api_events(request):
             # Validate required fields
             title = data.get('title', '').strip()
             start = data.get('start')
-            
+            end = data.get('end')
+
             if not title:
                 return JsonResponse({'success': False, 'message': 'Title is required'}, status=400)
             
@@ -461,29 +465,32 @@ def api_events(request):
                     start_dt = datetime.strptime(start, '%Y-%m-%dT%H:%M')
                 else:
                     start_dt = datetime.fromisoformat(start.replace('Z', '+00:00'))
-                
-                # Make timezone aware
-                if timezone.is_naive(start_dt):
-                    start_dt = timezone.make_aware(start_dt)
-            except ValueError:
+            except Exception:
                 return JsonResponse({'success': False, 'message': 'Invalid start date format'}, status=400)
             
-            # Parse end datetime if provided
             end_dt = None
-            end = data.get('end')
             if end:
                 try:
-                    if 'T' in end and len(end) == 16:  # datetime-local format YYYY-MM-DDTHH:MM
+                    if 'T' in end and len(end) == 16:
                         end_dt = datetime.strptime(end, '%Y-%m-%dT%H:%M')
                     else:
                         end_dt = datetime.fromisoformat(end.replace('Z', '+00:00'))
-                    
-                    # Make timezone aware
-                    if timezone.is_naive(end_dt):
-                        end_dt = timezone.make_aware(end_dt)
-                except ValueError:
-                    pass  # If end date is invalid, just ignore it
-            
+                except Exception:
+                    return JsonResponse({'success': False, 'message': 'Invalid end date format'}, status=400)
+
+            # If no end time, treat as 1 hour event for overlap check
+            if not end_dt:
+                end_dt = start_dt + timedelta(hours=1)
+
+            # Overlap validation: check if any event for this student overlaps with the new event
+            overlap_qs = CalendarEvent.objects.filter(
+                student=student,
+                date_time__lt=end_dt,
+                end_time__gt=start_dt
+            )
+            if overlap_qs.exists():
+                return JsonResponse({'success': False, 'message': 'Веќе постои настан закажан во истото време.'}, status=400)
+
             # Create the event
             event = CalendarEvent.objects.create(
                 student=student,
@@ -777,4 +784,123 @@ def delete_document(request, document_id):
         return JsonResponse({
             'success': False,
             'error': 'Internal server error'
+        }, status=500)
+
+
+@login_required
+def profile_view(request):
+    """Display user profile"""
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        messages.error(request, 'Студентскиот профил не е пронајден.')
+        return redirect('mindmate:register')
+
+    # Get or create student preferences
+    preferences, created = StudentPreferences.objects.get_or_create(student=student)
+
+    # Get progress data
+    try:
+        progress = Progress.objects.get(student=student)
+        streak = Streak.objects.get(progress=progress)
+        streak_days = streak.days_count
+    except (Progress.DoesNotExist, Streak.DoesNotExist):
+        streak_days = 0
+
+    # Get quiz statistics
+    quiz_results = QuizResult.objects.filter(student=student)
+    completed_quizzes = quiz_results.count()
+
+    if quiz_results.exists():
+        total_accuracy = sum([result.accuracy_percentage for result in quiz_results])
+        accuracy_percentage = round(total_accuracy / len(quiz_results), 1)
+    else:
+        accuracy_percentage = 0.0
+
+    # Get badges
+    badges = Badge.objects.filter(student=student).order_by('-received_at')
+
+    context = {
+        'student': student,
+        'preferences': preferences,
+        'streak_days': streak_days,
+        'completed_quizzes': completed_quizzes,
+        'accuracy_percentage': accuracy_percentage,
+        'badges': badges,
+        'interests': student.interests.split(', ') if student.interests else [],
+    }
+
+    return render(request, 'profile/profile.html', context)
+
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def update_profile(request):
+    """Update user profile information"""
+    try:
+        student = Student.objects.get(user=request.user)
+        data = json.loads(request.body)
+
+        # Update student fields
+        if 'full_name' in data:
+            student.full_name = data['full_name']
+            # Update User model too
+            name_parts = data['full_name'].split()
+            if name_parts:
+                request.user.first_name = name_parts[0]
+                if len(name_parts) > 1:
+                    request.user.last_name = ' '.join(name_parts[1:])
+                request.user.save()
+
+        if 'email' in data:
+            # Check if email is already taken by another user
+            if User.objects.filter(email=data['email']).exclude(id=request.user.id).exists():
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Оваа е-пошта веќе се користи'
+                }, status=400)
+
+            student.email = data['email']
+            request.user.email = data['email']
+            request.user.username = data['email']
+            request.user.save()
+
+        if 'study_direction' in data:
+            student.study_direction = data['study_direction']
+
+        student.save()
+
+        # Update preferences
+        preferences, created = StudentPreferences.objects.get_or_create(student=student)
+
+        if 'major_field_of_study' in data:
+            preferences.major_field_of_study = data['major_field_of_study']
+
+        if 'learning_goals' in data:
+            preferences.learning_goals = data['learning_goals']
+
+        preferences.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Профилот е успешно ажуриран'
+        })
+
+    except Student.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Студентскиот профил не е пронајден'
+        }, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Невалидни податоци'
+        }, status=400)
+    except Exception as e:
+        logger.error(f"Profile update error: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Грешка при ажурирање на профилот'
         }, status=500)

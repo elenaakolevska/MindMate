@@ -172,40 +172,39 @@
             background: #f3f4f6;
             border: 2px solid var(--border-gray);
             border-radius: 20px;
-            padding: 8px 18px;
+            padding: 10px 18px;
             font-size: 14px;
             color: #374151;
             cursor: pointer;
             transition: all 0.2s ease;
             user-select: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             position: relative;
         }
-        
+
         .interest-btn input[type="checkbox"] {
-            display: none;
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
         }
-        
-        .interest-btn input[type="checkbox"]:checked + .interest-label {
+
+        .interest-btn.checked {
             background: var(--primary-purple);
             color: #fff;
             border-color: var(--primary-purple);
         }
-        
-        .interest-label {
-            display: block;
-            background: inherit;
-            border: inherit;
-            border-radius: inherit;
-            padding: inherit;
-            color: inherit;
-            cursor: pointer;
-            margin: 0;
-            transition: all 0.2s ease;
-        }
-        
-        .interest-btn:hover .interest-label {
+
+        .interest-btn:has(input[type="checkbox"]:checked) {
+            background: var(--primary-purple);
+            color: #fff;
             border-color: var(--primary-purple);
+        }
+
+        .interest-text {
+            display: block;
+            color: inherit;
         }
         
         .terms-section {
@@ -391,20 +390,23 @@
 
                         <div class="section-title">Персонализирајте го вашето искуство</div>
                         
-                        <div class="interests-section">
-                            <label class="form-label">{{ form.interests.label }}</label>
-                            <div class="interests-grid">
-                                {% for choice in form.interests %}
-                                    <div class="interest-btn">
-                                        {{ choice.tag }}
-                                        <label class="interest-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            {% if form.interests.errors %}
-                                <div class="text-danger small mt-2">{{ form.interests.errors.0 }}</div>
-                            {% endif %}
+                      <div class="interests-section">
+                        <label class="form-label">{{ form.interests.label }}</label>
+                        <div class="interests-grid">
+                            {% for choice in form.interests %}
+                                <label class="interest-btn">
+                                    {{ choice.tag }}
+                                    <span class="interest-text">{{ choice.choice_label }}</span>
+                                </label>
+                            {% endfor %}
                         </div>
+                        <div id="interestError" class="text-danger small mt-2" style="display: none;">
+                            Не можете да одберете повеќе од 5 интереси
+                        </div>
+                        {% if form.interests.errors %}
+                            <div class="text-danger small mt-2">{{ form.interests.errors.0 }}</div>
+                        {% endif %}
+                    </div>
 
                         <!-- Terms and Conditions -->
                         <div class="terms-section">
@@ -433,44 +435,57 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Interest selection as clickable buttons with purple color
-        document.querySelectorAll('.interest-btn input[type="checkbox"]').forEach(function(checkbox) {
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const interestCheckboxes = document.querySelectorAll('.interest-btn input[type="checkbox"]');
+        const errorDiv = document.getElementById('interestError');
+        const MAX_INTERESTS = 5;
+
+        interestCheckboxes.forEach(function(checkbox) {
             const btn = checkbox.closest('.interest-btn');
-            const label = btn.querySelector('.interest-label');
-            
+
             checkbox.addEventListener('change', function() {
+                const checkedCount = Array.from(interestCheckboxes).filter(cb => cb.checked).length;
+
+                if (checkedCount > MAX_INTERESTS) {
+                    this.checked = false;
+
+                    if (errorDiv) {
+                        errorDiv.style.display = 'block';
+                        setTimeout(function() {
+                            errorDiv.style.display = 'none';
+                        }, 3000);
+                    }
+                }
+
                 if (this.checked) {
-                    btn.style.background = '#6c47ff';
-                    btn.style.borderColor = '#6c47ff';
-                    btn.style.color = '#fff';
-                    label.style.background = '#6c47ff';
-                    label.style.color = '#fff';
+                    btn.classList.add('checked');
                 } else {
-                    btn.style.background = '#f3f4f6';
-                    btn.style.borderColor = '#e5e7eb';
-                    btn.style.color = '#374151';
-                    label.style.background = '#f3f4f6';
-                    label.style.color = '#374151';
+                    btn.classList.remove('checked');
                 }
             });
-            
-            // Make the entire button clickable
+
             btn.addEventListener('click', function(e) {
-                if (e.target !== checkbox) {
-                    checkbox.click();
+                // Prevent double-firing if clicking the checkbox itself
+                if (e.target === checkbox) {
+                    return;
                 }
+                checkbox.click();
             });
-        });
 
-        // Form validation
-        const form = document.getElementById('registrationForm');
-        const submitBtn = document.getElementById('submitBtn');
-
-        form.addEventListener('submit', function(e) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Се регистрира...';
+            if (checkbox.checked) {
+                btn.classList.add('checked');
+            }
         });
+    });
+
+    const form = document.getElementById('registrationForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', function(e) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Се регистрира...';
+    });
     </script>
 </body>
 </html>
