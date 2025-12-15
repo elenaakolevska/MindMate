@@ -20,99 +20,17 @@
             min-height: 100vh;
         }
 
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 250px;
-            height: 100vh;
-            background: white;
-            border-right: 1px solid #e5e7eb;
-            padding: 24px 0;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar.collapsed {
-            width: 85px;
-        }
-
-        .sidebar-logo {
-            padding: -10px 24px 32px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-logo img {
-            height: 40px;
-            width: auto;
-        }
-
-        .sidebar-logo span {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1f2937;
-        }
-
-        .sidebar.collapsed .sidebar-logo span {
-            display: none;
-        }
-
-        .sidebar-nav {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 14px 24px;
-            color: #6b7280;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .sidebar-link:hover, .sidebar-link.active {
-            background: #f3f4f6;
-            color: #4285f4;
-        }
-
-        .sidebar-link.active::before {
-            content: '';
-            position: absolute;
-            left: 10px;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: #4285f4;
-        }
-        .sidebar.collapsed .sidebar-link.active::before {
-            left: 18px;
-        }
-
-        .sidebar-link i {
-            font-size: 20px;
-            min-width: 20px;
-        }
-
-        .sidebar.collapsed .sidebar-link span {
-            display: none;
-        }
-
         /* Main Content */
         .main-content {
             margin-left: 250px;
             min-height: 100vh;
             transition: all 0.3s ease;
+            width: calc(100% - 250px);
         }
 
         .sidebar.collapsed + .main-content {
             margin-left: 80px;
+            width: calc(100% - 80px);
         }
 
         /* Header */
@@ -253,18 +171,21 @@
         .schedule-tabs {
             display: flex;
             gap: 8px;
-            margin-bottom: 20px;
         }
 
         .schedule-tab {
             padding: 8px 20px;
             border: none;
             background: #f3f4f6;
-            border-radius: 8px;
             color: #6b7280;
-            font-weight: 500;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: 500;
             transition: all 0.2s ease;
+        }
+
+        .schedule-tab:hover {
+            background: #e5e7eb;
         }
 
         .schedule-tab.active {
@@ -273,30 +194,27 @@
         }
 
         .calendar-view {
-            background: #f9fafb;
-            border-radius: 12px;
-            padding: 40px;
+            padding: 60px 20px;
             text-align: center;
             color: #9ca3af;
-            min-height: 300px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background: #f9fafb;
+            border-radius: 12px;
+            margin-top: 20px;
         }
 
         .calendar-view i {
             font-size: 48px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
-        /* Study Agent & Recent Activity Row */
+        /* Two Column Row */
         .two-column-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 24px;
         }
 
+        /* Action Buttons */
         .action-buttons {
             display: flex;
             flex-direction: column;
@@ -304,16 +222,17 @@
         }
 
         .btn {
-            padding: 12px 20px;
-            border-radius: 10px;
-            border: none;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
             justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
         }
 
         .btn-primary {
@@ -323,20 +242,18 @@
 
         .btn-primary:hover {
             background: #3367d6;
-            transform: translateY(-1px);
         }
 
         .btn-secondary {
-            background: white;
-            color: #374151;
-            border: 1px solid #e5e7eb;
+            background: #f3f4f6;
+            color: #1f2937;
         }
 
         .btn-secondary:hover {
-            background: #f9fafb;
+            background: #e5e7eb;
         }
 
-        /* Recent Activity */
+        /* Activity List */
         .activity-list {
             display: flex;
             flex-direction: column;
@@ -347,37 +264,32 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 8px 0;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 10px;
         }
 
         .activity-icon {
             width: 36px;
             height: 36px;
-            border-radius: 8px;
+            border-radius: 50%;
             background: #eff6ff;
             color: #4285f4;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .activity-text {
-            flex: 1;
             font-size: 14px;
-            color: #374151;
+            color: #4b5563;
         }
 
-        .activity-text a {
-            color: #4285f4;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        /* Quiz Progress */
+        /* Progress */
         .progress-info {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             margin-bottom: 8px;
         }
 
@@ -387,51 +299,55 @@
         }
 
         .progress-value {
-            font-size: 16px;
             font-weight: 700;
-            color: #4285f4;
+            color: #1f2937;
         }
 
         .progress-bar-container {
-            height: 10px;
+            width: 100%;
+            height: 12px;
             background: #e5e7eb;
             border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 20px;
         }
 
         .progress-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, #4285f4 0%, #667eea 100%);
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
             transition: width 0.3s ease;
         }
 
         .quiz-count {
+            margin-top: 16px;
             font-size: 14px;
             color: #6b7280;
         }
 
-        /* Streak Card */
+        /* Streak */
         .streak-display {
             text-align: center;
-            padding: 20px 0;
+            padding: 10px 0;
         }
 
         .streak-number {
-            font-size: 48px;
-            font-weight: 800;
-            color: #4285f4;
-            margin-bottom: 8px;
+            font-size: 38px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .streak-text {
-            font-size: 18px;
-            color: #1f2937;
+            font-size: 15px;
             font-weight: 600;
+            color: #1f2937;
+            margin-top: -8px;
         }
 
         .streak-subtext {
-            font-size: 14px;
+            font-size: 12px;
             color: #6b7280;
             margin-top: 8px;
         }
@@ -462,12 +378,16 @@
 
         /* Profile Card */
         .profile-content {
+            padding: 0;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .profile-avatar {
-            width: 80px;
-            height: 80px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
@@ -475,33 +395,35 @@
             justify-content: center;
             color: white;
             font-weight: 700;
-            font-size: 32px;
-            margin: 0 auto 16px;
+            font-size: 20px;
+            margin: 0 auto 8px;
         }
 
         .profile-name {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 700;
             color: #1f2937;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
+            text-align: center;
         }
 
         .profile-role {
-            font-size: 14px;
+            font-size: 12px;
             color: #6b7280;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            text-align: center;
         }
 
         .profile-section {
+            margin-top: 20px;
             text-align: left;
-            margin-top: 16px;
         }
 
         .profile-section-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            color: #6b7280;
-            margin-bottom: 8px;
+            color: #1f2937;
+            margin-bottom: 4px;
         }
 
         .profile-tags {
@@ -511,46 +433,39 @@
         }
 
         .profile-tag {
-            padding: 6px 12px;
+            padding: 4px 8px;
             background: #f3f4f6;
-            color: #374151;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
+            color: #4b5563;
+            border-radius: 16px;
+            font-size: 11px;
         }
 
         .profile-recommendation {
-            font-size: 13px;
-            color: #4285f4;
-            line-height: 1.5;
+            font-size: 11px;
         }
 
         /* Chatbot Card */
         .chatbot-content {
             text-align: center;
-            padding: 20px 0;
+            padding: 10px 0;
         }
 
         .chatbot-icon {
-            font-size: 48px;
+            font-size: 32px;
             color: #4285f4;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
         }
 
         .chatbot-link {
             display: inline-block;
-            padding: 12px 24px;
-            background: #4285f4;
-            color: white;
+            margin-top: 4px;
+            color: #4285f4;
+            font-weight: 600;
             text-decoration: none;
-            border-radius: 10px;
-            font-weight: 500;
-            transition: all 0.2s ease;
         }
 
         .chatbot-link:hover {
-            background: #3367d6;
-            transform: translateY(-1px);
+            text-decoration: underline;
         }
 
         /* Upload Modal */
@@ -559,12 +474,12 @@
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            align-items: center;
+            z-index: 9999;
             justify-content: center;
+            align-items: center;
         }
 
         .upload-modal.active {
@@ -573,10 +488,12 @@
 
         .upload-modal-content {
             background: white;
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 32px;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .upload-area {
@@ -607,6 +524,9 @@
 
         .uploaded-files {
             margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .file-item {
@@ -616,7 +536,6 @@
             padding: 12px;
             background: #f9fafb;
             border-radius: 10px;
-            margin-bottom: 8px;
         }
 
         .file-info {
@@ -626,33 +545,126 @@
         }
 
         .file-icon {
+            font-size: 24px;
             color: #4285f4;
-            font-size: 20px;
         }
 
         .file-name {
-            font-size: 14px;
             font-weight: 500;
             color: #1f2937;
         }
 
         .file-remove {
-            background: #ef4444;
-            color: white;
+            background: none;
             border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
+            color: #ef4444;
             cursor: pointer;
-            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .file-remove:hover {
+            background: #fee2e2;
+        }
+
+        /* Calendar Card */
+        .calendar-card {
+            padding: 0;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+            margin-bottom: 24px;
+        }
+
+        .calendar-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 32px 32px 0 32px;
+        }
+
+        .calendar-card-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .calendar-card-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calendar-card-tab {
+            background: #f3f4f6;
+            color: #222;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .calendar-card-tab:hover {
+            background: #e5e7eb;
+        }
+
+        .calendar-card-tab.active {
+            background: #4285f4;
+            color: #fff;
+        }
+
+        .calendar-card-body {
+            background: #f9fafb;
+            border-radius: 12px;
+            margin: 24px 24px 24px 24px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 24px;
+        }
+
+        .calendar-card-icon {
+            font-size: 48px;
+            color: #9ca3af;
+            margin-bottom: 0;
+        }
+
+        .calendar-card-center-text {
+            font-size: 18px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 24px 16px 0 16px;
+            }
+
+            .calendar-card-body {
+                margin: 16px;
+                min-height: 180px;
+            }
+
+            .calendar-card-title {
+                font-size: 1.2rem;
+            }
         }
 
         /* Responsive */
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
             .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .two-column-row {
                 grid-template-columns: 1fr;
             }
         }
@@ -668,41 +680,90 @@
 
             .main-content {
                 margin-left: 0;
+                width: 100%;
+            }
+
+            .two-column-row {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-wrapper {
+                padding: 16px;
+            }
+        }
+
+        /* --- Compact Right Column Cards --- */
+        .right-column .card {
+            padding: 16px 18px;
+            min-height: unset;
+        }
+        .streak-display {
+            padding: 10px 0;
+        }
+        .streak-number {
+            font-size: 38px;
+        }
+        .streak-text {
+            font-size: 15px;
+        }
+        .streak-subtext {
+            font-size: 12px;
+        }
+        .profile-content {
+            padding: 0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .profile-avatar {
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        .profile-name {
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+        .profile-role {
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        .profile-section-title {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        .profile-tag {
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+        .profile-recommendation {
+            font-size: 11px;
+        }
+        .card .chatbot-content {
+            padding: 10px 0;
+        }
+        .card .chatbot-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .card .card-title {
+            font-size: 15px;
+        }
+        .card .chatbot-link {
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        @media (max-width: 1200px) {
+            .right-column .card {
+                padding: 12px 8px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-logo">
-            <img src="{% static 'logo.png' %}" alt="MindMate">
-            <span>MindMate</span>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="{% url 'mindmate:dashboard' %}" class="sidebar-link active">
-                <i class="fas fa-th-large"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="{% url 'mindmate:study_agent_chat' %}" class="sidebar-link">
-                <i class="fas fa-robot"></i>
-                <span>Study Agent</span>
-            </a>
-            <a href="{% url 'mindmate:calendar' %}" class="sidebar-link">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Calendar</span>
-            </a>
-        </nav>
-        <!-- Log Out button at the bottom -->
-        <div class="sidebar-logout" style="position: absolute; bottom: 30px; width: 100%;">
-            <a href="{% url 'mindmate:logout' %}" class="sidebar-link" style="color: #e53e3e;">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Одјави се</span>
-            </a>
-        </div>
-    </div>
-
-    <!-- Main Content -->
+    {% include 'sidebar_base.html' %}
     <div class="main-content">
         <!-- Header -->
         <div class="header">
@@ -712,43 +773,40 @@
                 </button>
             </div>
             <div class="header-right">
-                <div class="user-profile">
+                <a href="{% url 'mindmate:profile' %}" class="user-profile" style="text-decoration: none; color: inherit;">
                     <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
                     <div class="user-info">
                         <div class="user-name">{{ student.full_name }}</div>
                         <div class="user-role">{{ student.get_study_level_display }}</div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
 
         <!-- Dashboard Content -->
         <div class="dashboard-wrapper">
             <div class="dashboard-grid">
-                <!-- Left Column -->
                 <div class="left-column">
-                    <!-- Upcoming Schedule -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-title">Upcoming Schedule</div>
-                            </div>
-                            <div class="schedule-tabs">
-                                <button class="schedule-tab">Day</button>
-                                <button class="schedule-tab">Week</button>
-                                <button class="schedule-tab active">Month</button>
-                            </div>
+                    <div class="card calendar-card" onclick="window.location.href='{% url 'mindmate:calendar' %}'" style="cursor:pointer;">
+                        <div class="calendar-card-header">
+                            <span class="calendar-card-title">Upcoming Schedule</span>
+                            <span class="calendar-card-tabs">
+                                <button class="calendar-card-tab">Day</button>
+                                <button class="calendar-card-tab">Week</button>
+                                <button class="calendar-card-tab active">Month</button>
+                            </span>
                         </div>
-                        <div class="calendar-view">
-                            <i class="fas fa-calendar"></i>
-                            <div>Interactive Calendar View</div>
-                            <div style="font-size: 13px; margin-top: 8px;">(Calendar functionality coming soon)</div>
+                        <div class="calendar-card-body">
+                            <span class="calendar-card-icon"><i class="fas fa-calendar-alt"></i></span>
+                            <span class="calendar-card-center-text">
+                                <i class="fas fa-clock"></i>
+                                Interactive Calendar View (Click to navigate to Calendar)
+                            </span>
                         </div>
                     </div>
 
                     <!-- Two Column Row -->
                     <div class="two-column-row">
-                        <!-- Study Agent Quick Access -->
                         <div class="card">
                             <div class="card-title">Study Agent Quick Access</div>
                             <div class="card-subtitle">Interact with your AI study assistant.</div>
@@ -876,13 +934,15 @@
                     </div>
 
                     <!-- Time Agent Chatbot -->
-                    <div class="card">
+                    <a href="{% url 'mindmate:calendar' %}#time-agent-chat" style="text-decoration:none;color:inherit;">
+                    <div class="card" style="cursor:pointer;">
                         <div class="chatbot-content">
                             <i class="fas fa-comments chatbot-icon"></i>
                             <div class="card-title">Time Agent Chatbot</div>
-                            <a href="#" class="chatbot-link">Click to Chat</a>
+                            <span class="chatbot-link">Click to Chat</span>
                         </div>
                     </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -1034,14 +1094,12 @@
             });
         }
 
-        // Mobile sidebar toggle
         window.addEventListener('resize', () => {
             if (window.innerWidth > 768) {
                 document.getElementById('sidebar').classList.remove('active');
             }
         });
 
-        // Apply progress bar widths from data attributes to avoid template + % parsing issues
         function applyProgressBarWidths() {
             document.querySelectorAll('.progress-bar-fill').forEach(el => {
                 const w = el.getAttribute('data-width');

@@ -7,10 +7,8 @@
     <title>Календар - MindMate</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <!-- FullCalendar CSS -->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
-    
     <style>
         * {
             margin: 0;
@@ -31,96 +29,17 @@
             overflow-y: auto;
         }
 
-        /* Sidebar - Same as dashboard */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 250px;
-            height: 100vh;
-            background: white;
-            border-right: 1px solid #e5e7eb;
-            padding: 24px 0;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar.collapsed {
-            width: 80px;
-        }
-
-        .sidebar-logo {
-            padding: 0 24px 32px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-logo img {
-            height: 40px;
-            width: auto;
-        }
-
-        .sidebar-logo span {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1f2937;
-        }
-
-        .sidebar.collapsed .sidebar-logo span {
-            display: none;
-        }
-
-        .sidebar-nav {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 14px 24px;
-            color: #6b7280;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .sidebar-link:hover, .sidebar-link.active {
-            background: #f3f4f6;
-            color: #4285f4;
-        }
-
-        .sidebar-link.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: #4285f4;
-        }
-
-        .sidebar-link i {
-            font-size: 20px;
-            min-width: 20px;
-        }
-
-        .sidebar.collapsed .sidebar-link span {
-            display: none;
-        }
-
         /* Main Content */
         .main-content {
             margin-left: 250px;
             min-height: 100vh;
             transition: all 0.3s ease;
+            width: calc(100% - 250px);
         }
 
         .sidebar.collapsed + .main-content {
             margin-left: 80px;
+            width: calc(100% - 80px);
         }
 
         /* Header - Same as dashboard */
@@ -226,6 +145,7 @@
             flex-direction: column;
             min-width: 350px;
             align-self: flex-start;
+            max-height: 600px;
         }
 
         .calendar-header {
@@ -314,6 +234,8 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            /* Set a max-height to make it scrollable */
+            max-height: 350px;
         }
 
         .message {
@@ -871,6 +793,7 @@
             .chat-section {
                 min-width: unset;
                 height: 500px;
+                max-height: 500px;
             }
         }
 
@@ -885,6 +808,7 @@
 
             .main-content {
                 margin-left: 0;
+                width: 100%;
             }
 
             .calendar-wrapper {
@@ -899,6 +823,7 @@
 
             .chat-section {
                 height: 400px;
+                max-height: 400px;
             }
             
             .quick-suggestions {
@@ -908,36 +833,7 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-logo">
-            <img src="{% static 'logo.png' %}" alt="MindMate">
-            <span>MindMate</span>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="{% url 'mindmate:dashboard' %}" class="sidebar-link">
-                <i class="fas fa-th-large"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <i class="fas fa-robot"></i>
-                <span>Study Agent</span>
-            </a>
-            <a href="{% url 'mindmate:calendar' %}" class="sidebar-link active">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Calendar</span>
-            </a>
-        </nav>
-                <!-- Log Out button at the bottom -->
-        <div class="sidebar-logout" style="position: absolute; bottom: 30px; width: 100%;">
-            <a href="{% url 'mindmate:logout' %}" class="sidebar-link" style="color: #e53e3e;">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Одјави се</span>
-            </a>
-        </div>
-    </div>
-
-    <!-- Main Content -->
+    {% include 'sidebar_base.html' %}
     <div class="main-content">
         <!-- Header -->
         <div class="header">
@@ -946,14 +842,14 @@
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
-            <div class="header-right">
-                <div class="user-profile">
+             <div class="header-right">
+                <a href="{% url 'mindmate:profile' %}" class="user-profile" style="text-decoration: none; color: inherit;">
                     <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
                     <div class="user-info">
                         <div class="user-name">{{ student.full_name }}</div>
                         <div class="user-role">{{ student.get_study_level_display }}</div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
 
@@ -1079,7 +975,6 @@
                     <label class="form-label" for="eventTitle">Наслов на Настан *</label>
                     <input type="text" class="form-input" id="eventTitle" name="title" required>
                 </div>
-                
                 <div class="form-group">
                     <label class="form-label" for="eventType">Тип на Настан *</label>
                     <select class="form-input" id="eventType" name="event_type" required>
@@ -1089,22 +984,19 @@
                         <option value="personal">Личен Настан</option>
                     </select>
                 </div>
-                
                 <div class="form-group">
                     <label class="form-label" for="eventStart">Почетен Датум и Време *</label>
                     <input type="datetime-local" class="form-input" id="eventStart" name="start" required>
                 </div>
-                
                 <div class="form-group">
                     <label class="form-label" for="eventEnd">Краен Датум и Време</label>
                     <input type="datetime-local" class="form-input" id="eventEnd" name="end">
                 </div>
-                
                 <div class="form-group">
                     <label class="form-label" for="eventDescription">Опис</label>
                     <textarea class="form-input form-textarea" id="eventDescription" name="description" placeholder="Додајте детали за настанот..."></textarea>
                 </div>
-                
+                <div id="eventError" style="display:none;color:#e53e3e;font-weight:500;margin-bottom:12px;"></div>
                 <div class="modal-buttons">
                     <button type="button" class="btn btn-secondary" onclick="closeEventModal()">Откажи</button>
                     <button type="button" class="btn btn-danger" id="deleteEventBtn" onclick="deleteEvent()" style="display: none;">Избриши</button>
@@ -1195,10 +1087,10 @@
                         alert('Се случи грешка при вчитување на настаните! Проверете ја конзолата за детали.');
                     }
                 },
-                
-                // Handle date selection (create new event)
+                eventContent: function(arg) {
+                    return { html: `<div class='fc-event-title'>${arg.event.title}</div>` };
+                },
                 select: function(selectInfo) {
-                    // Store the selection range for duration calculation
                     window.selectedRange = {
                         start: selectInfo.start,
                         end: selectInfo.end
@@ -1210,22 +1102,18 @@
                     });
                 },
                 
-                // Handle event click (edit event)
                 eventClick: function(clickInfo) {
                     openEventModal('edit', clickInfo.event);
                 },
                 
-                // Handle event drag and drop
                 eventDrop: function(dropInfo) {
                     updateEventDateTime(dropInfo.event);
                 },
                 
-                // Handle event resize
                 eventResize: function(resizeInfo) {
                     updateEventDateTime(resizeInfo.event);
                 },
                 
-                // Loading state
                 loading: function(isLoading) {
                     const loadingEl = document.getElementById('calendar-loading');
                     if (isLoading) {
@@ -1235,9 +1123,7 @@
                     }
                 },
                 
-                // Ensure event styling is applied
                 eventDidMount: function(info) {
-                    // Force apply the background color
                     if (info.event.backgroundColor) {
                         info.el.style.backgroundColor = info.event.backgroundColor;
                         info.el.style.borderColor = info.event.backgroundColor;
@@ -1255,7 +1141,6 @@
             const deleteBtn = document.getElementById('deleteEventBtn');
             const form = document.getElementById('eventForm');
             
-            // Reset form
             form.reset();
             currentEvent = null;
             
@@ -1263,7 +1148,6 @@
                 modalTitle.textContent = 'Создади Настан';
                 deleteBtn.style.display = 'none';
                 
-                // Set default dates
                 if (eventData.start) {
                     document.getElementById('eventStart').value = formatDateTimeLocal(eventData.start);
                 }
@@ -1325,6 +1209,9 @@
         });
 
         function createEvent(eventData) {
+            // Hide previous error
+            document.getElementById('eventError').style.display = 'none';
+            document.getElementById('eventError').textContent = '';
             fetch('{% url "mindmate:api_events" %}', {
                 method: 'POST',
                 headers: {
@@ -1335,7 +1222,7 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    return response.json().then(data => { throw data; });
                 }
                 return response.json();
             })
@@ -1344,13 +1231,18 @@
                     calendar.refetchEvents();
                     closeEventModal();
                 } else {
-                    alert('Грешка при креирање на настан: ' + (data.message || 'Непозната грешка'));
+                    showEventError(data.message || 'Грешка при креирање на настан.');
                 }
             })
             .catch(error => {
-                console.error('Error creating event:', error);
-                alert('Грешка при креирање на настан: ' + error.message);
+                let msg = error && error.message ? error.message : 'Грешка при креирање на настан.';
+                showEventError(msg);
             });
+        }
+        function showEventError(msg) {
+            var err = document.getElementById('eventError');
+            err.textContent = msg;
+            err.style.display = 'block';
         }
 
         function updateEvent(eventId, eventData) {
@@ -1543,7 +1435,6 @@
             const responseMessage = generateTimeEstimationResponse(estimationData);
             addMessage(responseMessage, 'agent', estimationData);
             
-            // Add follow-up questions if any
             if (data.follow_up_questions && data.follow_up_questions.length > 0) {
                 setTimeout(() => {
                     addMessage("💡 Дополнителни прашања:\n" + data.follow_up_questions.map(q => "• " + q).join("\n"), 'agent');
@@ -1552,14 +1443,11 @@
         }
         
         function handleSlotFindingResponse(data) {
-            // Show conversational response first
             if (data.conversation_response) {
                 addMessage(data.conversation_response, 'agent');
             }
             
-            // Then show slot data in the existing format
             const slotsData = data.slots_data;
-            // Fix data structure for compatibility with existing function
             const compatibleData = {
                 suggested_slots: slotsData.slots || [],
                 request_duration: slotsData.request_duration || 2.0
@@ -1567,7 +1455,6 @@
             const responseMessage = generateSlotSuggestionResponse(compatibleData);
             addMessage(responseMessage, 'agent', compatibleData);
             
-            // Add follow-up questions if any
             if (data.follow_up_questions && data.follow_up_questions.length > 0) {
                 setTimeout(() => {
                     addMessage("💡 " + data.follow_up_questions.join(" "), 'agent');
@@ -1576,10 +1463,8 @@
         }
         
         function handleConversationResponse(data) {
-            // Show the conversational response
             addMessage(data.response, 'agent');
             
-            // Add suggestions if any
             if (data.suggestions && data.suggestions.length > 0) {
                 setTimeout(() => {
                     const suggestionsText = "💡 Совети:\n" + data.suggestions.map(s => "• " + s).join("\n");
@@ -1587,7 +1472,6 @@
                 }, 500);
             }
             
-            // Add follow-up questions as quick action buttons
             if (data.follow_up_questions && data.follow_up_questions.length > 0) {
                 setTimeout(() => {
                     const buttonsHtml = data.follow_up_questions.map(q => 
@@ -1599,7 +1483,6 @@
             }
         }
         
-        // Helper function to generate time estimation response (reuse existing logic)
         function generateTimeEstimationResponse(estimationData) {
             const timeText = estimationData.time_text;
             const confidence = estimationData.confidence;
@@ -1611,7 +1494,6 @@
             return response;
         }
         
-        // Keep the old function for backwards compatibility but make it simpler
         function isSlotFindingRequest(message) {
             // This is now just a fallback - the AI will handle intent detection
             return false;
@@ -1625,7 +1507,6 @@
         function addMessage(content, sender, data = null) {
             const messagesContainer = document.getElementById('chatMessages');
             
-            // Remove welcome message if it exists
             const welcomeMsg = messagesContainer.querySelector('.welcome-message');
             if (welcomeMsg) {
                 welcomeMsg.remove();
@@ -2010,7 +1891,7 @@
 
         function generateSlotSuggestionResponse(data) {
             if (!data.suggested_slots || data.suggested_slots.length === 0) {
-                return 'Не пронајдов достапни термини за бараното време. Обидете се со пократок период или променете ги преференците.';
+                return 'Не пронајдов достапни термини за бараното време. Обидете се со пократко период или променете ги преференците.';
             }
             
             let response = `🗓️ **Пронајдов ${data.suggested_slots.length} одлични термини за вашата задача:**\\n\\n`;
@@ -2140,7 +2021,7 @@
 
             result += `
                     <div class="quick-actions" style="margin-top: 12px;">
-                        <button class="quick-action-btn" onclick="sendQuickMessage('Најdi други термини за истата задача')">
+                        <button class="quick-action-btn" onclick="sendQuickMessage('Најди други термини за истата задача')">
                             🔄 Други термини
                         </button>
                         <button class="quick-action-btn" onclick="sendQuickMessage('Кои се најдобрите времиња за учење?')">

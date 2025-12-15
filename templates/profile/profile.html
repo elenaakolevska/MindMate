@@ -1,0 +1,287 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - MindMate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fb;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            width: calc(100% - 250px);
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 80px;
+            width: calc(100% - 80px);
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .menu-toggle:hover {
+            background: #f3f4f6;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .user-profile:hover {
+            background: #f3f4f6;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .profile-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .profile-wrapper h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .info-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .profile-wrapper {
+                padding: 20px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'sidebar_base.html' %}
+    <div class="main-content">
+        <div class="header">
+            <div class="header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="header-right">
+                <div class="user-profile">
+                    <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ student.full_name }}</div>
+                        <div class="user-role">{{ student.get_study_level_display }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="profile-wrapper">
+            <h1>Profile</h1>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Основни Информации</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Име и Презиме</div>
+                        <div class="info-value">{{ student.full_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Е-пошта</div>
+                        <div class="info-value">{{ student.email }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Ниво на Образование</div>
+                        <div class="info-value">{{ student.get_study_level_display }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Поле на Студирање</div>
+                        <div class="info-value">{{ student.study_direction }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Датум на Регистрација</div>
+                        <div class="info-value">{{ student.created_at|date:"d M Y" }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Интереси</h2>
+                </div>
+                <div class="tags-container">
+                    {% if interests %}
+                        {% for interest in interests %}
+                            <span class="tag">{{ interest }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: #6b7280;">Нема додадени интереси</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Цели за Учeње</h2>
+                </div>
+                <p style="line-height: 1.6;">{{ preferences.learning_goals|default:"Не се наведени цели" }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
