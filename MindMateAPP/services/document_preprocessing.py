@@ -3,6 +3,7 @@ import sys
 import os
 from typing import Tuple
 import time
+from ..models import StudyMaterial
 
 try:
     from .ocr_processor import OCRProcessor
@@ -20,21 +21,29 @@ except ImportError as e:
 logger = logging.getLogger(__name__)
 
 
-def process_document(file_path: str):
+def process_document(document_id: str):
     """
     Process any document type (image, PDF, Word) and return chunks.
     """
-    if not os.path.exists(file_path):
-        print(f"Error: File '{file_path}' not found")
-        return None
+    doc = StudyMaterial.objects.get(id=document_id)
     
-    print(f"Processing document: {file_path}")
+    # Handle file path - make it absolute if relative
+    file_path = doc.file_path
+    if not os.path.isabs(file_path):
+        from django.conf import settings
+        file_path = os.path.join(settings.MEDIA_ROOT, file_path)
+    
+    file_extension = doc.original_filename.split('.')[-1].lower()
+    if file_extension not in {'txt', 'pdf', 'docx', 'png', 'jpg', 'jpeg', 'tiff', 'tif', 'bmp'}:
+        raise ValueError(f"Unsupported file extension: {file_extension}")
+    
+    print(f"Processing document: {doc.original_filename} (ID: {document_id})")
     print("=" * 60)
     
     start_time = time.time()
     
     try:
-        if file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp')):
+        if file_extension in {'png', 'jpg', 'jpeg', 'tiff', 'tif', 'bmp'}:
             # Process image with OCR
             processor = OCRProcessor()
             with open(file_path, 'rb') as f:
@@ -51,13 +60,13 @@ def process_document(file_path: str):
                 print(f"OCR failed: {status}")
                 return None
                 
-        elif file_path.lower().endswith('.pdf'):
+        elif file_extension == 'pdf':
             # Process PDF
             print("Processing PDF document...")
             with open(file_path, 'rb') as f:
                 file_content = f.read()
             
-            file_dict = {"name": file_path, "content": file_content}
+            file_dict = {"name": doc.file_path, "content": file_content}
             result = preprocess_pdf(file_dict)
             
             chunks = result['result']['chunks']
@@ -71,7 +80,7 @@ def process_document(file_path: str):
             print(chunks[0])
             return chunks
             
-        elif file_path.lower().endswith('.docx'):
+        elif file_extension == 'docx':
             # Process Word document
             print("Processing Word document...")
             with open(file_path, 'rb') as f:
@@ -91,7 +100,7 @@ def process_document(file_path: str):
             print(chunks[0])
             return chunks
             
-        elif file_path.lower().endswith('.txt'):
+        elif file_extension == 'txt':
             # Process plain text file
             print("Processing text file...")
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -134,4 +143,4 @@ if __name__ == "__main__":
         print("Usage: python document_preprocessing.py <file_path>")
         print("-" * 60)
     
-    chunks = process_document(file_path)
+    chunks = process_document(1)

@@ -15,7 +15,7 @@ from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
 
 from .models import Student
-from .services.rag_retriever import get_rag_retriever
+from .services.rag_retriever import PostgresRAGRetriever
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +122,7 @@ def search_context(request):
             }, status=404)
         
         # Get RAG retriever
-        rag_retriever = get_rag_retriever()
+        rag_retriever = PostgresRAGRetriever(student_id= student.id)
         
         # Perform search
         if include_context:
@@ -236,7 +236,7 @@ def get_available_subjects(request):
             }, status=404)
         
         # Get RAG retriever and available subjects
-        rag_retriever = get_rag_retriever()
+        rag_retriever = PostgresRAGRetriever(student_id= student.id)
         subjects = rag_retriever.get_available_subjects(student.id)
         
         return JsonResponse({
@@ -286,7 +286,7 @@ def get_search_stats(request):
             }, status=404)
         
         # Get RAG retriever and statistics
-        rag_retriever = get_rag_retriever()
+        rag_retriever = PostgresRAGRetriever(student_id= student.id)
         stats = rag_retriever.get_search_stats(student.id)
         
         return JsonResponse({
@@ -373,7 +373,7 @@ def chat_with_study_agent(request):
         
         # Get relevant context if requested
         if use_context:
-            rag_retriever = get_rag_retriever()
+            rag_retriever = PostgresRAGRetriever(student_id= student.id)
             context_results = rag_retriever.retrieve_context(
                 student_id=student.id,
                 query=message,

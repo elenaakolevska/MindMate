@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from ..models import Quiz, QuizQuestion, StudyMaterial, Student, StudentPreferences
-from .rag_retriever import get_rag_retriever
+from .rag_retriever import PostgresRAGRetriever
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class QuizGenerator:
         """Initialize quiz generator with Ollama connection"""
         self.ollama_url = ollama_url
         self.model_name = "llama3.2:3b"  # Use smaller model for better performance
-        self.rag_retriever = get_rag_retriever()
+        # RAG retriever will be initialized per student when needed
     
     def generate_quiz(
         self,
@@ -62,12 +62,15 @@ class QuizGenerator:
             student = Student.objects.get(id=student_id)
             preferences = getattr(student, 'preferences', None)
             
+            # Initialize RAG retriever for this student
+            rag_retriever = PostgresRAGRetriever(student_id=str(student_id))
+            
             # Adjust options based on preferences
             if preferences and not options.difficulty:
                 options.difficulty = preferences.difficulty_preference or 'medium'
             
             # Get relevant content from study materials
-            content_chunks = self._get_study_content(student_id, options)
+            content_chunks = self._get_study_content(student_id, options, rag_retriever)
             
             if not content_chunks:
                 raise ValueError("No study materials found for quiz generation")
@@ -91,7 +94,8 @@ class QuizGenerator:
     def _get_study_content(
         self,
         student_id: int,
-        options: QuizGenerationOptions
+        options: QuizGenerationOptions,
+        rag_retriever: PostgresRAGRetriever
     ) -> List[Dict]:
         """Get relevant content chunks from study materials"""
         try:
@@ -99,7 +103,7 @@ class QuizGenerator:
             if options.material_ids:
                 content_chunks = []
                 for material_id in options.material_ids:
-                    chunks = self.rag_retriever.vector_store.get_document_chunks(material_id)
+                    chunks = rag_retriever.vector_store.get_document_chunks(material_id)
                     content_chunks.extend(chunks)
             else:
                 # Use RAG retriever to get diverse content
@@ -112,7 +116,7 @@ class QuizGenerator:
                 
                 content_chunks = []
                 for query in broad_queries:
-                    results = self.rag_retriever.retrieve_context(
+                    results = rag_retriever.retrieve_context(
                         student_id=student_id,
                         query=query,
                         top_k=3,
@@ -559,8 +563,10 @@ Now create {options.questions_count} questions following the exact format above:
             # Check if materials have content in vector store
             has_vector_data = False
             if has_materials:
-                stats = self.rag_retriever.get_search_stats(student_id)
-                has_vector_data = stats.get('total_chunks', 0) > 0
+                # Create RAG retriever to check stats
+                rag_retriever = PostgresRAGRetriever(student_id=str(student_id))
+                stats = rag_retriever.get_search_stats(student_id)
+                has_vector_data = stats.get('available_documents', 0) > 0
             
             return {
                 'has_materials': has_materials,

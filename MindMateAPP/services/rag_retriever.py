@@ -1,434 +1,619 @@
+"""
+RAG Retriever with PostgreSQL Chat History
+Uses Django ORM instead of MongoDB for chat history storage
+"""
+
 import logging
-import time
-from datetime import datetime, timedelta
+import requests
 from typing import List, Dict, Any, Optional, Tuple
-from dataclasses import dataclass
-from django.utils import timezone
-from .vector_store import get_vector_store
+import json
+
+from .vector_store import VectorStoreService
+from .chat_history_service import PostgresChatHistoryManager
+from ..models import Student, StudyMaterial, ChatbotInteraction
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class RetrievalResult:
-    """Data class for storing retrieval results with metadata"""
-    text: str
-    document_id: int
-    document_title: str
-    subject: str
-    upload_date: datetime
-    chunk_index: int
-    similarity_score: float
-    relevance_score: float
-    recency_score: float
-    final_score: float
-    metadata: Dict[str, Any]
-
-
-class RAGRetriever:
+class PostgresRAGRetriever:
     """
-    RAG Retrieval System for finding relevant context from uploaded materials.
-    Implements semantic search with relevance scoring, subject filtering, and recency ranking.
+    RAG (Retrieval Augmented Generation) system using PostgreSQL for chat history
     """
     
-    def __init__(self, relevance_threshold: float = 0.3, recency_weight: float = 0.3, similarity_weight: float = 0.7):
+    def __init__(self, student_id: str):
         """
-        Initialize RAG Retriever with configurable weights and thresholds.
+        Initialize the RAG retriever for a specific student
         
         Args:
-            relevance_threshold: Minimum relevance score for including results
-            recency_weight: Weight for recency scoring (0-1)
-            similarity_weight: Weight for similarity scoring (0-1, should sum with recency_weight to 1)
+            student_id: The ID of the student using the system
         """
-        self.vector_store = get_vector_store()
-        self.relevance_threshold = relevance_threshold
-        self.recency_weight = recency_weight
-        self.similarity_weight = similarity_weight
+        self.vector_store = VectorStoreService()
+        self.student_id = student_id
+        self.bot_type = "study_agent"  # Set bot_type for chat history
+        self.chat_manager = PostgresChatHistoryManager(bot_type=self.bot_type)
+        self.session_id = self._initialize_session()
         
-        if abs(self.recency_weight + self.similarity_weight - 1.0) > 0.01:
-            logger.warning("Recency and similarity weights don't sum to 1.0. Normalizing...")
-            total_weight = self.recency_weight + self.similarity_weight
-            self.recency_weight /= total_weight
-            self.similarity_weight /= total_weight
-
-    def retrieve_context(
-        self,
-        student_id: int,
-        query: str,
-        top_k: int = 5,
-        subject_filter: Optional[str] = None,
-        min_relevance: Optional[float] = None
-    ) -> List[RetrievalResult]:
-        """
-        Retrieve relevant context from uploaded materials using semantic search.
+        # Initialize Ollama client configuration (same as quiz generator)
+        self.ollama_url = "http://host.docker.internal:11434"  # Docker-compatible URL
+        self.model_name = "llama3.2:3b"  # Same model as quiz generator
         
-        Args:
-            student_id: ID of the student
-            query: Search query string
-            top_k: Number of top results to return (default: 5)
-            subject_filter: Optional subject to filter by
-            min_relevance: Minimum relevance threshold (overrides default)
-            
-        Returns:
-            List of RetrievalResult objects sorted by relevance
-        """
-        start_time = time.time()
-        
+        # Verify student exists
         try:
-            # Use provided threshold or default
-            threshold = min_relevance if min_relevance is not None else self.relevance_threshold
-            
-            # Prepare filter metadata
-            filter_metadata = {}
-            if subject_filter:
-                filter_metadata["subject"] = subject_filter
-            
-            # Perform vector search with increased limit for filtering
-            search_limit = min(top_k * 3, 50)  # Search more to allow for filtering
-            search_results = self.vector_store.search_similar_content(
-                student_id=student_id,
-                query=query,
-                limit=search_limit,
-                filter_metadata=filter_metadata if filter_metadata else None
-            )
-            
-            if not search_results:
-                logger.info(f"No search results found for query: {query}")
-                return []
-            
-            # Convert to RetrievalResult objects with enhanced scoring
-            retrieval_results = []
-            for result in search_results:
-                try:
-                    # Get document metadata
-                    doc_metadata = self._get_document_metadata(result.get("document_id"))
-                    if not doc_metadata:
-                        continue
-                    
-                    # Calculate enhanced scores
-                    similarity_score = result.get("similarity_score", 0.0)
-                    recency_score = self._calculate_recency_score(doc_metadata["upload_date"])
-                    relevance_score = self._calculate_relevance_score(
-                        similarity_score, recency_score
-                    )
-                    
-                    # Apply relevance threshold
-                    if relevance_score < threshold:
-                        continue
-                    
-                    # Create RetrievalResult object
-                    retrieval_result = RetrievalResult(
-                        text=result["text"],
-                        document_id=result.get("document_id", 0),
-                        document_title=doc_metadata.get("title", "Unknown Document"),
-                        subject=doc_metadata.get("subject", ""),
-                        upload_date=doc_metadata["upload_date"],
-                        chunk_index=result.get("metadata", {}).get("chunk_index", 0),
-                        similarity_score=similarity_score,
-                        relevance_score=relevance_score,
-                        recency_score=recency_score,
-                        final_score=relevance_score,  # Could be enhanced with additional factors
-                        metadata=result.get("metadata", {})
-                    )
-                    
-                    retrieval_results.append(retrieval_result)
-                    
-                except Exception as e:
-                    logger.warning(f"Error processing search result: {e}")
-                    continue
-            
-            # Sort by final score (highest first)
-            retrieval_results.sort(key=lambda x: x.final_score, reverse=True)
-            
-            # Return top K results
-            final_results = retrieval_results[:top_k]
-            
-            # Log performance
-            elapsed_time = time.time() - start_time
-            logger.info(
-                f"Retrieved {len(final_results)} relevant chunks for query '{query}' "
-                f"in {elapsed_time:.3f} seconds (student: {student_id})"
-            )
-            
-            return final_results
-            
-        except Exception as e:
-            logger.error(f"Error in retrieve_context: {e}")
-            return []
+            self.student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            raise ValueError(f"Student with ID {student_id} not found")
 
-    def _get_document_metadata(self, document_id: int) -> Optional[Dict[str, Any]]:
-        """Get metadata for a document from the database."""
+    def _initialize_session(self) -> str:
+        """Initialize or get existing chat session"""
         try:
-            from ..models import StudyMaterial
+            # Get recent sessions for this student
+            sessions = self.chat_manager.get_sessions(self.student_id, limit=1)
             
-            study_material = StudyMaterial.objects.get(id=document_id)
-            return {
-                "title": study_material.title or study_material.original_filename or "Untitled",
-                "subject": study_material.subject or "",
-                "upload_date": study_material.upload_date,
-                "type": study_material.type,
-                "original_filename": study_material.original_filename or "",
-                "processing_status": study_material.processing_status
-            }
-        except Exception as e:
-            logger.warning(f"Could not get metadata for document {document_id}: {e}")
-            return None
-
-    def _calculate_recency_score(self, upload_date: datetime) -> float:
-        """
-        Calculate recency score based on how recent the upload is.
-        
-        Args:
-            upload_date: When the document was uploaded
-            
-        Returns:
-            Recency score between 0 and 1 (1 = most recent)
-        """
-        try:
-            # Handle timezone-aware datetime
-            if upload_date.tzinfo is None:
-                upload_date = timezone.make_aware(upload_date)
-            
-            now = timezone.now()
-            days_old = (now - upload_date).days
-            
-            # Recency scoring: exponential decay
-            # Recent uploads (0-7 days) get high scores
-            # Moderate uploads (7-30 days) get medium scores  
-            # Older uploads get lower scores
-            if days_old <= 7:
-                return 1.0
-            elif days_old <= 30:
-                return 0.8 * (1.0 - (days_old - 7) / 23)  # Linear decay from 0.8 to 0.0
-            elif days_old <= 90:
-                return 0.3 * (1.0 - (days_old - 30) / 60)  # Linear decay from 0.3 to 0.0
+            if sessions:
+                # Use the most recent session
+                session_id = sessions[0]["session_id"]
+                logger.info(f"Using existing session: {session_id}")
             else:
-                return 0.1  # Minimum score for very old documents
-                
+                # Create new session
+                session_id = self.chat_manager.create_session(
+                    self.student_id,
+                    {"created_by": "rag_retriever", "type": "study_session"}
+                )
+                logger.info(f"Created new session: {session_id}")
+            
+            return session_id
+            
         except Exception as e:
-            logger.warning(f"Error calculating recency score: {e}")
-            return 0.5  # Default middle score
+            logger.error(f"Error initializing session: {e}")
+            # Create a fallback session ID
+            import time
+            return f"session_{self.student_id}_{int(time.time())}"
 
-    def _calculate_relevance_score(self, similarity_score: float, recency_score: float) -> float:
+    def query(self, user_question: str, max_context_chunks: int = 5, 
+             context_window: int = 10) -> Dict[str, Any]:
         """
-        Calculate combined relevance score using similarity and recency.
+        Process a user question using RAG approach with PostgreSQL chat history
         
         Args:
-            similarity_score: Semantic similarity score (0-1)
-            recency_score: Recency score (0-1)
+            user_question: The question from the user
+            max_context_chunks: Maximum number of document chunks to retrieve
+            context_window: Number of recent chat messages to include for context
             
         Returns:
-            Combined relevance score (0-1)
+            Dict containing response, sources, and metadata
         """
+        try:
+            logger.info(f"Processing query for student {self.student_id}: {user_question}")
+            
+            # Step 1: Store the user question in chat history
+            self.chat_manager.add_message(
+                self.student_id, 
+                self.session_id, 
+                user_question, 
+                "user"
+            )
+            
+            # Step 2: Get recent chat context
+            recent_context = self.chat_manager.get_recent_context(
+                self.student_id, 
+                self.session_id, 
+                context_window
+            )
+            
+            # Step 3: Search chat history for relevant previous discussions
+            chat_search_results = self.chat_manager.search_chat_history(
+                self.student_id, 
+                user_question, 
+                session_id=None,  # Search across all sessions
+                limit=3
+            ) or []  # Ensure we have a list, not None
+            
+            # Step 4: Retrieve relevant document chunks from vector store
+            document_results = self.vector_store.query_collection(
+                student_id=int(self.student_id),
+                query=user_question,
+                n_results=max_context_chunks
+            )
+            
+            # Convert VectorStoreService format to expected format
+            formatted_document_results = {
+                "documents": [[item["document"] for item in document_results]],
+                "metadatas": [[item["metadata"] for item in document_results]],
+                "distances": [[0.0] * len(document_results)]  # Placeholder distances
+            }
+            
+            # Step 5: Build comprehensive context
+            context = self._build_context(
+                user_question=user_question,
+                recent_chat=recent_context,
+                chat_history_matches=chat_search_results,
+                document_chunks=formatted_document_results
+            )
+            
+            # Step 6: Generate response using Ollama
+            response = self._generate_response(context)
+            
+            # Step 7: Store assistant response in chat history
+            self.chat_manager.add_response(
+                self.student_id,
+                self.session_id,
+                response,
+                {
+                    "document_sources": len(document_results.get("documents", [])),
+                    "chat_context_used": len(recent_context),
+                    "chat_history_matches": len(chat_search_results)
+                }
+            )
+            
+            # Step 8: Prepare response data
+            response_data = {
+                "response": response,
+                "sources": self._extract_sources(formatted_document_results),
+                "context_used": {
+                    "recent_chat_messages": len(recent_context),
+                    "document_chunks": len(formatted_document_results.get("documents", [[]])[0]),
+                    "chat_history_matches": len(chat_search_results)
+                },
+                "session_id": self.session_id,
+                "student_id": self.student_id
+            }
+            
+            logger.info(f"Successfully processed query with {len(formatted_document_results.get('documents', [[]])[0])} document sources")
+            return response_data
+            
+        except Exception as e:
+            logger.error(f"Error processing query: {e}")
+            error_response = f"I'm sorry, I encountered an error processing your question: {str(e)}"
+            
+            # Still try to store the error response
+            try:
+                self.chat_manager.add_response(
+                    self.student_id,
+                    self.session_id,
+                    error_response,
+                    {"error": str(e)}
+                )
+            except:
+                pass  # Don't fail on logging errors
+            
+            return {
+                "response": error_response,
+                "sources": [],
+                "context_used": {"error": str(e)},
+                "session_id": self.session_id,
+                "student_id": self.student_id
+            }
+
+    def _build_context(self, user_question: str, recent_chat: List[Dict], 
+                      chat_history_matches: List[Dict], 
+                      document_chunks: Dict) -> str:
+        """Build comprehensive context for the LLM"""
+        
+        context_parts = []
+        
+        # Add document context
+        if document_chunks.get("documents"):
+            context_parts.append("=== RELEVANT STUDY MATERIALS ===")
+            for i, (doc, metadata) in enumerate(zip(
+                document_chunks["documents"][0], 
+                document_chunks["metadatas"][0] or []
+            )):
+                source_info = ""
+                if metadata and isinstance(metadata, dict):
+                    source_info = f" (Source: {metadata.get('source', 'Unknown')})"
+                context_parts.append(f"Document {i+1}{source_info}:\n{doc}")
+            context_parts.append("")
+        
+        # Add relevant chat history
+        if chat_history_matches:
+            context_parts.append("=== RELEVANT PREVIOUS DISCUSSIONS ===")
+            for match in chat_history_matches:
+                context_parts.append(
+                    f"Previous {match['message_type']}: {match['message']} "
+                    f"(Similarity: {match.get('similarity_score', 0):.2f})"
+                )
+            context_parts.append("")
+        
+        # Add recent conversation context
+        if recent_chat:
+            context_parts.append("=== RECENT CONVERSATION ===")
+            for message in recent_chat[-5:]:  # Last 5 messages
+                role = "Student" if message["message_type"] == "user" else "Assistant"
+                context_parts.append(f"{role}: {message['message']}")
+            context_parts.append("")
+        
+        # Add current question
+        context_parts.append("=== CURRENT QUESTION ===")
+        context_parts.append(f"Student: {user_question}")
+        context_parts.append("")
+        
+        # Add instructions
+        context_parts.append("=== INSTRUCTIONS ===")
+        context_parts.append(
+            "You are a helpful study assistant. Use the provided study materials and conversation context "
+            "to give a comprehensive, accurate answer. If the materials don't contain relevant information, "
+            "say so and provide general guidance based on your knowledge. Always be encouraging and educational."
+        )
+        
+        return "\n".join(context_parts)
+
+    def _generate_response(self, context: str) -> str:
+        """Generate response using Ollama local LLM"""
+        try:
+            # Prepare the prompt for Ollama
+            prompt = {
+                "model": self.model_name,
+                "prompt": context,
+                "stream": False,
+                "options": {
+                    "temperature": 0.7,
+                    "top_p": 0.9,
+                    "max_tokens": 1000
+                }
+            }
+            
+            # Make request to Ollama
+            response = requests.post(
+                f"{self.ollama_url}/api/generate",
+                json=prompt,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                return result.get("response", "I apologize, but I couldn't generate a response.")
+            else:
+                logger.error(f"Ollama API error: {response.status_code} - {response.text}")
+                return self._fallback_response()
+                
+        except requests.RequestException as e:
+            logger.error(f"Error connecting to Ollama: {e}")
+            return self._fallback_response()
+        except Exception as e:
+            logger.error(f"Error generating response: {e}")
+            return self._fallback_response()
+
+    def _fallback_response(self) -> str:
+        """Generate a fallback response when Ollama is not available"""
         return (
-            self.similarity_weight * similarity_score +
-            self.recency_weight * recency_score
+            "I'm currently having trouble connecting to my AI model to generate a detailed response. "
+            "However, based on the context available, I can see that you're asking about your study materials. "
+            "Please ensure that Ollama is running locally, or check back in a moment. "
+            "In the meantime, you might want to review the relevant sections in your uploaded documents."
         )
 
-    def get_available_subjects(self, student_id: int) -> List[str]:
-        """
-        Get list of available subjects for a student.
+    def _extract_sources(self, document_results: Dict) -> List[Dict[str, Any]]:
+        """Extract source information from document results"""
+        sources = []
         
-        Args:
-            student_id: ID of the student
-            
-        Returns:
-            List of subject names
-        """
-        try:
-            from ..models import StudyMaterial
-            
-            subjects = StudyMaterial.objects.filter(
-                student_id=student_id,
-                subject__isnull=False
-            ).exclude(
-                subject=""
-            ).values_list("subject", flat=True).distinct()
-            
-            return list(subjects)
-            
-        except Exception as e:
-            logger.error(f"Error getting available subjects: {e}")
-            return []
+        if not document_results.get("metadatas"):
+            return sources
+        
+        metadatas = document_results["metadatas"][0] if document_results["metadatas"] else []
+        for metadata in metadatas:
+            if metadata and isinstance(metadata, dict):
+                sources.append({
+                    "source": metadata.get("source", "Unknown"),
+                    "chunk_id": metadata.get("chunk_id", ""),
+                    "document_id": metadata.get("document_id", ""),
+                    "page": metadata.get("page", "")
+                })
+        
+        return sources
 
-    def search_with_context_ranking(
-        self,
-        student_id: int,
-        query: str,
-        top_k: int = 5,
-        subject_filter: Optional[str] = None,
-        context_window: int = 2
-    ) -> List[Dict[str, Any]]:
-        """
-        Enhanced search that includes context chunks around relevant results.
-        
-        Args:
-            student_id: ID of the student
-            query: Search query string
-            top_k: Number of top results to return
-            subject_filter: Optional subject to filter by
-            context_window: Number of adjacent chunks to include on each side
-            
-        Returns:
-            List of search results with context
-        """
+    def get_chat_history(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """Get chat history for the current session"""
+        return self.chat_manager.get_chat_history(
+            self.student_id, 
+            self.session_id, 
+            limit
+        )
+
+    def search_documents(self, query: str, max_results: int = 10) -> Dict[str, Any]:
+        """Search only in documents (no chat context)"""
         try:
-            # Get base results
-            base_results = self.retrieve_context(
-                student_id=student_id,
+            results = self.vector_store.query_collection(
+                student_id=int(self.student_id),
                 query=query,
-                top_k=top_k,
-                subject_filter=subject_filter
+                n_results=max_results
             )
             
-            if not base_results:
-                return []
+            # Convert to expected format
+            formatted_results = {
+                "documents": [[item["document"] for item in results]],
+                "metadatas": [[item["metadata"] for item in results]],
+                "distances": [[0.0] * len(results)]
+            }
             
-            # Enhance results with context
-            enhanced_results = []
-            for result in base_results:
-                try:
-                    # Get surrounding context chunks
-                    context_chunks = self._get_context_chunks(
-                        document_id=result.document_id,
-                        chunk_index=result.chunk_index,
-                        window_size=context_window
-                    )
+            return {
+                "results": formatted_results,
+                "sources": self._extract_sources(formatted_results),
+                "query": query
+            }
+            
+        except Exception as e:
+            logger.error(f"Error searching documents: {e}")
+            return {"error": str(e), "query": query}
+
+    def get_session_info(self) -> Dict[str, Any]:
+        """Get information about the current session"""
+        try:
+            stats = self.chat_manager.get_session_stats(self.student_id, self.session_id)
+            return {
+                "session_id": self.session_id,
+                "student_id": self.student_id,
+                "student_name": self.student.full_name,
+                "stats": stats
+            }
+        except Exception as e:
+            logger.error(f"Error getting session info: {e}")
+            return {"error": str(e)}
+
+    def clear_session(self) -> bool:
+        """Clear the current session and start a new one"""
+        try:
+            # Delete current session
+            self.chat_manager.delete_session(self.student_id, self.session_id)
+            
+            # Initialize new session
+            self.session_id = self.chat_manager.create_session(
+                self.student_id,
+                {"created_by": "rag_retriever", "type": "study_session", "cleared": True}
+            )
+            
+            logger.info(f"Cleared session and created new session: {self.session_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error clearing session: {e}")
+            return False
+
+    def get_student_documents(self) -> List[Dict[str, Any]]:
+        """Get list of documents uploaded by the student"""
+        try:
+            materials = StudyMaterial.objects.filter(
+                student=self.student,
+                processing_status='completed'
+            ).order_by('-upload_date')
+            
+            documents = []
+            for material in materials:
+                documents.append({
+                    "id": material.id,
+                    "title": material.title,
+                    "filename": material.original_filename,
+                    "type": material.type,
+                    "upload_date": material.upload_date.isoformat(),
+                    "subject": material.subject,
+                    "collection_name": material.vector_collection_name
+                })
+            
+            return documents
+            
+        except Exception as e:
+            logger.error(f"Error getting student documents: {e}")
+            return []
+
+    def analyze_conversation_topics(self) -> Dict[str, Any]:
+        """Analyze topics discussed in recent conversations"""
+        try:
+            # Get recent chat history
+            recent_messages = self.chat_manager.get_chat_history(
+                self.student_id, 
+                self.session_id, 
+                limit=100
+            )
+            
+            if not recent_messages:
+                return {"topics": [], "message_count": 0}
+            
+            # Simple topic extraction (you could enhance this with more sophisticated NLP)
+            user_messages = [msg["message"] for msg in recent_messages if msg["message_type"] == "user"]
+            
+            # Count common topics/subjects mentioned
+            topics = {}
+            common_subjects = [
+                "math", "science", "history", "english", "physics", "chemistry", 
+                "biology", "literature", "programming", "computer", "economics"
+            ]
+            
+            for message in user_messages:
+                message_lower = message.lower()
+                for subject in common_subjects:
+                    if subject in message_lower:
+                        topics[subject] = topics.get(subject, 0) + 1
+            
+            # Sort topics by frequency
+            sorted_topics = sorted(topics.items(), key=lambda x: x[1], reverse=True)
+            
+            return {
+                "topics": sorted_topics[:5],  # Top 5 topics
+                "message_count": len(user_messages),
+                "session_id": self.session_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing conversation topics: {e}")
+            return {"error": str(e)}
+
+    def search_with_context_ranking(self, query: str, n_results: int = 10, 
+                                   subject_filter: str = None) -> Dict[str, Any]:
+        """
+        Enhanced search with context ranking - compatibility method for study_agent_views
+        """
+        try:
+            # Use the existing search_documents method
+            results = self.search_documents(query, n_results)
+            
+            # Format results to match expected format
+            if "error" in results:
+                return {"error": results["error"]}
+            
+            # Transform to expected format
+            document_results = results.get("results", {})
+            formatted_results = []
+            
+            if document_results.get("documents"):
+                for i, (doc, metadata) in enumerate(zip(
+                    document_results["documents"][0], 
+                    document_results["metadatas"][0] or [{}] * len(document_results["documents"][0])
+                )):
+                    # Filter by subject if specified
+                    if subject_filter:
+                        doc_subject = metadata.get("subject", "").lower()
+                        if subject_filter.lower() not in doc_subject:
+                            continue
                     
-                    enhanced_result = {
-                        "primary_chunk": {
-                            "text": result.text,
-                            "chunk_index": result.chunk_index,
-                            "similarity_score": result.similarity_score,
-                            "relevance_score": result.relevance_score
-                        },
-                        "context_chunks": context_chunks,
-                        "document_info": {
-                            "id": result.document_id,
-                            "title": result.document_title,
-                            "subject": result.subject,
-                            "upload_date": result.upload_date.isoformat()
-                        },
-                        "final_score": result.final_score
-                    }
-                    
-                    enhanced_results.append(enhanced_result)
-                    
-                except Exception as e:
-                    logger.warning(f"Error enhancing result with context: {e}")
-                    # Fallback to basic result
-                    enhanced_results.append({
-                        "primary_chunk": {
-                            "text": result.text,
-                            "chunk_index": result.chunk_index,
-                            "similarity_score": result.similarity_score,
-                            "relevance_score": result.relevance_score
-                        },
-                        "context_chunks": [],
-                        "document_info": {
-                            "id": result.document_id,
-                            "title": result.document_title,
-                            "subject": result.subject,
-                            "upload_date": result.upload_date.isoformat()
-                        },
-                        "final_score": result.final_score
+                    formatted_results.append({
+                        "content": doc,
+                        "metadata": metadata,
+                        "score": document_results.get("distances", [[0] * len(document_results["documents"][0])])[0][i],
+                        "source": metadata.get("source", "Unknown")
                     })
             
-            return enhanced_results
+            return {
+                "results": formatted_results,
+                "total_results": len(formatted_results),
+                "query": query
+            }
             
         except Exception as e:
             logger.error(f"Error in search_with_context_ranking: {e}")
-            return []
+            return {"error": str(e)}
 
-    def _get_context_chunks(
-        self,
-        document_id: int,
-        chunk_index: int,
-        window_size: int
-    ) -> List[Dict[str, Any]]:
+    def retrieve_context(self, student_id: str, query: str, top_k: int = 5, 
+                        subject_filter: str = None) -> Dict[str, Any]:
         """
-        Get context chunks around a specific chunk.
-        
-        Args:
-            document_id: ID of the document
-            chunk_index: Index of the target chunk
-            window_size: Number of chunks to include on each side
-            
-        Returns:
-            List of context chunks
+        Retrieve context for a query - compatibility method for study_agent_views
         """
         try:
-            # Get all chunks for the document
-            all_chunks = self.vector_store.get_document_chunks(document_id)
-            if not all_chunks:
-                return []
+            # Use search_with_context_ranking
+            search_results = self.search_with_context_ranking(
+                query, n_results=top_k, subject_filter=subject_filter
+            )
             
-            # Sort by chunk index
-            all_chunks.sort(key=lambda x: x["metadata"].get("chunk_index", 0))
+            if "error" in search_results:
+                return search_results
             
-            # Find the target chunk and surrounding context
+            # Format for context usage
             context_chunks = []
-            start_idx = max(0, chunk_index - window_size)
-            end_idx = min(len(all_chunks), chunk_index + window_size + 1)
+            for result in search_results.get("results", []):
+                context_chunks.append({
+                    "content": result["content"],
+                    "source": result["source"],
+                    "metadata": result["metadata"],
+                    "relevance_score": 1.0 - result["score"]  # Convert distance to similarity
+                })
             
-            for i in range(start_idx, end_idx):
-                if i < len(all_chunks):
-                    chunk = all_chunks[i]
-                    context_chunks.append({
-                        "text": chunk["text"],
-                        "chunk_index": chunk["metadata"].get("chunk_index", i),
-                        "is_primary": chunk["metadata"].get("chunk_index", i) == chunk_index
-                    })
-            
-            return context_chunks
+            return {
+                "context_chunks": context_chunks,
+                "total_chunks": len(context_chunks),
+                "query": query,
+                "student_id": student_id
+            }
             
         except Exception as e:
-            logger.warning(f"Error getting context chunks: {e}")
-            return []
+            logger.error(f"Error retrieving context: {e}")
+            return {"error": str(e)}
 
-    def get_search_stats(self, student_id: int) -> Dict[str, Any]:
+    def get_search_stats(self, student_id: str) -> Dict[str, Any]:
         """
-        Get statistics about the searchable content for a student.
-        
-        Args:
-            student_id: ID of the student
-            
-        Returns:
-            Dictionary with search statistics
+        Get search statistics for a student - compatibility method
         """
         try:
-            stats = self.vector_store.get_collection_stats(student_id)
+            student = Student.objects.get(id=student_id)
             
-            # Add subjects information
-            available_subjects = self.get_available_subjects(student_id)
+            # Get statistics from chat interactions
+            total_queries = ChatbotInteraction.objects.filter(
+                student=student,
+                bot_type=self.bot_type,
+                event_action="message_user"
+            ).count()
             
-            # Get recent upload activity
-            from ..models import StudyMaterial
-            recent_uploads = StudyMaterial.objects.filter(
-                student_id=student_id,
-                upload_date__gte=timezone.now() - timedelta(days=30),
+            total_responses = ChatbotInteraction.objects.filter(
+                student=student,
+                bot_type=self.bot_type,
+                event_action="message_assistant"
+            ).count()
+            
+            # Get recent activity (last 7 days)
+            from django.utils import timezone
+            from datetime import timedelta
+            
+            recent_date = timezone.now() - timedelta(days=7)
+            recent_queries = ChatbotInteraction.objects.filter(
+                student=student,
+                bot_type=self.bot_type,
+                event_action="message_user",
+                action_time__gte=recent_date
+            ).count()
+            
+            # Get document count
+            document_count = StudyMaterial.objects.filter(
+                student=student,
                 processing_status='completed'
             ).count()
             
-            stats.update({
-                "available_subjects": available_subjects,
-                "recent_uploads_30d": recent_uploads,
-                "is_searchable": stats.get("total_chunks", 0) > 0
-            })
+            return {
+                "total_queries": total_queries,
+                "total_responses": total_responses,
+                "recent_queries_7_days": recent_queries,
+                "available_documents": document_count,
+                "student_id": student_id
+            }
             
-            return stats
-            
+        except Student.DoesNotExist:
+            logger.error(f"Student with ID {student_id} not found")
+            return {"error": f"Student with ID {student_id} not found"}
         except Exception as e:
             logger.error(f"Error getting search stats: {e}")
             return {"error": str(e)}
 
-
-# Singleton instance
-_rag_retriever_instance = None
-
-def get_rag_retriever() -> RAGRetriever:
-    """Get singleton instance of RAGRetriever."""
-    global _rag_retriever_instance
-    if _rag_retriever_instance is None:
-        _rag_retriever_instance = RAGRetriever()
-    return _rag_retriever_instance
+    def get_available_subjects(self, student_id: str) -> List[str]:
+        """
+        Get available subjects from student's documents
+        """
+        try:
+            student = Student.objects.get(id=student_id)
+            
+            # Get subjects from uploaded materials
+            materials = StudyMaterial.objects.filter(
+                student=student,
+                processing_status='completed'
+            ).exclude(subject__isnull=True).exclude(subject__exact="")
+            
+            subjects = set()
+            for material in materials:
+                if material.subject:
+                    subjects.add(material.subject.strip())
+            
+            # Also analyze chat history for mentioned subjects
+            try:
+                recent_messages = self.chat_manager.get_chat_history(
+                    student_id, self.session_id, limit=100
+                )
+                
+                # Simple subject detection in messages
+                common_subjects = [
+                    "mathematics", "math", "science", "history", "english", 
+                    "physics", "chemistry", "biology", "literature", "programming", 
+                    "computer science", "economics", "psychology", "sociology"
+                ]
+                
+                for message in recent_messages:
+                    message_lower = message["message"].lower()
+                    for subject in common_subjects:
+                        if subject in message_lower:
+                            subjects.add(subject.title())
+                            
+            except Exception:
+                pass  # Don't fail if chat history analysis fails
+            
+            return sorted(list(subjects))
+            
+        except Student.DoesNotExist:
+            logger.error(f"Student with ID {student_id} not found")
+            return []
+        except Exception as e:
+            logger.error(f"Error getting available subjects: {e}")
+            return []
