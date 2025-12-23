@@ -22,9 +22,9 @@ from .models import (
     Student, TaskEstimationRequest, TaskEstimationFeedback,
     StudentPerformanceProfile, TaskCompletionLog, CalendarEvent
 )
-from .services.task_estimator import TaskEstimatorService, TaskEstimate
-from .services.llama_estimator import LlamaTaskEstimator, AIEstimationContext
-from .services.slot_finder import SlotFinder, SlotRequest, TimeSlot
+from .services.time_magager.task_estimator import TaskEstimatorService, TaskEstimate
+from .services.time_magager.llama_estimator import LlamaTaskEstimator, AIEstimationContext
+from .services.time_magager.slot_finder import SlotFinder, SlotRequest, TimeSlot
 
 logger = logging.getLogger(__name__)
 
@@ -1070,7 +1070,7 @@ def chat_with_agent(request):
         
         # Initialize conversational agent  
         try:
-            from .services.conversational_agent import ConversationalTimeAgent, ConversationContext, IntentRouter
+            from .services.time_magager.conversational_agent import ConversationalTimeAgent, ConversationContext, IntentRouter
             
             # Try to create agent (this will test Ollama connectivity)
             agent = ConversationalTimeAgent()

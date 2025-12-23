@@ -1,109 +1,297 @@
 {% load static %}
 <style>
+    /* Optimized Sidebar Styles */
     .sidebar {
         position: fixed;
         left: 0;
         top: 0;
-        width: 250px;
+        width: 280px;
         height: 100vh;
         background: white;
         border-right: 1px solid #e5e7eb;
-        padding: 24px 0 0 0;
         z-index: 1000;
-        transition: all 0.3s ease;
+        transform: translateX(0);
+        transition: transform 0.3s ease, width 0.3s ease;
         display: flex;
         flex-direction: column;
+        overflow: hidden;
     }
     .sidebar.collapsed {
-        width: 80px;
+        width: 60px;
     }
-    .sidebar-logo {
-        padding: 0 24px 32px 16px;
+    
+    /* Sidebar Header */
+    .sidebar-header {
+        padding: 16px;
+        border-bottom: 1px solid #e5e7eb;
         display: flex;
         align-items: center;
-        justify-content: flex-start;
-        height: 80px;
-        gap: 10px;
+        justify-content: space-between;
+        min-height: 60px;
+    }
+    .sidebar-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        overflow: hidden;
     }
     .sidebar-logo img {
-        height: 40px;
+        height: 28px;
         width: auto;
-        display: block;
-        margin: 0;
+        flex-shrink: 0;
     }
     .sidebar-logo span {
-        font-size: 20px;
-        font-weight: 700;
+        font-size: 16px;
+        font-weight: 600;
         color: #1f2937;
-        margin-left: 0;
-        transition: opacity 0.3s;
+        transition: opacity 0.3s ease;
+        white-space: nowrap;
+        overflow: hidden;
     }
-    .sidebar.collapsed .sidebar-logo span,
-    .sidebar.collapsed .sidebar-link span {
-        display: none;
-    }
-    .sidebar-nav {
+    
+    /* Collapse Toggle Button */
+    .collapse-toggle {
+        background: #f3f4f6;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 6px;
+        width: 28px;
+        height: 28px;
         display: flex;
-        flex-direction: column;
-        flex: 1 1 auto;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.2s ease;
     }
+    .collapse-toggle:hover {
+        background: #e5e7eb;
+    }
+    
+    /* Collapsed state visibility */
+    .sidebar.collapsed .sidebar-logo span,
+    .sidebar.collapsed .sidebar-link span,
+    .sidebar.collapsed .session-title,
+    .sidebar.collapsed .new-session-btn span,
+    .sidebar.collapsed .sessions-section {
+        opacity: 0;
+        width: 0;
+    }
+    /* Main Navigation */
+    .sidebar-nav {
+        flex: 0 0 auto;
+        padding: 8px 0;
+    }
+    
+    /* Navigation Links */
     .sidebar-link {
         display: flex;
         align-items: center;
-        gap: 16px;
-        padding: 14px 24px;
+        gap: 12px;
+        padding: 10px 16px;
         color: #6b7280;
         text-decoration: none;
+        font-size: 14px;
         font-weight: 500;
+        margin: 2px 8px;
+        border-radius: 6px;
         transition: all 0.2s ease;
-        position: relative;
+        overflow: hidden;
     }
-    .sidebar-link:hover, .sidebar-link.active {
+    .sidebar-link:hover {
         background: #f3f4f6;
-        color: #4285f4;
+        color: #374151;
     }
-    .sidebar-link.active::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: #4285f4;
+    .sidebar-link.active {
+        background: #eff6ff;
+        color: #2563eb;
+        font-weight: 600;
     }
     .sidebar-link i {
-        font-size: 20px;
-        min-width: 20px;
+        font-size: 16px;
+        width: 16px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    
+    /* Study Agent Sessions Section */
+    .sessions-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        border-top: 1px solid #e5e7eb;
+        padding: 8px;
+        overflow: hidden;
+        min-height: 0;
+    }
+    
+    .session-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px;
+        margin-bottom: 8px;
+    }
+    
+    .session-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: opacity 0.3s ease;
+        flex-shrink: 0;
+    }
+    
+    .new-session-btn {
+        background: #f3f4f6;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+    .new-session-btn:hover {
+        background: #e5e7eb;
+    }
+    
+    .sessions-list {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+    }
+    
+    .session-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px;
+        margin-bottom: 2px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        color: #6b7280;
+        transition: all 0.2s ease;
+    }
+    .session-item:hover {
+        background: #f9fafb;
+    }
+    .session-item.active {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+    
+    .session-item-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+    }
+    
+    .session-item-title {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 12px;
+    }
+    
+    .session-item-actions {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    .session-item:hover .session-item-actions {
+        opacity: 1;
+    }
+    
+    .session-action-btn {
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        padding: 2px;
+        border-radius: 2px;
+        font-size: 10px;
+        transition: all 0.2s ease;
+    }
+    .session-action-btn:hover {
+        background: #f3f4f6;
+        color: #6b7280;
     }
     .sidebar-logout {
-        width: 100%;
-        display: flex;
-        justify-content: flex-start;
-        margin-top: 0;
-        margin-bottom: 30px;
+        padding: 0 8px 8px 8px;
+        margin-top: auto;
     }
+    
+    /* Mobile styles */
     @media (max-width: 768px) {
         .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100vh;
             transform: translateX(-100%);
             z-index: 2000;
         }
         .sidebar.active {
             transform: translateX(0);
         }
+        .sidebar.collapsed {
+            width: 280px;
+        }
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    }
+    
+    /* Main content adjustment */
+    .main-content-area {
+        margin-left: 280px;
+        transition: margin-left 0.3s ease;
+        min-height: 100vh;
+        background: #f8fafc;
+    }
+    .main-content-area.sidebar-collapsed {
+        margin-left: 60px;
+    }
+    
+    @media (max-width: 768px) {
+        .main-content-area,
+        .main-content-area.sidebar-collapsed {
+            margin-left: 0;
+        }
     }
 </style>
 
 <div class="sidebar" id="sidebar">
-    <a href="{% url 'mindmate:home' %}" style="text-decoration: none;">
-        <div class="sidebar-logo">
+    <div class="sidebar-header">
+        <a href="{% url 'mindmate:home' %}" style="text-decoration: none;" class="sidebar-logo">
             <img src="{% static 'logo.png' %}" alt="MindMate">
             <span>MindMate</span>
-        </div>
-    </a>
+        </a>
+        <button class="collapse-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
     <nav class="sidebar-nav">
         <a href="{% url 'mindmate:dashboard' %}" class="sidebar-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
             <i class="fas fa-th-large"></i>
@@ -115,9 +303,39 @@
         </a>
         <a href="{% url 'mindmate:calendar' %}" class="sidebar-link{% if request.resolver_match.url_name == 'calendar' %} active{% endif %}">
             <i class="fas fa-calendar-alt"></i>
-            <span>Calendar</span>
+            <span>Календар</span>
+        </a>
+        <a href="{% url 'mindmate:quiz_dashboard' %}" class="sidebar-link{% if request.resolver_match.view_name == 'mindmate:quiz_dashboard' %} active{% endif %}">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Мои Квизови</span>
         </a>
     </nav>
+    
+    <!-- Study Agent Sessions Section (only visible on Study Agent pages) -->
+    {% if request.resolver_match.url_name == 'study_agent_chat' %}
+    <div class="sessions-section">
+        <div class="session-header">
+            <div class="session-title">Chat Sessions</div>
+            <button class="new-session-btn" onclick="createNewSession()" title="Start new chat">
+                <i class="fas fa-plus"></i>
+                <span>New</span>
+            </button>
+        </div>
+        <div class="sessions-list" id="sessionsList">
+            <div class="session-item active" data-session-id="current">
+                <div class="session-item-content">
+                    <i class="fas fa-comments" style="font-size: 12px; color: #9ca3af;"></i>
+                    <div class="session-item-title">Current Session</div>
+                </div>
+                <div class="session-item-actions">
+                    <button class="session-action-btn" onclick="deleteSession('current')" title="Delete session">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     <div class="sidebar-logout">
         <a href="{% url 'mindmate:logout' %}" class="sidebar-link" style="color: #e53e3e;">
             <i class="fas fa-sign-out-alt"></i>
@@ -125,9 +343,187 @@
         </a>
     </div>
 </div>
+
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
 <script>
+    // Optimized sidebar functionality
+    let sidebarState = {
+        collapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+        currentSessionId: null,
+        csrfToken: null
+    };
+
+    // Initialize on DOM load
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeSidebar();
+    });
+
+    function initializeSidebar() {
+        sidebarState.csrfToken = getCSRFToken();
+        
+        // Apply saved sidebar state
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content-area');
+        
+        if (sidebarState.collapsed) {
+            sidebar?.classList.add('collapsed');
+            mainContent?.classList.add('sidebar-collapsed');
+        }
+        
+        // Load sessions only if on study agent page
+        if (window.location.pathname.includes('/study-agent/')) {
+            loadChatSessions();
+        }
+    }
+    
+    // Sidebar toggle functionality
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('collapsed');
+        const mainContent = document.querySelector('.main-content-area');
+        
+        sidebarState.collapsed = !sidebarState.collapsed;
+        
+        if (sidebarState.collapsed) {
+            sidebar?.classList.add('collapsed');
+            mainContent?.classList.add('sidebar-collapsed');
+        } else {
+            sidebar?.classList.remove('collapsed');
+            mainContent?.classList.remove('sidebar-collapsed');
+        }
+        
+        localStorage.setItem('sidebarCollapsed', sidebarState.collapsed);
     }
+    
+    // Get CSRF token efficiently
+    function getCSRFToken() {
+        if (sidebarState.csrfToken) return sidebarState.csrfToken;
+        
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) return meta.getAttribute('content');
+        
+        const cookies = document.cookie.match(/csrftoken=([^;]+)/);
+        return cookies ? cookies[1] : '';
+    }
+    
+    // Session management functions (only for study agent pages)
+    function loadChatSessions() {
+        if (!window.location.pathname.includes('/study-agent/')) return;
+        
+        fetch('/study-agent/history/', {
+            headers: { 'X-CSRFToken': sidebarState.csrfToken }
+        })
+        .then(response => response.json())
+        .then(data => {
+            displaySessions(data.sessions || []);
+            sidebarState.currentSessionId = data.current_session_id;
+        })
+        .catch(error => console.error('Session loading error:', error));
+    }
+    
+    function displaySessions(sessions) {
+        const sessionsList = document.getElementById('sessionsList');
+        if (!sessionsList) return;
+        
+        if (sessions.length === 0) {
+            sessionsList.innerHTML = '<div class="session-item active" data-session-id="new"><div class="session-item-content"><i class="fas fa-comments" style="font-size: 10px;"></i><div class="session-item-title">New Session</div></div></div>';
+            return;
+        }
+        
+        sessionsList.innerHTML = sessions.map((session, index) => `
+            <div class="session-item ${index === 0 ? 'active' : ''}" 
+                 data-session-id="${session.id}" 
+                 onclick="switchToSession('${session.id}')"
+                 title="${session.title}">
+                <div class="session-item-content">
+                    <i class="fas fa-comments" style="font-size: 10px;"></i>
+                    <div class="session-item-title">${session.title || 'New Chat'}</div>
+                </div>
+                <div class="session-item-actions">
+                    <button class="session-action-btn" 
+                            onclick="event.stopPropagation(); deleteSession('${session.id}')" 
+                            title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function createNewSession() {
+        if (typeof clearCurrentChat === 'function') {
+            clearCurrentChat();
+        }
+        
+        sidebarState.currentSessionId = null;
+        
+        const sessionsList = document.getElementById('sessionsList');
+        if (sessionsList) {
+            sessionsList.querySelectorAll('.session-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const newSession = document.createElement('div');
+            newSession.className = 'session-item active';
+            newSession.setAttribute('data-session-id', 'new');
+            newSession.innerHTML = '<div class="session-item-content"><i class="fas fa-comments" style="font-size: 10px;"></i><div class="session-item-title">New Session</div></div>';
+            sessionsList.insertBefore(newSession, sessionsList.firstChild);
+        }
+    }
+    
+    function switchToSession(sessionId) {
+        if (sessionId === sidebarState.currentSessionId) return;
+        
+        sidebarState.currentSessionId = sessionId;
+        
+        document.querySelectorAll('.session-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelector(`[data-session-id="${sessionId}"]`)?.classList.add('active');
+        
+        if (typeof loadSessionMessages === 'function') {
+            loadSessionMessages(sessionId);
+        }
+    }
+    
+    function deleteSession(sessionId) {
+        if (!confirm('Delete this session?')) return;
+        
+        fetch(`/study-agent/sessions/${sessionId}/delete/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': sidebarState.csrfToken }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelector(`[data-session-id="${sessionId}"]`)?.remove();
+                if (sessionId === sidebarState.currentSessionId) {
+                    createNewSession();
+                }
+            }
+        })
+        .catch(error => console.error('Delete session error:', error));
+    }
+    
+    // Mobile sidebar functionality
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        const isActive = sidebar?.classList.toggle('active');
+        
+        if (overlay) {
+            overlay.classList.toggle('active', isActive);
+        }
+    }
+    
+    // Global functions
+    window.sidebarFunctions = {
+        loadChatSessions,
+        createNewSession,
+        switchToSession,
+        deleteSession,
+        toggleSidebar,
+        toggleMobileSidebar
+    };
 </script>

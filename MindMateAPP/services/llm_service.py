@@ -93,20 +93,14 @@ class LLMService:
             logger.error(f"Failed to initialize LLM client: {e}")
 
     def _initialize_ollama(self):
-        """Initialize Ollama client"""
+        """Initialize Ollama client using HTTP requests (more reliable than Python client)"""
         try:
-            import ollama
-            self.client = ollama
-
-            # Test connection
-            try:
-                self.client.list()
-                logger.info(f"✅ Ollama client initialized successfully")
-            except Exception as e:
-                logger.warning(f"Ollama not available: {e}")
-                self.client = None
-        except ImportError:
-            logger.error("Ollama package not installed. Install with: pip install ollama")
+            # For Ollama, we'll use direct HTTP requests instead of the Python client
+            # This is more reliable in Docker environments
+            self.client = "ollama_http"  # Marker to use HTTP approach
+            logger.info(f"✅ Ollama HTTP client configured for {self.config.base_url or 'localhost:11434'}")
+        except Exception as e:
+            logger.error(f"Failed to configure Ollama HTTP client: {e}")
             self.client = None
 
     def _initialize_openai(self):
@@ -169,53 +163,58 @@ class LLMService:
         max_tokens: Optional[int],
         json_mode: bool
     ) -> LLMResponse:
-        """Generate response using Ollama"""
-        messages = []
-
+        """Generate response using Ollama via HTTP requests"""
+        import requests
+        
+        # Build the full prompt
+        full_prompt = ""
         if system_prompt:
-            messages.append({
-                "role": "system",
-                "content": system_prompt
-            })
-
-        messages.append({
-            "role": "user",
-            "content": prompt
-        })
-
-        options = {
-            "temperature": temperature or self.config.temperature,
-            "num_predict": max_tokens or self.config.max_tokens,
-            "top_p": self.config.top_p,
-            "top_k": self.config.top_k,
+            full_prompt = f"System: {system_prompt}\n\n"
+        full_prompt += f"User: {prompt}"
+        
+        if json_mode:
+            full_prompt += "\n\nRespond with valid JSON."
+        
+        ollama_url = self.config.base_url or "http://localhost:11434"
+        
+        payload = {
+            "model": self.config.model_name,
+            "prompt": full_prompt,
+            "stream": False,
+            "options": {
+                "temperature": temperature or self.config.temperature,
+                "num_predict": max_tokens or self.config.max_tokens,
+                "top_p": self.config.top_p,
+                "top_k": self.config.top_k,
+            }
         }
-
-        # Add JSON format instruction if requested
-        format_type = "json" if json_mode else None
-
+        
         try:
-            response = self.client.chat(
-                model=self.config.model_name,
-                messages=messages,
-                options=options,
-                format=format_type,
-                stream=False
+            response = requests.post(
+                f"{ollama_url}/api/generate",
+                json=payload,
+                timeout=60  # Longer timeout for generation
             )
-
-            content = response['message']['content']
-
-            return LLMResponse(
-                content=content,
-                model=self.config.model_name,
-                provider=self.config.provider.value,
-                finish_reason=response.get('done_reason', 'stop'),
-                metadata={
-                    'eval_count': response.get('eval_count', 0),
-                    'prompt_eval_count': response.get('prompt_eval_count', 0)
-                }
-            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                content = result.get("response", "").strip()
+                
+                return LLMResponse(
+                    content=content,
+                    model=self.config.model_name,
+                    provider=self.config.provider.value,
+                    finish_reason=result.get('done_reason', 'stop'),
+                    metadata={
+                        'eval_count': result.get('eval_count', 0),
+                        'prompt_eval_count': result.get('prompt_eval_count', 0)
+                    }
+                )
+            else:
+                raise Exception(f"HTTP {response.status_code}: {response.text}")
+                
         except Exception as e:
-            logger.error(f"Ollama generation error: {e}")
+            logger.error(f"Ollama HTTP generation error: {e}")
             raise
 
     def _generate_openai(
@@ -339,8 +338,14 @@ class LLMService:
 
         try:
             if self.config.provider == ModelProvider.OLLAMA:
-                models = self.client.list()
-                return [model['name'] for model in models.get('models', [])]
+                # Use HTTP request for Ollama
+                import requests
+                ollama_url = self.config.base_url or "http://localhost:11434"
+                response = requests.get(f"{ollama_url}/api/tags", timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    return [model['name'] for model in data.get('models', [])]
+                return []
             elif self.config.provider == ModelProvider.OPENAI:
                 # OpenAI models are known
                 return ["gpt-4", "gpt-3.5-turbo", "gpt-4-turbo"]

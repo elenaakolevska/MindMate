@@ -26,3 +26,7 @@ db.sqlite3
 # OS files
 .DS_Store
 
+# ChromaDB vector database files
+chroma_db/
+/chroma_db/*
+*.sqlite3

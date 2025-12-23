@@ -1,6 +1,6 @@
 from django.urls import path
-from . import views, time_agent_views, study_agent_views, quiz_views
-from . import study_agent_chat_views
+from . import views, time_agent_views, quiz_views
+from . import study_agent_views 
 
 app_name = 'mindmate'
 
@@ -20,19 +20,16 @@ urlpatterns = [
     path('dashboard/api/events/<int:event_id>/', views.api_event_detail, name='api_event_detail'),
     
     # Study Agent Chat Interface (main page)
-    path('study-agent/', study_agent_chat_views.study_agent_chat_view, name='study_agent_chat'),
-    path('study-agent/chat/', study_agent_chat_views.study_agent_chat_api, name='study_agent_chat_api'),
-    path('study-agent/stream/', study_agent_chat_views.study_agent_stream_api, name='study_agent_stream'),
-    path('study-agent/history/', study_agent_chat_views.chat_history_api, name='study_agent_history'),
-    path('study-agent/clear/', study_agent_chat_views.clear_chat_history_api, name='study_agent_clear'),
+    path('study-agent/', study_agent_views.study_agent_chat_view, name='study_agent_chat'),
+    path('study-agent/chat/', study_agent_views.study_agent_chat_api, name='study_agent_chat_api'),
+    path('study-agent/stream/', study_agent_views.study_agent_stream_api, name='study_agent_stream'),
+    path('study-agent/history/', study_agent_views.chat_history_api, name='study_agent_history'),
+    path('study-agent/clear/', study_agent_views.clear_chat_history_api, name='study_agent_clear'),
+    path('study-agent/sessions/<str:session_id>/delete/', study_agent_views.delete_session_api, name='delete_session'),
 
     # Study Agent API URLs
     path('api/study-agent/recent-documents/', views.get_recent_documents, name='study_agent_recent_documents'),
     path('api/study-agent/documents/<int:document_id>/delete/', views.delete_document, name='delete_document'),
-    path('api/study-agent/search/', study_agent_views.search_context, name='study_agent_search'),
-    path('api/study-agent/subjects/', study_agent_views.get_available_subjects, name='study_agent_subjects'),
-    path('api/study-agent/stats/', study_agent_views.get_search_stats, name='study_agent_stats'),
-    path('api/study-agent/chat/', study_agent_views.chat_with_study_agent, name='study_agent_chat_api_legacy'),
 
     # Time Agent API URLs
     path('api/time-agent/estimate/', time_agent_views.estimate_task_time, name='time_agent_estimate'),
@@ -56,7 +53,6 @@ urlpatterns = [
     path('quiz/dashboard/', quiz_views.quiz_dashboard, name='quiz_dashboard'),
     path('quiz/<int:quiz_id>/take/', quiz_views.quiz_interface, name='quiz_take'),
     path('quiz/results/<int:quiz_result_id>/', quiz_views.quiz_results_view, name='quiz_results_view'),
-    path('study-agent/legacy/', views.study_agent_view, name='study_agent'),
 
     path('profile/', views.profile_view, name='profile'),
 ]

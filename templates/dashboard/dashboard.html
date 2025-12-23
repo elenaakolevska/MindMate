@@ -913,7 +913,7 @@
                             <div class="profile-name">{{ student.full_name }}</div>
                             <div class="profile-role">{{ student.study_direction }}</div>
                             
-                            {% if interests %}
+                            <!-- {% if interests %}
                             <div class="profile-section">
                                 <div class="profile-section-title">Interests:</div>
                                 <div class="profile-tags">
@@ -922,12 +922,12 @@
                                     {% endfor %}
                                 </div>
                             </div>
-                            {% endif %}
+                            {% endif %} -->
                             
                             {% if preferences.learning_goals %}
                             <div class="profile-section">
-                                <div class="profile-section-title">Goals:</div>
-                                <div class="profile-recommendation">{{ preferences.learning_goals|truncatewords:15 }}</div>
+                                <div class="profile-section-title">Goal: <span>{{ preferences.learning_goals|truncatewords:15 }}</span></div>
+                                <!-- <div class="profile-recommendation">{{ preferences.learning_goals|truncatewords:15 }}</div> -->
                             </div>
                             {% endif %}
                         </div>

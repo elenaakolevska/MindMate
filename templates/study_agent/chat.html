@@ -1,0 +1,1168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{% csrf_token %}">
+    <title>Study Agent Chat - MindMate</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: white;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-toggle {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+        .header-left h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .header-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+
+        /* Left side - Chat */
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+        }
+
+        .chat-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        .chat-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .chat-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            max-width: 85%;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .message.agent .message-avatar {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+        }
+
+        .message-content {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .message.agent .message-content {
+            background: white;
+            border-color: #e5e7eb;
+        }
+
+        .chat-input-area {
+            padding: 20px 24px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #2563eb;
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            background: #2563eb;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .send-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* Right side - Document Upload and Quiz */
+        .right-panel {
+            width: 400px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-section {
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .panel-section:last-child {
+            border-bottom: none;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        /* Document Upload */
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f8fafc;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .upload-icon {
+            font-size: 32px;
+            color: #9ca3af;
+            margin-bottom: 12px;
+        }
+
+        .upload-text h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .upload-text p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .uploaded-files {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .file-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .file-size {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        /* Quiz Generation */
+        .quiz-section {
+            flex: 1;
+        }
+
+        .quiz-btn {
+            width: 100%;
+            padding: 12px 16px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .quiz-btn:hover {
+            background: #059669;
+        }
+
+        .quiz-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .quiz-options {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .document-selection {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            background: #f9fafb;
+        }
+
+        .quiz-document-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .quiz-doc-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            background: white;
+            border: 1px solid #e5e7eb;
+        }
+
+        .quiz-doc-item:hover {
+            background: #f3f4f6;
+        }
+
+        .quiz-doc-checkbox {
+            margin: 0;
+        }
+
+        .quiz-doc-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .quiz-doc-info {
+            flex: 1;
+        }
+
+        .quiz-doc-name {
+            font-weight: 500;
+            color: #1f2937;
+            font-size: 13px;
+        }
+
+        .quiz-doc-meta {
+            color: #6b7280;
+            font-size: 11px;
+        }
+
+        .text-success { color: #10b981 !important; }
+        .text-warning { color: #f59e0b !important; }
+        .text-muted { color: #6b7280 !important; }
+
+        .text-success { color: #10b981 !important; }
+        .text-warning { color: #f59e0b !important; }
+        .text-muted { color: #6b7280 !important; }
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .option-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .option-select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e5e7eb;
+            border-top: 2px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body data-student-id="{{ student.id }}"> 
+    {% include 'sidebar_base.html' %}
+    
+    <div class="main-content-area">
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <button class="menu-toggle" onclick="window.sidebarFunctions?.toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-left">
+                    <h1 id="chatTitle">Study Agent Chat</h1>
+                </div>
+                <div class="header-right">
+                    <a href="{% url 'mindmate:profile' %}" class="user-profile" style="text-decoration: none; color: inherit;">
+                        <div class="user-info">
+                            <div class="user-name">{{ student.full_name }}</div>
+                            <div class="user-role">{{ student.get_study_level_display }}</div>
+                        </div>
+                        <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area" >
+                <!-- Left side - Chat -->
+                <div class="chat-section">
+                    <div class="chat-header">
+                        <div class="chat-title">Chat with Study Agent</div>
+                        <div class="chat-subtitle">Get help with your studies and learning materials.</div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Chat messages will appear here -->
+                        <div class="message agent">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <p>Hello! I'm your Study Agent. I can help you with:</p>
+                                <ul style="margin-top: 8px; padding-left: 20px;">
+                                    <li>📚 Answering questions about your documents</li>
+                                    <li>🧠 Generating quizzes from your materials</li>
+                                    <li>📝 Creating summaries</li>
+                                    <li>⏰ Time estimation for study sessions</li>
+                                    <li>📅 Study schedule suggestions</li>
+                                </ul>
+                                <p style="margin-top: 8px;">Upload documents on the right or ask me anything!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-area">
+                        <div class="input-container">
+                            <div class="input-wrapper">
+                                <input 
+                                    type="text"
+                                    class="chat-input" 
+                                    id="messageInput" 
+                                    placeholder="Type your message..." 
+                                    onkeydown="handleKeyDown(event)"
+                                />
+                            </div>
+                            <button class="send-btn" onclick="sendMessage()" id="sendButton">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right side - Document Upload and Quiz -->
+                <div class="right-panel">
+                    <!-- Document Upload Section -->
+                    <div class="panel-section">
+                        <div class="panel-title">Upload Documents</div>
+                        
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="upload-text">
+                                <h4>Upload Study Material</h4>
+                                <p>Drag & drop or click to browse</p>
+                                <p style="font-size: 12px; color: #9ca3af; margin-top: 4px;">
+                                    PDF, DOC, DOCX, TXT (max 50MB)
+                                </p>
+                            </div>
+                            <input type="file" id="fileInput" class="file-input" accept=".pdf,.doc,.docx,.txt" multiple>
+                        </div>
+
+                        <div class="uploaded-files" id="uploadedFiles">
+                            <!-- Uploaded files will appear here -->
+                        </div>
+                    </div>
+
+                    <!-- Quiz Generation Section -->
+                    <div class="panel-section quiz-section">
+                        <div class="panel-title">Generate Quiz</div>
+                        
+                        <div id="document-selection" class="document-selection" style="margin-bottom: 16px;">
+                            <div style="font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">
+                                Select Documents for Quiz:
+                            </div>
+                            <div id="quiz-document-list" class="quiz-document-list">
+                                <!-- Documents will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <div class="quiz-options">
+                            <div class="option-group">
+                                <label class="option-label">Questions</label>
+                                <select id="quizQuestions" class="option-select">
+                                    <option value="5">5 Questions</option>
+                                    <option value="10" selected>10 Questions</option>
+                                    <option value="15">15 Questions</option>
+                                    <option value="20">20 Questions</option>
+                                </select>
+                            </div>
+
+                            <div class="option-group">
+                                <label class="option-label">Difficulty</label>
+                                <select id="quizDifficulty" class="option-select">
+                                    <option value="easy">Easy</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+
+                            <div class="option-group">
+                                <label class="option-label">Type</label>
+                                <select id="quizType" class="option-select">
+                                    <option value="mixed" selected>Mixed</option>
+                                    <option value="multiple_choice">Multiple Choice</option>
+                                    <option value="true_false">True/False</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button class="quiz-btn" onclick="generateQuiz()" id="generateQuizBtn">
+                            <i class="fas fa-magic"></i>
+                            Generate Quiz
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Optimized chat functionality
+        let chatState = {
+            csrfToken: '',
+            uploadedFiles: [],
+            currentSessionId: null
+        };
+
+        // Initialize on DOM load
+        document.addEventListener('DOMContentLoaded', function() {
+            chatState.csrfToken = getCSRFToken();
+            initializeFileUpload();
+            loadRecentDocuments();
+            
+            // Ensure quiz document selection is updated on load
+            setTimeout(() => {
+                updateQuizDocumentSelection();
+            }, 500);
+            
+            // Integration with sidebar
+            window.clearCurrentChat = clearCurrentChat;
+            window.loadSessionMessages = loadSessionMessages;
+        });
+
+        // Integration functions for sidebar
+        function clearCurrentChat() {
+            const chatMessages = document.getElementById('chatMessages');
+            const welcomeMessage = `
+                <div class="message agent">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! I'm your Study Agent. I can help you with:</p>
+                        <ul style="margin-top: 8px; padding-left: 20px;">
+                            <li>📚 Answering questions about your documents</li>
+                            <li>🧠 Generating quizzes from your materials</li>
+                            <li>📝 Creating summaries</li>
+                            <li>⏰ Time estimation for study sessions</li>
+                            <li>📅 Study schedule suggestions</li>
+                        </ul>
+                        <p style="margin-top: 8px;">Upload documents on the right or ask me anything!</p>
+                    </div>
+                </div>
+            `;
+            chatMessages.innerHTML = welcomeMessage;
+        }
+
+        function loadSessionMessages(sessionId) {
+            if (!sessionId || sessionId === 'new') return;
+            
+            fetch(`/study-agent/history/?session_id=${sessionId}`, {
+                headers: { 'X-CSRFToken': chatState.csrfToken }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.history) {
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.innerHTML = '';
+                    data.history.forEach(msg => {
+                        addMessage(msg.content, msg.is_user_message ? 'user' : 'agent');
+                    });
+                }
+            })
+            .catch(error => console.error('Session loading error:', error));
+        }
+
+        // File upload functionality
+        function initializeFileUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                handleFiles(files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+        }
+
+        function handleFiles(files) {
+            for (let file of files) {
+                uploadFile(file);
+            }
+        }
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loading state
+            const uploadText = document.querySelector('.upload-text h4');
+            const originalText = uploadText.textContent;
+            uploadText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            fetch('/upload-document/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': chatState.csrfToken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`✅ ${file.name} uploaded successfully!`, 'success');
+                    addUploadedFile(file, data.material_id);
+                    loadRecentDocuments();
+                } else {
+                    showNotification(`❌ Upload failed: ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                showNotification('❌ Upload failed. Please try again.', 'error');
+            })
+            .finally(() => {
+                uploadText.textContent = originalText;
+            });
+        }
+
+        function addUploadedFile(file, materialId) {
+            chatState.uploadedFiles.push({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                materialId: materialId
+            });
+            updateUploadedFilesDisplay();
+        }
+
+        function deleteDocument(materialId, fileIndex) {
+            if (!confirm('Are you sure you want to delete this document?')) return;
+            
+            fetch(`/api/study-agent/documents/${materialId}/delete/`, {
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': chatState.csrfToken }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('✅ Document deleted successfully!', 'success');
+                    loadRecentDocuments(); // Reload from server to ensure sync
+                } else {
+                    showNotification(`❌ Delete failed: ${data.error || 'Unknown error'}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Delete error:', error);
+                showNotification('❌ Delete failed. Please try again.', 'error');
+            });
+        }
+
+        function updateUploadedFilesDisplay() {
+            const container = document.getElementById('uploadedFiles');
+            container.innerHTML = chatState.uploadedFiles.map((file, index) => `
+                <div class="file-item">
+                    <div class="file-icon">
+                        <i class="fas fa-file-${getFileIcon(file.type)}"></i>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <button class="delete-file-btn" title="Delete" onclick="deleteDocument(${file.materialId}, ${index})" 
+                            style="background:none;border:none;color:#ef4444;font-size:16px;cursor:pointer;margin-left:8px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+            updateQuizDocumentSelection();
+        }
+
+        function loadRecentDocuments() {
+            fetch('/api/study-agent/recent-documents/', {
+                headers: { 'X-CSRFToken': chatState.csrfToken }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    chatState.uploadedFiles = data.documents.map(doc => ({
+                        name: doc.name,
+                        size: doc.file_size || 0,
+                        type: doc.type,
+                        materialId: doc.id,
+                        processingStatus: doc.processing_status || 'pending'
+                    }));
+                    updateUploadedFilesDisplay();
+                }
+            })
+            .catch(error => console.error('Error loading documents:', error));
+        }
+
+        function updateQuizDocumentSelection() {
+            const container = document.getElementById('quiz-document-list');
+            if (!container) return;
+            
+            if (chatState.uploadedFiles.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #6b7280; font-size: 14px; padding: 20px;">No documents uploaded yet</div>';
+                return;
+            }
+            
+            container.innerHTML = chatState.uploadedFiles.map((file, index) => {
+                const statusClass = file.processingStatus === 'completed' ? 'text-success' :
+                                  file.processingStatus === 'processing' ? 'text-warning' : 'text-muted';
+                const statusIcon = file.processingStatus === 'completed' ? 'fa-check-circle' :
+                                 file.processingStatus === 'processing' ? 'fa-clock' : 'fa-clock';
+                const statusText = file.processingStatus === 'completed' ? 'Ready' :
+                                 file.processingStatus === 'processing' ? 'Processing' : 'Pending';
+                
+                return `
+                <div class="quiz-doc-item">
+                    <input type="checkbox" class="quiz-doc-checkbox" id="quiz-doc-${index}" data-material-id="${file.materialId}" checked>
+                    <div class="quiz-doc-icon">
+                        <i class="fas fa-file-${getFileIcon(file.type)}"></i>
+                    </div>
+                    <div class="quiz-doc-info">
+                        <div class="quiz-doc-name">${file.name}</div>
+                        <div class="quiz-doc-meta">${formatFileSize(file.size)} • <i class="fas ${statusIcon} ${statusClass}"></i> ${statusText}</div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Quiz generation functionality
+        function generateQuiz() {
+            const questions = document.getElementById('quizQuestions').value;
+            const difficulty = document.getElementById('quizDifficulty').value;
+            const quizType = document.getElementById('quizType').value;
+
+            // Get selected documents
+            const selectedCheckboxes = document.querySelectorAll('.quiz-doc-checkbox:checked');
+            const materialIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.getAttribute('data-material-id'))).filter(id => id);
+
+            if (materialIds.length === 0) {
+                showNotification('❌ Please select at least one document for quiz generation', 'error');
+                return;
+            }
+
+            // Show loading
+            const btn = document.getElementById('generateQuizBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            btn.disabled = true;
+
+            fetch('/api/quiz/generate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': chatState.csrfToken
+                },
+                body: JSON.stringify({
+                    student_id: getCurrentStudentId(),
+                    material_ids: materialIds,
+                    questions_count: parseInt(questions),
+                    difficulty: difficulty,
+                    quiz_type: quizType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.quiz) {
+                    // Try to open in new tab
+                    const quizUrl = `/quiz/${data.quiz.id}/take/`;
+                    let popup = window.open(quizUrl, '_blank');
+                    // Show custom notification with fallback link
+                    showNotification(
+                        `✅ Quiz generated successfully! <br><a href="${quizUrl}" target="_blank" style="color:#2563eb;font-weight:600;">Take Quiz Now</a>`,
+                        'success',
+                        true
+                    );
+                    if (!popup) {
+                        // If popup blocked, user can click the link in the notification
+                    }
+                } else {
+                    showNotification(`❌ Quiz generation failed: ${data.error || 'Unknown error'}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Quiz generation error:', error);
+                showNotification('❌ Quiz generation failed. Please try again.', 'error');
+            })
+            .finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        function getCurrentStudentId() {
+            // Get student ID from data attribute
+            return parseInt(document.body.getAttribute('data-student-id'));
+        }
+
+        // Chat functionality
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            
+            sendToStudyAgent(message);
+        }
+
+        function sendToStudyAgent(message) {
+            addMessage('Thinking...', 'agent', true);
+            
+            fetch('/study-agent/chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': chatState.csrfToken
+                },
+                body: new URLSearchParams({
+                    'message': message,
+                    'session_id': chatState.currentSessionId || ''
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                removeLoadingMessage();
+                
+                if (data.error) {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                        return;
+                    }
+                    addMessage(`Error: ${data.error}`, 'agent');
+                } else {
+                    addMessage(data.response, 'agent');
+                    
+                    if (data.session_id && !chatState.currentSessionId) {
+                        chatState.currentSessionId = data.session_id;
+                        
+                        if (window.sidebarFunctions?.loadChatSessions) {
+                            setTimeout(window.sidebarFunctions.loadChatSessions, 500);
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                removeLoadingMessage();
+                console.error('Chat error:', error);
+                addMessage('Sorry, I\'m having trouble connecting. Please try again.', 'agent');
+            });
+        }
+
+        function addMessage(text, sender, isLoading = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            if (isLoading) {
+                messageDiv.id = 'loading-message';
+            }
+            
+            let avatar = '';
+            if (sender === 'user') {
+                avatar = `<div class="message-avatar">{{ student.full_name|slice:":1"|upper }}</div>`;
+            } else if (sender === 'agent') {
+                avatar = `<div class="message-avatar"><i class="fas fa-robot"></i></div>`;
+            }
+            
+            const loadingClass = isLoading ? 'loading' : '';
+            
+            let processedText = text;
+            if (sender === 'agent' && !isLoading && typeof marked !== 'undefined') {
+                processedText = marked.parse(text);
+            }
+            
+            messageDiv.innerHTML = `
+                ${avatar}
+                <div class="message-content ${loadingClass}">${processedText}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeLoadingMessage() {
+            const loadingMessage = document.getElementById('loading-message');
+            if (loadingMessage) {
+                loadingMessage.remove();
+            }
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Utility functions
+        function getFileIcon(type) {
+            const icons = {
+                'pdf': 'pdf',
+                'word': 'word',
+                'text': 'alt',
+                'image': 'image'
+            };
+            return icons[type] || 'alt';
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return 'Unknown size';
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function showNotification(message, type = 'info', isHtml = false) {
+            // Enhanced notification
+            let notification = document.createElement('div');
+            notification.className = `custom-notification ${type}`;
+            notification.style.position = 'fixed';
+            notification.style.top = '32px';
+            notification.style.right = '32px';
+            notification.style.zIndex = 9999;
+            notification.style.background = type === 'success' ? '#e0f7e9' : (type === 'error' ? '#fee2e2' : '#f3f4f6');
+            notification.style.color = '#222';
+            notification.style.padding = '18px 28px';
+            notification.style.borderRadius = '8px';
+            notification.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+            notification.style.fontSize = '16px';
+            notification.style.maxWidth = '350px';
+            notification.style.minWidth = '200px';
+            notification.style.textAlign = 'center';
+            notification.style.fontWeight = 500;
+            notification.style.border = type === 'success' ? '1.5px solid #34d399' : (type === 'error' ? '1.5px solid #f87171' : '1.5px solid #d1d5db');
+            if (isHtml) {
+                notification.innerHTML = message;
+            } else {
+                notification.textContent = message;
+            }
+            // Dismiss button
+            let closeBtn = document.createElement('span');
+            closeBtn.textContent = '×';
+            closeBtn.style.float = 'right';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.style.marginLeft = '12px';
+            closeBtn.style.fontSize = '20px';
+            closeBtn.onclick = function() {
+                notification.remove();
+            };
+            notification.appendChild(closeBtn);
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                if (notification.parentNode) notification.remove();
+            }, 8000);
+        }
+
+        function getCSRFToken() {
+            // Try to get from cookie first
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') {
+                    return value;
+                }
+            }
+            
+            // Try to get from meta tag
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            if (metaToken) {
+                return metaToken.getAttribute('content');
+            }
+            
+            // Try to get from hidden input
+            const inputToken = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (inputToken) {
+                return inputToken.value;
+            }
+            
+            return '';
+        }
+    </script>
+</body>
+</html>

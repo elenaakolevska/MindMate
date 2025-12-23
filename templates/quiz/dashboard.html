@@ -1,0 +1,418 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои Квизови - MindMate</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            color: #1f2937;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #6b7280;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .quizzes-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .quiz-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .quiz-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .quiz-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .quiz-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .quiz-meta {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .quiz-stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .quiz-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .quiz-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .difficulty-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .difficulty-easy {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .difficulty-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .difficulty-hard {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .recent-results {
+            margin-top: 24px;
+        }
+
+        .results-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .result-info h4 {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .result-meta {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .result-score {
+            text-align: right;
+        }
+
+        .score-percentage {
+            font-size: 24px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .score-details {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
+
+            .quiz-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'sidebar_base.html' %}
+    <div class="container">
+        <div class="header">
+            <h1>Мои Квизови</h1>
+            <p>Погледнете ги вашите квизови и резултати</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total }}</div>
+                <div class="stat-label">Вкупно Квизови</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total }}</div> <div class="stat-label">Завршени</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.avg_score|floatformat:1 }}%</div>
+                <div class="stat-label">Просечен Резултат</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.passed }}</div>
+                <div class="stat-label">Положени</div>
+            </div>
+        </div>
+
+        <!-- Available Quizzes -->
+        {% if generation_status.can_generate_quiz %}
+        <div class="quizzes-section">
+            <div class="section-header">
+                <div class="section-title">Достапни Квизови</div>
+                <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Генерирај Нов Квиз
+                </a>
+            </div>
+
+            <div class="quiz-grid">
+                <!-- This would be populated with available quizzes to take -->
+                <div class="quiz-card">
+                    <div class="quiz-header">
+                        <div>
+                            <div class="quiz-title">Квиз од ваши материјали</div>
+                            <div class="quiz-meta">Генерирано од ваши документи</div>
+                        </div>
+                        <span class="difficulty-badge difficulty-medium">Средно</span>
+                    </div>
+                    <div class="quiz-stats">
+                        <div class="quiz-stat">
+                            <i class="fas fa-question"></i>
+                            10 прашања
+                        </div>
+                        <div class="quiz-stat">
+                            <i class="fas fa-clock"></i>
+                            ~15 мин
+                        </div>
+                    </div>
+                    <div class="quiz-actions">
+                        <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary">
+                            <i class="fas fa-play"></i>
+                            Започни
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Results -->
+        {% if quiz_history %}
+        <div class="quizzes-section recent-results">
+            <div class="section-title">Недавни Резултати</div>
+            <div class="results-list">
+                {% for quiz_data in quiz_history %}
+                <div class="result-item">
+                    <div class="result-info">
+                        <h4>{{ quiz_data.quiz.subject|default:"Општ Квиз" }}</h4>
+                        <div class="result-meta">
+                            {{ quiz_data.quiz.questions_count }} прашања • 
+                            {{ quiz_data.quiz.difficulty|title }} • 
+                            {{ quiz_data.result.taken_at|date:"d.m.Y H:i" }}
+                        </div>
+                    </div>
+                    <div class="result-score">
+                        <div class="score-percentage">{{ quiz_data.result.accuracy_percentage|floatformat:1 }}%</div>
+                        <div class="score-details">
+                            {{ quiz_data.result.score }}/{{ quiz_data.result.max_score }}
+                        </div>
+                    </div>
+                    <div class="quiz-actions">
+                        {% if quiz_data.result.id %}
+                        <a href="{% url 'mindmate:quiz_results_view' quiz_data.result.id %}" class="btn btn-secondary">
+                            <i class="fas fa-eye"></i>
+                            Детали
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Empty State -->
+        {% if not quiz_history and not generation_status.can_generate_quiz %}
+        <div class="quizzes-section">
+            <div class="empty-state">
+                <i class="fas fa-question-circle"></i>
+                <h3>Немате достапни квизови</h3>
+                <p>Прво треба да додадете студиски материјали за да генерирате квизови.</p>
+                <a href="{% url 'mindmate:upload_document' %}" class="btn btn-primary" style="margin-top: 16px;">
+                    <i class="fas fa-upload"></i>
+                    Додај Материјали
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html></content>

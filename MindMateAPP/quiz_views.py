@@ -5,29 +5,30 @@ API endpoints for generating and managing AI-powered quizzes
 from student study materials using RAG and Llama3.
 """
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.db.models import Avg, Count
 import json
 import logging
 
-from .models import Quiz, QuizQuestion, QuizResult, StudyMaterial, Student
-from .services.quiz_generator import get_quiz_generator, QuizGenerationOptions
+from .models import Quiz, QuizQuestion, QuizResult, StudyMaterial, Student, StudentAnswer
+from .services.study_agent.quiz_generator import get_quiz_generator, QuizGenerationOptions
 
 logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_required
 def generate_quiz(request):
     """
     Generate a new quiz from study materials
     
     POST /api/quiz/generate/
     Body: {
-        "student_id": int,
         "questions_count": int (optional, default 10),
         "quiz_type": str (optional, "multiple_choice"|"true_false"|"mixed", default "mixed"),
         "difficulty": str (optional, "easy"|"medium"|"hard", default from preferences),
@@ -37,16 +38,13 @@ def generate_quiz(request):
     """
     try:
         data = json.loads(request.body)
-        student_id = data.get('student_id')
         
-        if not student_id:
-            return JsonResponse({'error': 'student_id is required'}, status=400)
-        
-        # Validate student exists
+        # Get student from authenticated user
         try:
-            student = Student.objects.get(id=student_id)
+            student = Student.objects.get(user=request.user)
+            student_id = student.id
         except Student.DoesNotExist:
-            return JsonResponse({'error': f'Student with id {student_id} not found'}, status=404)
+            return JsonResponse({'error': 'Student profile not found for current user'}, status=404)
         
         # Prepare generation options
         options = QuizGenerationOptions(
@@ -57,20 +55,30 @@ def generate_quiz(request):
             material_ids=data.get('material_ids')
         )
         
+        material_ids = data.get('material_ids', [])
+        
         # Validate generation requirements
         quiz_generator = get_quiz_generator()
         validation = quiz_generator.validate_quiz_generation_requirements(student_id)
         
-        if not validation['can_generate_quiz']:
+        # For development/testing, allow quiz generation with pending documents if material_ids are specified
+        if not validation['can_generate_quiz'] and not material_ids:
             return JsonResponse({
                 'error': 'Cannot generate quiz',
-                'details': 'No processed study materials available',
+                'details': 'No study materials available. Please upload documents first.',
                 'validation': validation
             }, status=400)
         
         # Generate quiz
         logger.info(f"Generating quiz for student {student_id}")
-        quiz, quiz_questions = quiz_generator.generate_quiz(student_id, options)
+        quiz, quiz_questions = quiz_generator.generate_quiz(
+            student_id=student_id,
+            questions_count=options.questions_count,
+            quiz_type=options.quiz_type,
+            difficulty=options.difficulty,
+            subject_filter=options.subject_filter,
+            material_ids=options.material_ids
+        )
         
         # Format response
         response_data = {
@@ -160,13 +168,13 @@ def get_quiz(request, quiz_id):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_required
 def submit_quiz(request, quiz_id):
     """
     Submit quiz answers and get results
     
     POST /api/quiz/<quiz_id>/submit/
     Body: {
-        "student_id": int,
         "answers": {
             "question_id": "selected_answer",
             ...
@@ -175,26 +183,21 @@ def submit_quiz(request, quiz_id):
     """
     try:
         data = json.loads(request.body)
-        student_id = data.get('student_id')
         answers = data.get('answers', {})
-        
-        if not student_id:
-            return JsonResponse({'error': 'student_id is required'}, status=400)
         
         if not answers:
             return JsonResponse({'error': 'answers are required'}, status=400)
         
+        # Get student from authenticated user
+        try:
+            student = Student.objects.get(user=request.user)
+            student_id = student.id
+        except Student.DoesNotExist:
+            return JsonResponse({'error': 'Student profile not found for current user'}, status=404)
+        
         # Get quiz and questions
         quiz = get_object_or_404(Quiz, id=quiz_id)
         questions = QuizQuestion.objects.filter(quiz=quiz)
-        
-        # Validate student
-        try:
-            student = Student.objects.get(id=student_id)
-        except Student.DoesNotExist:
-            return JsonResponse({'error': f'Student with id {student_id} not found'}, status=404)
-        
-        # Calculate results
         total_questions = questions.count()
         correct_answers = 0
         question_results = []
@@ -227,6 +230,21 @@ def submit_quiz(request, quiz_id):
             max_score=total_questions,  # Total possible points  
             accuracy_percentage=score_percentage  # Percentage score
         )
+        
+        # Save individual answers
+        for question in questions:
+            user_answer = answers.get(str(question.id), '').strip().upper()
+            correct_answer = question.correct_answer.strip().upper()
+            is_correct = user_answer == correct_answer
+            points_earned = 1 if is_correct else 0
+            
+            StudentAnswer.objects.create(
+                quiz_result=quiz_result,
+                question=question,
+                student_answer=user_answer,
+                is_correct=is_correct,
+                points_earned=points_earned
+            )
         
         # Format response
         response_data = {
@@ -276,7 +294,13 @@ def get_quiz_results(request, quiz_result_id):
         # Reconstruct detailed results
         question_results = []
         for question in questions:
-            user_answer = quiz_result.answers_data.get(str(question.id), '')
+            # Get student's answer from StudentAnswer model
+            try:
+                student_answer_obj = StudentAnswer.objects.get(quiz_result=quiz_result, question=question)
+                user_answer = student_answer_obj.student_answer
+            except StudentAnswer.DoesNotExist:
+                user_answer = ''
+            
             is_correct = user_answer.strip().upper() == question.correct_answer.strip().upper()
             
             question_results.append({
@@ -322,21 +346,20 @@ def get_quiz_results(request, quiz_result_id):
 
 
 @require_http_methods(["GET"])
+@login_required
 def list_student_quizzes(request):
     """
     List all quizzes for a student
     
-    GET /api/quiz/student/<student_id>/
+    GET /api/quiz/student/
     """
     try:
-        student_id = request.GET.get('student_id')
-        if not student_id:
-            return JsonResponse({'error': 'student_id parameter is required'}, status=400)
-        
+        # Get student from authenticated user
         try:
-            student = Student.objects.get(id=student_id)
+            student = Student.objects.get(user=request.user)
+            student_id = student.id
         except Student.DoesNotExist:
-            return JsonResponse({'error': f'Student with id {student_id} not found'}, status=404)
+            return JsonResponse({'error': 'Student profile not found for current user'}, status=404)
         
         # Get quiz results for student
         quiz_results = QuizResult.objects.filter(student=student).select_related('quiz').order_by('-taken_at')
@@ -378,16 +401,20 @@ def list_student_quizzes(request):
 
 
 @require_http_methods(["GET"])
+@login_required
 def quiz_generation_status(request):
     """
     Check if student can generate quizzes
     
-    GET /api/quiz/generation-status/?student_id=<id>
+    GET /api/quiz/generation-status/
     """
     try:
-        student_id = request.GET.get('student_id')
-        if not student_id:
-            return JsonResponse({'error': 'student_id parameter is required'}, status=400)
+        # Get student from authenticated user
+        try:
+            student = Student.objects.get(user=request.user)
+            student_id = student.id
+        except Student.DoesNotExist:
+            return JsonResponse({'error': 'Student profile not found for current user'}, status=404)
         
         quiz_generator = get_quiz_generator()
         validation = quiz_generator.validate_quiz_generation_requirements(int(student_id))
@@ -474,30 +501,25 @@ def _get_available_subjects_for_student(student_id: int) -> list:
 # Template views for quiz interface
 @login_required
 def quiz_dashboard(request):
-    """Dashboard for quiz management and generation"""
-    try:
-        # Get student for current user
-        student = get_object_or_404(Student, user=request.user)
-        
-        # Get quiz generation status
-        quiz_generator = get_quiz_generator()
-        generation_status = quiz_generator.validate_quiz_generation_requirements(student.id)
-        
-        # Get recent quiz results
-        recent_results = QuizResult.objects.filter(student=student).select_related('quiz').order_by('-taken_at')[:5]
-        
-        context = {
-            'student': student,
-            'generation_status': generation_status,
-            'recent_results': recent_results,
-            'available_subjects': _get_available_subjects_for_student(student.id)
-        }
-        
-        return render(request, 'quiz/dashboard.html', context)
-        
-    except Exception as e:
-        logger.error(f"Error loading quiz dashboard: {e}")
-        return render(request, 'quiz/error.html', {'error': str(e)})
+    student = get_object_or_404(Student, user=request.user)
+    
+    # Get all results for this student
+    quiz_results = QuizResult.objects.filter(student=student).select_related('quiz').order_by('-taken_at')
+    
+    # Calculate Statistics
+    stats = {
+        'total': quiz_results.count(),
+        'avg_score': quiz_results.aggregate(Avg('accuracy_percentage'))['accuracy_percentage__avg'] or 0,
+        'passed': quiz_results.filter(accuracy_percentage__gte=70).count()
+    }
+
+    context = {
+        'student': student,
+        'quiz_history': quiz_results,
+        'stats': stats,
+        # ... keep your other context items ...
+    }
+    return render(request, 'quiz/dashboard.html', context)
 
 
 @login_required
@@ -508,10 +530,18 @@ def quiz_interface(request, quiz_id):
         questions = QuizQuestion.objects.filter(quiz=quiz).order_by('id')
         student = get_object_or_404(Student, user=request.user)
         
+        # Check if student has already taken this quiz
+        existing_result = QuizResult.objects.filter(student=student, quiz=quiz).exists()
+        if existing_result:
+            # Redirect to results if already taken
+            result = QuizResult.objects.get(student=student, quiz=quiz)
+            return redirect('mindmate:quiz_results_view', quiz_result_id=result.id)
+        
         context = {
             'quiz': quiz,
             'questions': questions,
-            'student': student
+            'student': student,
+            'question_ids': json.dumps([q.id for q in questions])
         }
         
         return render(request, 'quiz/take_quiz.html', context)
@@ -538,12 +568,29 @@ def quiz_results_view(request, quiz_result_id):
         # Reconstruct detailed results
         question_results = []
         for question in questions:
-            user_answer = quiz_result.answers_data.get(str(question.id), '')
+            # Get student's answer from StudentAnswer model
+            try:
+                student_answer_obj = StudentAnswer.objects.get(quiz_result=quiz_result, question=question)
+                user_answer = student_answer_obj.student_answer
+            except StudentAnswer.DoesNotExist:
+                user_answer = ''
+            
             is_correct = user_answer.strip().upper() == question.correct_answer.strip().upper()
+            
+            # Get option texts
+            user_answer_text = ''
+            correct_answer_text = ''
+            
+            if question.options:
+                user_answer_text = question.options.get(user_answer, '') if user_answer else ''
+                correct_answer_text = question.options.get(question.correct_answer, '')
             
             question_results.append({
                 'question': question,
                 'user_answer': user_answer,
+                'user_answer_text': user_answer_text,
+                'correct_answer': question.correct_answer,
+                'correct_answer_text': correct_answer_text,
                 'is_correct': is_correct
             })
         
