@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from django.utils import timezone
 from django.db.models import Q
 
-from ..models import CalendarEvent, Student, StudentPreferences
+from ...models import CalendarEvent, Student, StudentPreferences
 
 logger = logging.getLogger(__name__)
 

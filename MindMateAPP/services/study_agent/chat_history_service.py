@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.db.models import Q
 
-from ..models import ChatbotInteraction, Student
+from ...models import ChatbotInteraction, Student
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
@@ -20,28 +20,16 @@ logger = logging.getLogger(__name__)
 
 
 class PostgresChatHistoryManager:
-    """
-    PostgreSQL-based chat history manager using Django ORM
-    Replaces MongoDB functionality with PostgreSQL storage
-    """
     
     def __init__(self, bot_type: str = "study_agent"):
         self.bot_type = bot_type
         self.vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
         
     def create_session(self, student_id: str, session_metadata: Dict[str, Any] = None) -> str:
-        """
-        Create a new chat session for a student
-        Since PostgreSQL doesn't have explicit sessions, we'll use timestamp as session ID
-        """
+       
         try:
-            # Validate student exists
             student = Student.objects.get(id=student_id)
-            
-            # Create session identifier based on current timestamp
             session_id = f"session_{student_id}_{int(timezone.now().timestamp())}"
-            
-            # Create initial session entry
             session_entry = ChatbotInteraction.objects.create(
                 student=student,
                 bot_type=self.bot_type,

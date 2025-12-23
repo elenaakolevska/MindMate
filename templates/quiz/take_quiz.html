@@ -1,0 +1,613 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квиз - MindMate</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .quiz-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .quiz-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .quiz-meta {
+            display: flex;
+            gap: 16px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .question-number {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f8fafc;
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .option-input {
+            display: none;
+        }
+
+        .option-label {
+            font-size: 16px;
+            color: #1f2937;
+            line-height: 1.5;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .timer {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-label {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .question-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .question-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .question-dot.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .question-dot.answered {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+        .submit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .submit-modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        .modal-text {
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .question-card {
+                padding: 24px;
+            }
+
+            .navigation {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% csrf_token %}
+        <!-- Quiz Header -->
+        <div class="quiz-header">
+            <div class="quiz-title">{{ quiz.subject|default:"Квиз" }}</div>
+            <div class="quiz-meta">
+                <span><i class="fas fa-question"></i> {{ questions|length }} прашања</span>
+                <span><i class="fas fa-signal"></i> {{ quiz.difficulty|title }}</span>
+                <span><i class="fas fa-tag"></i> {{ quiz.quiz_type|title }}</span>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+
+        <!-- Question Navigation -->
+        <div class="question-nav" id="question-nav">
+            {% for question in questions %}
+            <div class="question-dot{% if forloop.first %} active{% endif %}" data-question="{{ forloop.counter0 }}">
+                {{ forloop.counter }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Questions Container -->
+        <div id="questions-container">
+            {% for question in questions %}
+            <div class="question-card{% if not forloop.first %} hidden{% endif %}" data-question="{{ forloop.counter0 }}">
+                <div class="question-number">Прашање {{ forloop.counter }} од {{ questions|length }}</div>
+                <div class="question-text">{{ question.question_text }}</div>
+
+                <div class="options">
+                    {% for option_key, option_value in question.options.items %}
+                    <div class="option" data-option="{{ option_key }}">
+                        <div class="option-letter">{{ option_key|upper }}</div>
+                        <div class="option-label">{{ option_value }}</div>
+                        <input type="radio" name="question_{{ forloop.parentloop.counter0 }}" value="{{ option_key }}" class="option-input">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prev-btn" disabled>
+                <i class="fas fa-arrow-left"></i>
+                Претходно
+            </button>
+
+            <div class="timer">
+                <div class="timer-display" id="timer">00:00</div>
+                <div class="timer-label">Преостанато време</div>
+            </div>
+
+            <button class="btn btn-primary" id="next-btn">
+                Следно
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- Submit Button -->
+        <div style="text-align: center; margin-top: 24px;">
+            <button class="btn btn-success" id="submit-btn" style="display: none;">
+                <i class="fas fa-check"></i>
+                Поднеси Квиз
+            </button>
+        </div>
+    </div>
+
+    <!-- Submit Confirmation Modal -->
+    <div class="submit-modal" id="submit-modal">
+        <div class="modal-content">
+            <div class="modal-title">Поднесете го квизот?</div>
+            <div class="modal-text">
+                Дали сте сигурни дека сакате да го поднесете квизот? Оваа акција не може да се поништи.
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeSubmitModal()">Откажи</button>
+                <button class="btn btn-primary" onclick="submitQuiz()">Поднеси</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quiz data
+        const totalQuestions = {{ questions|length }};
+        let currentQuestion = 0;
+        let answers = new Array(totalQuestions).fill(null);
+        let questionIds = {{ question_ids|safe }};
+        let studentId = {{ student.id }};
+        let quizId = {{ quiz.id }};
+        let startTime = Date.now();
+        let timerInterval;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+            startTimer();
+            updateNavigation();
+        });
+
+        // Option selection
+        document.querySelectorAll('.option').forEach(option => {
+            option.addEventListener('click', function() {
+                const questionCard = this.closest('.question-card');
+                const questionIndex = parseInt(questionCard.dataset.question);
+
+                // Remove selected class from all options in this question
+                questionCard.querySelectorAll('.option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+
+                // Add selected class to clicked option
+                this.classList.add('selected');
+
+                // Set radio button
+                const radio = this.querySelector('.option-input');
+                radio.checked = true;
+
+                // Store answer
+                answers[questionIndex] = radio.value;
+
+                // Update navigation dots
+                updateQuestionNav();
+
+        // Auto-advance to next question after short delay
+                setTimeout(() => {
+                    if (currentQuestion < totalQuestions - 1) {
+                        nextQuestion();
+                    } else {
+                        showSubmitButton();
+                    }
+                }, 500);
+            });
+        });
+
+        // Navigation
+        document.getElementById('prev-btn').addEventListener('click', prevQuestion);
+        document.getElementById('next-btn').addEventListener('click', nextQuestion);
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+                updateNavigation();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < totalQuestions - 1) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+                updateNavigation();
+            }
+        }
+
+        function showQuestion(index) {
+            // Hide all questions
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.classList.add('hidden');
+            });
+
+            // Show current question
+            document.querySelector(`.question-card[data-question="${index}"]`).classList.remove('hidden');
+
+            // Update navigation dots
+            document.querySelectorAll('.question-dot').forEach((dot, i) => {
+                dot.classList.remove('active');
+                if (i === index) {
+                    dot.classList.add('active');
+                }
+            });
+
+            updateProgress();
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+
+            prevBtn.disabled = currentQuestion === 0;
+            nextBtn.style.display = currentQuestion === totalQuestions - 1 ? 'none' : 'flex';
+            submitBtn.style.display = currentQuestion === totalQuestions - 1 ? 'inline-flex' : 'none';
+        }
+
+        function updateQuestionNav() {
+            document.querySelectorAll('.question-dot').forEach((dot, i) => {
+                if (answers[i]) {
+                    dot.classList.add('answered');
+                } else {
+                    dot.classList.remove('answered');
+                }
+            });
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / totalQuestions) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+        }
+
+        function showSubmitButton() {
+            document.getElementById('submit-btn').style.display = 'inline-flex';
+            document.getElementById('next-btn').style.display = 'none';
+        }
+
+        // Question dot navigation
+        document.querySelectorAll('.question-dot').forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                currentQuestion = index;
+                showQuestion(currentQuestion);
+                updateNavigation();
+            });
+        });
+
+        // Timer
+        function startTimer() {
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timer').textContent =
+                String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+        }
+
+        // Submit functionality
+        document.getElementById('submit-btn').addEventListener('click', showSubmitModal);
+
+        function showSubmitModal() {
+            // Check if all questions are answered
+            const unanswered = answers.filter(answer => answer === null).length;
+            if (unanswered > 0) {
+                if (!confirm(`Имате ${unanswered} неодговорени прашања. Дали сакате да продолжите со поднесување?`)) {
+                    return;
+                }
+            }
+            document.getElementById('submit-modal').classList.add('show');
+        }
+
+        function closeSubmitModal() {
+            document.getElementById('submit-modal').classList.remove('show');
+        }
+
+        function submitQuiz() {
+            closeSubmitModal();
+
+            // Prepare answers data
+            const answersData = {};
+            answers.forEach((answer, index) => {
+                if (answer) {
+                    answersData[questionIds[index]] = answer.toUpperCase();
+                }
+            });
+
+            // Submit quiz
+            const formData = new FormData();
+            formData.append('student_id', {{ student.id }});
+            formData.append('answers', JSON.stringify(answersData));
+
+            fetch(`/api/quiz/${quizId}/submit/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                },
+                body: JSON.stringify({
+                    answers: answersData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.quiz_result) {
+                    // Redirect to results
+                    window.location.href = `/quiz/results/${data.quiz_result.id}/`;
+                } else {
+                    alert('Грешка при поднесување на квизот');
+                }
+            })
+            .catch(error => {
+                console.error('Submit error:', error);
+                alert('Грешка при поднесување на квизот');
+            });
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key >= '1' && e.key <= '4') {
+                const optionIndex = parseInt(e.key) - 1;
+                const options = document.querySelectorAll('.question-card:not(.hidden) .option');
+                if (options[optionIndex]) {
+                    options[optionIndex].click();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                prevQuestion();
+            } else if (e.key === 'ArrowRight') {
+                nextQuestion();
+            }
+        });
+    </script>
+</body>
+</html>

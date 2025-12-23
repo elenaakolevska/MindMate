@@ -3,7 +3,7 @@ import sys
 import os
 from typing import Tuple
 import time
-from ..models import StudyMaterial
+from ...models import StudyMaterial
 
 try:
     from .ocr_processor import OCRProcessor

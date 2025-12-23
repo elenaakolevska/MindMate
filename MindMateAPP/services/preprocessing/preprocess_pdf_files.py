@@ -11,7 +11,7 @@ import io
 try:
     from .text_chunker import process_text_with_chunks
 except ImportError:
-    from text_chunker import process_text_with_chunks
+    from MindMateAPP.services.preprocessing.text_chunker import process_text_with_chunks
 
 import pdfplumber.page
 

@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from django.db.models import Avg, Q
 from django.utils import timezone
 
-from ..models import (
+from ...models import (
     Student, StudySession, QuizResult, CalendarEvent, 
     StudyMaterial, ChatbotInteraction, StudentPreferences
 )

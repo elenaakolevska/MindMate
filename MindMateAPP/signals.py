@@ -4,7 +4,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from .models import StudyMaterial, Student
-from .services.vector_store import VectorStoreService
+from .services.study_agent.vector_store import VectorStoreService
 
 logger = logging.getLogger(__name__)
 

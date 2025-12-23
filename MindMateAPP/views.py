@@ -619,29 +619,6 @@ def api_event_detail(request, event_id):
 
 
 @login_required
-def study_agent_view(request):
-    """Display the Study Agent interface"""
-    try:
-        student = Student.objects.get(user=request.user)
-        
-        # Get student's recent documents
-        recent_documents = StudyMaterial.objects.filter(
-            student=student
-        ).order_by('-upload_date')[:10]
-        
-        context = {
-            'student': student,
-            'recent_documents': recent_documents,
-        }
-        
-        return render(request, 'study_agent/index.html', context)
-        
-    except Student.DoesNotExist:
-        # Redirect to preferences if student profile not found
-        return redirect('mindmate:student_preferences')
-
-
-@login_required
 def get_recent_documents(request):
     """Get recent documents for Study Agent interface"""
     try:

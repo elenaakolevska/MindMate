@@ -32,7 +32,7 @@ class ConversationalTimeAgent:
     
     def __init__(self, ollama_url: str = "http://host.docker.internal:11434"):
         self.ollama_url = ollama_url
-        self.model_name = "llama3.1:8b"  # Better multilingual support including Macedonian
+        self.model_name = "qwen2.5:7b"  # Better multilingual support and higher token limit
         
     def process_message(
         self, 
@@ -147,11 +147,12 @@ Your response:"""
                     "options": {
                         "temperature": 0.7,
                         "top_p": 0.9,
-                        "num_predict": 500,
+                        "num_predict": 2048,
+                        "max_tokens": 8192,
                         "stop": ["\n\nКорисник:", "\n\nTime Agent:"]
                     }
                 },
-                timeout=60  # Increased timeout for larger models like Qwen2.5
+                timeout=120  # Increased timeout for larger models like Qwen2.5
             )
             
             if response.status_code == 200:
@@ -165,8 +166,8 @@ Your response:"""
                 
         except requests.RequestException as e:
             logger.error(f"Request to Ollama failed: {e}")
-            # Try fallback to smaller model if Llama3.1 fails
-            if self.model_name == "llama3.1:8b":
+            # Try fallback to smaller model if Qwen2.5 fails
+            if self.model_name == "qwen2.5:7b":
                 logger.info("Trying fallback to llama3.2:3b model")
                 try:
                     fallback_response = requests.post(
@@ -178,10 +179,11 @@ Your response:"""
                             "options": {
                                 "temperature": 0.7,
                                 "top_p": 0.9,
-                                "num_predict": 300,
+                                "num_predict": 512,
+                                "max_tokens": 2048
                             }
                         },
-                        timeout=30
+                        timeout=60
                     )
                     if fallback_response.status_code == 200:
                         result = fallback_response.json()
@@ -396,7 +398,7 @@ class IntentRouter:
     
     def _route_time_estimation(self, parameters: Dict, student) -> Dict:
         """Route to time estimation service"""
-        from .. import time_agent_views
+        from ... import time_agent_views
         
         # Build request data for time estimation
         request_data = {
