@@ -20,11 +20,16 @@
             min-height: 100vh;
         }
 
+        .main-content-area {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
         .main-content {
-            margin-left: 250px;
-            min-height: 100vh;
+            flex: 1;
             transition: all 0.3s ease;
-            width: calc(100% - 250px);
+            padding: 0 24px;
         }
 
         .sidebar.collapsed + .main-content {
@@ -215,71 +220,73 @@
 </head>
 <body>
     {% include 'sidebar_base.html' %}
-    <div class="main-content">
-        <div class="header">
-            <div class="header-left">
-                <button class="menu-toggle" onclick="toggleSidebar()">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            <div class="header-right">
-                <div class="user-profile">
-                    <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
-                    <div class="user-info">
-                        <div class="user-name">{{ student.full_name }}</div>
-                        <div class="user-role">{{ student.get_study_level_display }}</div>
+    <div class="main-content-area">
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
+                        <div class="user-info">
+                            <div class="user-name">{{ student.full_name }}</div>
+                            <div class="user-role">{{ student.get_study_level_display }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="profile-wrapper">
-            <h1>Profile</h1>
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Основни Информации</h2>
-                </div>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Име и Презиме</div>
-                        <div class="info-value">{{ student.full_name }}</div>
+            <div class="profile-wrapper">
+                <h1>Profile</h1>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Основни Информации</h2>
                     </div>
-                    <div class="info-item">
-                        <div class="info-label">Е-пошта</div>
-                        <div class="info-value">{{ student.email }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Ниво на Образование</div>
-                        <div class="info-value">{{ student.get_study_level_display }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Поле на Студирање</div>
-                        <div class="info-value">{{ student.study_direction }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Датум на Регистрација</div>
-                        <div class="info-value">{{ student.created_at|date:"d M Y" }}</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Име и Презиме</div>
+                            <div class="info-value">{{ student.full_name }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Е-пошта</div>
+                            <div class="info-value">{{ student.email }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Ниво на Образование</div>
+                            <div class="info-value">{{ student.get_study_level_display }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Поле на Студирање</div>
+                            <div class="info-value">{{ student.study_direction }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Датум на Регистрација</div>
+                            <div class="info-value">{{ student.created_at|date:"d M Y" }}</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Интереси</h2>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Интереси</h2>
+                    </div>
+                    <div class="tags-container">
+                        {% if interests %}
+                            {% for interest in interests %}
+                                <span class="tag">{{ interest }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <p style="color: #6b7280;">Нема додадени интереси</p>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="tags-container">
-                    {% if interests %}
-                        {% for interest in interests %}
-                            <span class="tag">{{ interest }}</span>
-                        {% endfor %}
-                    {% else %}
-                        <p style="color: #6b7280;">Нема додадени интереси</p>
-                    {% endif %}
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Цели за Учeње</h2>
+                    </div>
+                    <p style="line-height: 1.6;">{{ preferences.learning_goals|default:"Не се наведени цели" }}</p>
                 </div>
-            </div>
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Цели за Учeње</h2>
-                </div>
-                <p style="line-height: 1.6;">{{ preferences.learning_goals|default:"Не се наведени цели" }}</p>
             </div>
         </div>
     </div>

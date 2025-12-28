@@ -5,8 +5,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мои Квизови - MindMate</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fb;
+            min-height: 100vh;
+        }
+        .main-content-area {
+            transition: all 0.3s ease;
+            width: calc(100% - 250px);
+        }
+        .sidebar.collapsed + .main-content-area {
+            width: calc(100% - 80px);
+        }
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .menu-toggle {
+            background: #f3f4f6;
+            border: none;
+            font-size: 20px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .menu-toggle:hover { background: #e5e7eb; color: #374151; }
+        @media (min-width: 769px) { .menu-toggle { display: flex; } }
+        @media (max-width: 768px) {
+            .menu-toggle { display: flex; }
+            .header { padding: 12px 20px; }
+            .main-content-area { width: 100%; }
+        }
+        .header-title { display: flex; flex-direction: column; }
+        .header-title h1 { font-size: 20px; font-weight: 600; color: #1f2937; margin: 0; }
+        .header-title p { font-size: 14px; color: #6b7280; margin: 2px 0 0 0; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .user-profile {
+            display: flex; align-items: center; gap: 12px; cursor: pointer;
+            padding: 8px 12px; border-radius: 12px; transition: all 0.2s ease;
+            text-decoration: none; color: inherit;
+        }
+        .user-profile:hover { background: #f3f4f6; }
+        .user-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 600; font-size: 16px;
+        }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-weight: 600; color: #1f2937; font-size: 14px; }
+        .user-role { font-size: 12px; color: #6b7280; }
+        @media (max-width: 480px) { .user-info { display: none; } }
+        .content-area { flex: 1; padding: 24px; overflow-y: auto; }
+
         * {
             margin: 0;
             padding: 0;
@@ -294,125 +364,143 @@
 </head>
 <body>
     {% include 'sidebar_base.html' %}
-    <div class="container">
+    <div class="main-content-area">
         <div class="header">
-            <h1>Мои Квизови</h1>
-            <p>Погледнете ги вашите квизови и резултати</p>
-        </div>
-
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">{{ stats.total }}</div>
-                <div class="stat-label">Вкупно Квизови</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-number">{{ stats.total }}</div> <div class="stat-label">Завршени</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-number">{{ stats.avg_score|floatformat:1 }}%</div>
-                <div class="stat-label">Просечен Резултат</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-number">{{ stats.passed }}</div>
-                <div class="stat-label">Положени</div>
-            </div>
-        </div>
-
-        <!-- Available Quizzes -->
-        {% if generation_status.can_generate_quiz %}
-        <div class="quizzes-section">
-            <div class="section-header">
-                <div class="section-title">Достапни Квизови</div>
-                <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Генерирај Нов Квиз
-                </a>
-            </div>
-
-            <div class="quiz-grid">
-                <!-- This would be populated with available quizzes to take -->
-                <div class="quiz-card">
-                    <div class="quiz-header">
-                        <div>
-                            <div class="quiz-title">Квиз од ваши материјали</div>
-                            <div class="quiz-meta">Генерирано од ваши документи</div>
-                        </div>
-                        <span class="difficulty-badge difficulty-medium">Средно</span>
-                    </div>
-                    <div class="quiz-stats">
-                        <div class="quiz-stat">
-                            <i class="fas fa-question"></i>
-                            10 прашања
-                        </div>
-                        <div class="quiz-stat">
-                            <i class="fas fa-clock"></i>
-                            ~15 мин
-                        </div>
-                    </div>
-                    <div class="quiz-actions">
-                        <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary">
-                            <i class="fas fa-play"></i>
-                            Започни
-                        </a>
-                    </div>
+            <div class="header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-title">
+                    <h1>Мои Квизови</h1>
+                    <p>Погледнете ги вашите квизови и резултати</p>
                 </div>
             </div>
-        </div>
-        {% endif %}
-
-        <!-- Recent Results -->
-        {% if quiz_history %}
-        <div class="quizzes-section recent-results">
-            <div class="section-title">Недавни Резултати</div>
-            <div class="results-list">
-                {% for quiz_data in quiz_history %}
-                <div class="result-item">
-                    <div class="result-info">
-                        <h4>{{ quiz_data.quiz.subject|default:"Општ Квиз" }}</h4>
-                        <div class="result-meta">
-                            {{ quiz_data.quiz.questions_count }} прашања • 
-                            {{ quiz_data.quiz.difficulty|title }} • 
-                            {{ quiz_data.result.taken_at|date:"d.m.Y H:i" }}
-                        </div>
+            <div class="header-right">
+                <a href="{% url 'mindmate:profile' %}" class="user-profile" style="text-decoration: none; color: inherit;">
+                    <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ student.full_name }}</div>
+                        <div class="user-role">{{ student.get_study_level_display }}</div>
                     </div>
-                    <div class="result-score">
-                        <div class="score-percentage">{{ quiz_data.result.accuracy_percentage|floatformat:1 }}%</div>
-                        <div class="score-details">
-                            {{ quiz_data.result.score }}/{{ quiz_data.result.max_score }}
-                        </div>
-                    </div>
-                    <div class="quiz-actions">
-                        {% if quiz_data.result.id %}
-                        <a href="{% url 'mindmate:quiz_results_view' quiz_data.result.id %}" class="btn btn-secondary">
-                            <i class="fas fa-eye"></i>
-                            Детали
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Empty State -->
-        {% if not quiz_history and not generation_status.can_generate_quiz %}
-        <div class="quizzes-section">
-            <div class="empty-state">
-                <i class="fas fa-question-circle"></i>
-                <h3>Немате достапни квизови</h3>
-                <p>Прво треба да додадете студиски материјали за да генерирате квизови.</p>
-                <a href="{% url 'mindmate:upload_document' %}" class="btn btn-primary" style="margin-top: 16px;">
-                    <i class="fas fa-upload"></i>
-                    Додај Материјали
                 </a>
             </div>
         </div>
-        {% endif %}
+        <div class="content-area">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total }}</div>
+                    <div class="stat-label">Вкупно Квизови</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total }}</div> <div class="stat-label">Завршени</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.avg_score|floatformat:1 }}%</div>
+                    <div class="stat-label">Просечен Резултат</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.passed }}</div>
+                    <div class="stat-label">Положени</div>
+                </div>
+            </div>
+
+            <!-- Available Quizzes -->
+            {% if generation_status.can_generate_quiz %}
+            <div class="quizzes-section">
+                <div class="section-header">
+                    <div class="section-title">Достапни Квизови</div>
+                    <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Генерирај Нов Квиз
+                    </a>
+                </div>
+
+                <div class="quiz-grid">
+                    <!-- This would be populated with available quizzes to take -->
+                    <div class="quiz-card">
+                        <div class="quiz-header">
+                            <div>
+                                <div class="quiz-title">Квиз од ваши материјали</div>
+                                <div class="quiz-meta">Генерирано од ваши документи</div>
+                            </div>
+                            <span class="difficulty-badge difficulty-medium">Средно</span>
+                        </div>
+                        <div class="quiz-stats">
+                            <div class="quiz-stat">
+                                <i class="fas fa-question"></i>
+                                10 прашања
+                            </div>
+                            <div class="quiz-stat">
+                                <i class="fas fa-clock"></i>
+                                ~15 мин
+                            </div>
+                        </div>
+                        <div class="quiz-actions">
+                            <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary">
+                                <i class="fas fa-play"></i>
+                                Започни
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Results -->
+            {% if quiz_history %}
+            <div class="quizzes-section recent-results">
+                <div class="section-title">Недавни Резултати</div>
+                <div class="results-list">
+                    {% for quiz_data in quiz_history %}
+                    <div class="result-item">
+                        <div class="result-info">
+                            <h4>{{ quiz_data.quiz.subject|default:"Општ Квиз" }}</h4>
+                            <div class="result-meta">
+                                {{ quiz_data.quiz.questions_count }} прашања •
+                                {{ quiz_data.quiz.difficulty|title }} •
+                                {{ quiz_data.result.taken_at|date:"d.m.Y H:i" }}
+                            </div>
+                        </div>
+                        <div class="result-score">
+                            <div class="score-percentage">{{ quiz_data.result.accuracy_percentage|floatformat:1 }}%</div>
+                            <div class="score-details">
+                                {{ quiz_data.result.score }}/{{ quiz_data.result.max_score }}
+                            </div>
+                        </div>
+                        <div class="quiz-actions">
+                            {% if quiz_data.result.id %}
+                            <a href="{% url 'mindmate:quiz_results_view' quiz_data.result.id %}" class="btn btn-secondary">
+                                <i class="fas fa-eye"></i>
+                                Детали
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Empty State -->
+            {% if not quiz_history and not generation_status.can_generate_quiz %}
+            <div class="quizzes-section">
+                <div class="empty-state">
+                    <i class="fas fa-question-circle"></i>
+                    <h3>Немате достапни квизови</h3>
+                    <p>Прво треба да додадете студиски материјали за да генерирате квизови.</p>
+                    <a href="{% url 'mindmate:upload_document' %}" class="btn btn-primary" style="margin-top: 16px;">
+                        <i class="fas fa-upload"></i>
+                        Додај Материјали
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
+    <!-- ...existing scripts... -->
 </body>
-</html></content>
+</html>

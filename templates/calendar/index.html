@@ -834,15 +834,17 @@
 </head>
 <body>
     {% include 'sidebar_base.html' %}
-    <div class="main-content">
-        <!-- Header -->
+    <div class="main-content-area">
         <div class="header">
             <div class="header-left">
                 <button class="menu-toggle" onclick="toggleSidebar()">
                     <i class="fas fa-bars"></i>
                 </button>
+                <div class="header-title">
+                    <h1>Календар</h1>
+                </div>
             </div>
-             <div class="header-right">
+            <div class="header-right">
                 <a href="{% url 'mindmate:profile' %}" class="user-profile" style="text-decoration: none; color: inherit;">
                     <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
                     <div class="user-info">
@@ -942,11 +944,13 @@
                         </div>
                         
                         <div class="chat-input-wrapper">
-                            <textarea 
+                            <label for="chatInput" style="display:none;">Time Agent Chat Input</label>
+                            <textarea
                                 class="chat-input" 
                                 id="chatInput" 
                                 placeholder="Прашајте за временска проценка за вашите задачи..."
                                 rows="1"
+                                aria-label="Time Agent Chat Input"
                             ></textarea>
                             <button class="chat-send-btn" id="chatSendBtn" onclick="sendMessage()">
                                 <i class="fas fa-paper-plane"></i>
@@ -956,361 +960,302 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Event Modal -->
-    <!-- Hidden CSRF Token -->
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        <!-- Event Modal -->
+        <!-- Hidden CSRF Token -->
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
-    <!-- Event Modal -->
-    <div class="event-modal" id="eventModal">
-        <div class="event-modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">Создади Настан</h2>
-                <button class="modal-close" onclick="closeEventModal()">×</button>
+        <!-- Event Modal -->
+        <div class="event-modal" id="eventModal">
+            <div class="event-modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="modalTitle">Создади Настан</h2>
+                    <button class="modal-close" onclick="closeEventModal()">×</button>
+                </div>
+
+                <form id="eventForm">
+                    <div class="form-group">
+                        <label class="form-label" for="eventTitle">Наслов на Настан *</label>
+                        <input type="text" class="form-input" id="eventTitle" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventType">Тип на Настан *</label>
+                        <select class="form-input" id="eventType" name="event_type" required>
+                            <option value="study_session">Студиска Сесија</option>
+                            <option value="exam">Испит</option>
+                            <option value="homework_deadline">Рок за Домашна</option>
+                            <option value="personal">Личен Настан</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventStart">Почетен Датум и Време *</label>
+                        <input type="datetime-local" class="form-input" id="eventStart" name="start" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventEnd">Краен Датум и Време</label>
+                        <input type="datetime-local" class="form-input" id="eventEnd" name="end">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventDescription">Опис</label>
+                        <textarea class="form-input form-textarea" id="eventDescription" name="description" placeholder="Додајте детали за настанот..."></textarea>
+                    </div>
+                    <div id="eventError" style="display:none;color:#e53e3e;font-weight:500;margin-bottom:12px;"></div>
+                    <div class="modal-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="closeEventModal()">Откажи</button>
+                        <button type="button" class="btn btn-danger" id="deleteEventBtn" onclick="deleteEvent()" style="display: none;">Избриши</button>
+                        <button type="submit" class="btn btn-primary" id="saveEventBtn">Зачувај Настан</button>
+                    </div>
+                </form>
             </div>
-            
-            <form id="eventForm">
-                <div class="form-group">
-                    <label class="form-label" for="eventTitle">Наслов на Настан *</label>
-                    <input type="text" class="form-input" id="eventTitle" name="title" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="eventType">Тип на Настан *</label>
-                    <select class="form-input" id="eventType" name="event_type" required>
-                        <option value="study_session">Студиска Сесија</option>
-                        <option value="exam">Испит</option>
-                        <option value="homework_deadline">Рок за Домашна</option>
-                        <option value="personal">Личен Настан</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="eventStart">Почетен Датум и Време *</label>
-                    <input type="datetime-local" class="form-input" id="eventStart" name="start" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="eventEnd">Краен Датум и Време</label>
-                    <input type="datetime-local" class="form-input" id="eventEnd" name="end">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="eventDescription">Опис</label>
-                    <textarea class="form-input form-textarea" id="eventDescription" name="description" placeholder="Додајте детали за настанот..."></textarea>
-                </div>
-                <div id="eventError" style="display:none;color:#e53e3e;font-weight:500;margin-bottom:12px;"></div>
-                <div class="modal-buttons">
-                    <button type="button" class="btn btn-secondary" onclick="closeEventModal()">Откажи</button>
-                    <button type="button" class="btn btn-danger" id="deleteEventBtn" onclick="deleteEvent()" style="display: none;">Избриши</button>
-                    <button type="submit" class="btn btn-primary" id="saveEventBtn">Зачувај Настан</button>
-                </div>
-            </form>
         </div>
-    </div>
 
-    <!-- FullCalendar JS -->
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-    <!-- FullCalendar Macedonian Locale -->
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/mk.js'></script>
-    
-    <script>
-        let calendar;
-        let currentEvent = null;
+        <!-- FullCalendar JS -->
+        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+        <!-- FullCalendar Macedonian Locale -->
+        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/mk.js'></script>
 
-        // Get CSRF token for AJAX requests
-        function getCSRFToken() {
-            return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
-        }
+        <script>
+            let calendar;
+            let currentEvent = null;
 
-        // Date formatting functions
-        function formatDateTimeForServer(date) {
-            const d = new Date(date);
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
+            // Get CSRF token for AJAX requests
+            function getCSRFToken() {
+                return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+            }
 
-        function formatDateTimeLocal(date) {
-            const d = new Date(date);
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
+            // Date formatting functions
+            function formatDateTimeForServer(date) {
+                const d = new Date(date);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const hours = String(d.getHours()).padStart(2, '0');
+                const minutes = String(d.getMinutes()).padStart(2, '0');
 
-        // Initialize calendar when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeCalendar();
-        });
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
 
-        function initializeCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'mk', // Macedonian locale
-                firstDay: 1, // Monday is the first day of the week
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                buttonText: {
-                    today: 'Денес',
-                    month: 'Месец',
-                    week: 'Недела', 
-                    day: 'Ден',
-                    list: 'Листа'
-                },
-                height: 'auto',
-                contentHeight: 'auto',
-                expandRows: true,
-                selectable: true,
-                selectMirror: true,
-                editable: true,
-                dayMaxEvents: true,
-                
-                // Ensure colors are applied properly
-                eventDisplay: 'block',
-                
-                // Event sources
-                events: {
-                    url: '{% url "mindmate:api_events" %}',
-                    method: 'GET',
-                    failure: function(error) {
-                        console.error('Error fetching events:', error);
-                        alert('Се случи грешка при вчитување на настаните! Проверете ја конзолата за детали.');
-                    }
-                },
-                eventContent: function(arg) {
-                    return { html: `<div class='fc-event-title'>${arg.event.title}</div>` };
-                },
-                select: function(selectInfo) {
-                    window.selectedRange = {
-                        start: selectInfo.start,
-                        end: selectInfo.end
-                    };
-                    
-                    openEventModal('create', {
-                        start: selectInfo.start,
-                        end: selectInfo.end
-                    });
-                },
-                
-                eventClick: function(clickInfo) {
-                    openEventModal('edit', clickInfo.event);
-                },
-                
-                eventDrop: function(dropInfo) {
-                    updateEventDateTime(dropInfo.event);
-                },
-                
-                eventResize: function(resizeInfo) {
-                    updateEventDateTime(resizeInfo.event);
-                },
-                
-                loading: function(isLoading) {
-                    const loadingEl = document.getElementById('calendar-loading');
-                    if (isLoading) {
-                        loadingEl.style.display = 'block';
-                    } else {
-                        loadingEl.style.display = 'none';
-                    }
-                },
-                
-                eventDidMount: function(info) {
-                    if (info.event.backgroundColor) {
-                        info.el.style.backgroundColor = info.event.backgroundColor;
-                        info.el.style.borderColor = info.event.backgroundColor;
-                        info.el.style.color = 'white';
-                    }
-                }
+            function formatDateTimeLocal(date) {
+                const d = new Date(date);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const hours = String(d.getHours()).padStart(2, '0');
+                const minutes = String(d.getMinutes()).padStart(2, '0');
+
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+
+            // Initialize calendar when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeCalendar();
             });
-            
-            calendar.render();
-        }
 
-        function openEventModal(mode, eventData) {
-            const modal = document.getElementById('eventModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const deleteBtn = document.getElementById('deleteEventBtn');
-            const form = document.getElementById('eventForm');
-            
-            form.reset();
-            currentEvent = null;
-            
-            if (mode === 'create') {
-                modalTitle.textContent = 'Создади Настан';
-                deleteBtn.style.display = 'none';
-                
-                if (eventData.start) {
+            function initializeCalendar() {
+                const calendarEl = document.getElementById('calendar');
+
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'mk', // Macedonian locale
+                    firstDay: 1, // Monday is the first day of the week
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    buttonText: {
+                        today: 'Денес',
+                        month: 'Месец',
+                        week: 'Недела',
+                        day: 'Ден',
+                        list: 'Листа'
+                    },
+                    height: 'auto',
+                    contentHeight: 'auto',
+                    expandRows: true,
+                    selectable: true,
+                    selectMirror: true,
+                    editable: true,
+                    dayMaxEvents: true,
+
+                    // Ensure colors are applied properly
+                    eventDisplay: 'block',
+
+                    // Event sources
+                    events: {
+                        url: '{% url "mindmate:api_events" %}',
+                        method: 'GET',
+                        failure: function(error) {
+                            console.error('Error fetching events:', error);
+                            alert('Се случи грешка при вчитување на настаните! Проверете ја конзолата за детали.');
+                        }
+                    },
+                    eventContent: function(arg) {
+                        return { html: `<div class='fc-event-title'>${arg.event.title}</div>` };
+                    },
+                    select: function(selectInfo) {
+                        window.selectedRange = {
+                            start: selectInfo.start,
+                            end: selectInfo.end
+                        };
+
+                        openEventModal('create', {
+                            start: selectInfo.start,
+                            end: selectInfo.end
+                        });
+                    },
+
+                    eventClick: function(clickInfo) {
+                        openEventModal('edit', clickInfo.event);
+                    },
+
+                    eventDrop: function(dropInfo) {
+                        updateEventDateTime(dropInfo.event);
+                    },
+
+                    eventResize: function(resizeInfo) {
+                        updateEventDateTime(resizeInfo.event);
+                    },
+
+                    loading: function(isLoading) {
+                        const loadingEl = document.getElementById('calendar-loading');
+                        if (isLoading) {
+                            loadingEl.style.display = 'block';
+                        } else {
+                            loadingEl.style.display = 'none';
+                        }
+                    },
+
+                    eventDidMount: function(info) {
+                        if (info.event.backgroundColor) {
+                            info.el.style.backgroundColor = info.event.backgroundColor;
+                            info.el.style.borderColor = info.event.backgroundColor;
+                            info.el.style.color = 'white';
+                        }
+                    }
+                });
+
+                calendar.render();
+            }
+
+            function openEventModal(mode, eventData) {
+                const modal = document.getElementById('eventModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const deleteBtn = document.getElementById('deleteEventBtn');
+                const form = document.getElementById('eventForm');
+
+                form.reset();
+                currentEvent = null;
+
+                if (mode === 'create') {
+                    modalTitle.textContent = 'Создади Настан';
+                    deleteBtn.style.display = 'none';
+
+                    if (eventData.start) {
+                        document.getElementById('eventStart').value = formatDateTimeLocal(eventData.start);
+                    }
+                    if (eventData.end && eventData.end !== eventData.start) {
+                        document.getElementById('eventEnd').value = formatDateTimeLocal(eventData.end);
+                    }
+                } else if (mode === 'edit') {
+                    modalTitle.textContent = 'Уреди Настан';
+                    deleteBtn.style.display = 'inline-block';
+                    currentEvent = eventData;
+
+                    // Populate form with event data
+                    document.getElementById('eventTitle').value = eventData.title || '';
+                    document.getElementById('eventType').value = eventData.extendedProps.event_type || 'personal';
                     document.getElementById('eventStart').value = formatDateTimeLocal(eventData.start);
-                }
-                if (eventData.end && eventData.end !== eventData.start) {
-                    document.getElementById('eventEnd').value = formatDateTimeLocal(eventData.end);
-                }
-            } else if (mode === 'edit') {
-                modalTitle.textContent = 'Уреди Настан';
-                deleteBtn.style.display = 'inline-block';
-                currentEvent = eventData;
-                
-                // Populate form with event data
-                document.getElementById('eventTitle').value = eventData.title || '';
-                document.getElementById('eventType').value = eventData.extendedProps.event_type || 'personal';
-                document.getElementById('eventStart').value = formatDateTimeLocal(eventData.start);
-                if (eventData.end) {
-                    document.getElementById('eventEnd').value = formatDateTimeLocal(eventData.end);
-                }
-                document.getElementById('eventDescription').value = eventData.extendedProps.description || '';
-            }
-            
-            modal.classList.add('active');
-        }
-
-        function closeEventModal() {
-            document.getElementById('eventModal').classList.remove('active');
-            currentEvent = null;
-        }
-
-
-
-        // Handle form submission
-        document.getElementById('eventForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = {
-                title: document.getElementById('eventTitle').value,
-                event_type: document.getElementById('eventType').value,
-                start: document.getElementById('eventStart').value,
-                end: document.getElementById('eventEnd').value || null,
-                description: document.getElementById('eventDescription').value
-            };
-            
-            // If end time is empty but we have a selection range, calculate duration
-            if (!formData.end && currentEvent === null && window.selectedRange) {
-                const start = new Date(formData.start);
-                const duration = window.selectedRange.end - window.selectedRange.start;
-                const end = new Date(start.getTime() + duration);
-                formData.end = formatDateTimeLocal(end);
-            }
-            
-            if (currentEvent) {
-                // Update existing event
-                updateEvent(currentEvent.id, formData);
-            } else {
-                // Create new event
-                createEvent(formData);
-            }
-        });
-
-        function createEvent(eventData) {
-            // Hide previous error
-            document.getElementById('eventError').style.display = 'none';
-            document.getElementById('eventError').textContent = '';
-            fetch('{% url "mindmate:api_events" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify(eventData)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(data => { throw data; });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    calendar.refetchEvents();
-                    closeEventModal();
-                } else {
-                    showEventError(data.message || 'Грешка при креирање на настан.');
-                }
-            })
-            .catch(error => {
-                let msg = error && error.message ? error.message : 'Грешка при креирање на настан.';
-                showEventError(msg);
-            });
-        }
-        function showEventError(msg) {
-            var err = document.getElementById('eventError');
-            err.textContent = msg;
-            err.style.display = 'block';
-        }
-
-        function updateEvent(eventId, eventData) {
-            fetch(`{% url "mindmate:api_events" %}${eventId}/`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify(eventData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    calendar.refetchEvents();
-                    closeEventModal();
-                } else {
-                    alert('Error updating event: ' + (data.message || 'Unknown error'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error updating event. Please try again.');
-            });
-        }
-
-        function updateEventDateTime(event) {
-            console.log('Updating event:', event.id, 'Title:', event.title);
-            const eventData = {
-                start: formatDateTimeForServer(event.start),
-                end: event.end ? formatDateTimeForServer(event.end) : null
-            };
-            console.log('Sending data:', eventData);
-            
-            fetch(`{% url "mindmate:api_events" %}${event.id}/`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify(eventData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Update response:', data);
-                if (!data.success) {
-                    alert('Error updating event: ' + (data.message || 'Unknown error'));
-                    calendar.refetchEvents(); // Revert changes
-                } else {
-                    console.log('Event updated successfully');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error updating event. Please try again.');
-                calendar.refetchEvents(); // Revert changes
-            });
-        }
-
-        function deleteEvent() {
-            if (!currentEvent) return;
-            
-            if (confirm('Дали сте сигурни дека сакате да го избришете овој настан?')) {
-                fetch(`{% url "mindmate:api_events" %}${currentEvent.id}/`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRFToken': getCSRFToken()
+                    if (eventData.end) {
+                        document.getElementById('eventEnd').value = formatDateTimeLocal(eventData.end);
                     }
+                    document.getElementById('eventDescription').value = eventData.extendedProps.description || '';
+                }
+
+                modal.classList.add('active');
+            }
+
+            function closeEventModal() {
+                document.getElementById('eventModal').classList.remove('active');
+                currentEvent = null;
+            }
+
+
+
+            // Handle form submission
+            document.getElementById('eventForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = {
+                    title: document.getElementById('eventTitle').value,
+                    event_type: document.getElementById('eventType').value,
+                    start: document.getElementById('eventStart').value,
+                    end: document.getElementById('eventEnd').value || null,
+                    description: document.getElementById('eventDescription').value
+                };
+
+                // If end time is empty but we have a selection range, calculate duration
+                if (!formData.end && currentEvent === null && window.selectedRange) {
+                    const start = new Date(formData.start);
+                    const duration = window.selectedRange.end - window.selectedRange.start;
+                    const end = new Date(start.getTime() + duration);
+                    formData.end = formatDateTimeLocal(end);
+                }
+
+                if (currentEvent) {
+                    // Update existing event
+                    updateEvent(currentEvent.id, formData);
+                } else {
+                    // Create new event
+                    createEvent(formData);
+                }
+            });
+
+            function createEvent(eventData) {
+                // Hide previous error
+                document.getElementById('eventError').style.display = 'none';
+                document.getElementById('eventError').textContent = '';
+                fetch('{% url "mindmate:api_events" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify(eventData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => { throw data; });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        calendar.refetchEvents();
+                        closeEventModal();
+                    } else {
+                        showEventError(data.message || 'Грешка при креирање на настан.');
+                    }
+                })
+                .catch(error => {
+                    let msg = error && error.message ? error.message : 'Грешка при креирање на настан.';
+                    showEventError(msg);
+                });
+            }
+            function showEventError(msg) {
+                var err = document.getElementById('eventError');
+                err.textContent = msg;
+                err.style.display = 'block';
+            }
+
+            function updateEvent(eventId, eventData) {
+                fetch(`{% url "mindmate:api_events" %}${eventId}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify(eventData)
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -1318,746 +1263,804 @@
                         calendar.refetchEvents();
                         closeEventModal();
                     } else {
-                        alert('Грешка при бришење на настан: ' + (data.message || 'Непозната грешка'));
+                        alert('Error updating event: ' + (data.message || 'Unknown error'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error deleting event. Please try again.');
+                    alert('Error updating event. Please try again.');
                 });
             }
-        }
 
-        // Sidebar toggle function
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-        }
+            function updateEventDateTime(event) {
+                console.log('Updating event:', event.id, 'Title:', event.title);
+                const eventData = {
+                    start: formatDateTimeForServer(event.start),
+                    end: event.end ? formatDateTimeForServer(event.end) : null
+                };
+                console.log('Sending data:', eventData);
 
-        // Mobile sidebar toggle
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
-                document.getElementById('sidebar').classList.remove('active');
+                fetch(`{% url "mindmate:api_events" %}${event.id}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify(eventData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Update response:', data);
+                    if (!data.success) {
+                        alert('Error updating event: ' + (data.message || 'Unknown error'));
+                        calendar.refetchEvents(); // Revert changes
+                    } else {
+                        console.log('Event updated successfully');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating event. Please try again.');
+                    calendar.refetchEvents(); // Revert changes
+                });
             }
-        });
 
-        // Time Agent Chat Functionality
-        let chatMessages = [];
-        let isTyping = false;
+            function deleteEvent() {
+                if (!currentEvent) return;
 
-        // Auto-resize textarea
-        document.getElementById('chatInput').addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
+                if (confirm('Дали сте сигурни дека сакате да го избришете овој настан?')) {
+                    fetch(`{% url "mindmate:api_events" %}${currentEvent.id}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': getCSRFToken()
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            calendar.refetchEvents();
+                            closeEventModal();
+                        } else {
+                            alert('Грешка при бришење на настан: ' + (data.message || 'Непозната грешка'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error deleting event. Please try again.');
+                    });
+                }
+            }
 
-        // Send message on Enter (but not Shift+Enter)
-        document.getElementById('chatInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
+            // Sidebar toggle function
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('collapsed');
+            }
+
+            // Mobile sidebar toggle
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+
+            // Time Agent Chat Functionality
+            let chatMessages = [];
+            let isTyping = false;
+
+            // Auto-resize textarea
+            document.getElementById('chatInput').addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Send message on Enter (but not Shift+Enter)
+            document.getElementById('chatInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+
+                if (!message || isTyping) return;
+
+                // Add user message
+                addMessage(message, 'user');
+                input.value = '';
+                input.style.height = 'auto';
+
+                // Show typing indicator
+                showTyping();
+
+                // Use conversational AI to process message
+                sendToConversationalAgent(message);
+            }
+
+            function sendToConversationalAgent(message) {
+                // Send message to intelligent conversational agent
+                fetch('/api/time-agent/chat/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        conversation_id: getConversationId()
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    hideTyping();
+
+                    if (data.success) {
+                        if (data.type === 'time_estimation') {
+                            // Handle time estimation response
+                            handleTimeEstimationResponse(data);
+                        } else if (data.type === 'slot_finding') {
+                            // Handle slot finding response
+                            handleSlotFindingResponse(data);
+                        } else {
+                            // Handle general conversation response
+                            handleConversationResponse(data);
+                        }
+                    } else {
+                        addMessage('Извинете, се случи грешка при обработка на вашата порака. Обидете се повторно.', 'agent');
+                    }
+                })
+                .catch(error => {
+                    hideTyping();
+                    console.error('Error:', error);
+                    addMessage('Се случи грешка при комуникацијата со серверот. Обидете се повторно.', 'agent');
+                });
+            }
+
+            function getConversationId() {
+                // Get or create conversation ID for session continuity
+                if (!window.conversationId) {
+                    window.conversationId = 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                }
+                return window.conversationId;
+            }
+
+            function handleTimeEstimationResponse(data) {
+                // Show conversational response first
+                if (data.conversation_response) {
+                    addMessage(data.conversation_response, 'agent');
+                }
+
+                // Then show estimation data in the existing format
+                const estimationData = data.estimation_data;
+                const responseMessage = generateTimeEstimationResponse(estimationData);
+                addMessage(responseMessage, 'agent', estimationData);
+
+                if (data.follow_up_questions && data.follow_up_questions.length > 0) {
+                    setTimeout(() => {
+                        addMessage("💡 Дополнителни прашања:\n" + data.follow_up_questions.map(q => "• " + q).join("\n"), 'agent');
+                    }, 1000);
+                }
+            }
+
+            function handleSlotFindingResponse(data) {
+                if (data.conversation_response) {
+                    addMessage(data.conversation_response, 'agent');
+                }
+
+                const slotsData = data.slots_data;
+                const compatibleData = {
+                    suggested_slots: slotsData.slots || [],
+                    request_duration: slotsData.request_duration || 2.0
+                };
+                const responseMessage = generateSlotSuggestionResponse(compatibleData);
+                addMessage(responseMessage, 'agent', compatibleData);
+
+                if (data.follow_up_questions && data.follow_up_questions.length > 0) {
+                    setTimeout(() => {
+                        addMessage("💡 " + data.follow_up_questions.join(" "), 'agent');
+                    }, 1000);
+                }
+            }
+
+            function handleConversationResponse(data) {
+                addMessage(data.response, 'agent');
+
+                if (data.suggestions && data.suggestions.length > 0) {
+                    setTimeout(() => {
+                        const suggestionsText = "💡 Совети:\n" + data.suggestions.map(s => "• " + s).join("\n");
+                        addMessage(suggestionsText, 'agent');
+                    }, 500);
+                }
+
+                if (data.follow_up_questions && data.follow_up_questions.length > 0) {
+                    setTimeout(() => {
+                        const buttonsHtml = data.follow_up_questions.map(q =>
+                            `<button class="quick-action-btn" onclick="sendQuickMessage('${q}')">${q}</button>`
+                        ).join(' ');
+
+                        addMessage(`🤔 Можете да прашате:\n<div class="quick-actions">${buttonsHtml}</div>`, 'agent');
+                    }, 1000);
+                }
+            }
+
+            function generateTimeEstimationResponse(estimationData) {
+                const timeText = estimationData.time_text;
+                const confidence = estimationData.confidence;
+                const difficulty = estimationData.difficulty;
+
+                let response = `За вашата задача проценувам дека ќе ви требаат околу **${timeText}**.\\n\\n`;
+                response += `Проценката е направена врз основа на сложеноста на задачата и вашите претходни перформанси.`;
+
+                return response;
+            }
+
+            function isSlotFindingRequest(message) {
+                // This is now just a fallback - the AI will handle intent detection
+                return false;
+            }
+
+            function sendQuickMessage(message) {
+                document.getElementById('chatInput').value = message;
                 sendMessage();
             }
-        });
 
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            
-            if (!message || isTyping) return;
-            
-            // Add user message
-            addMessage(message, 'user');
-            input.value = '';
-            input.style.height = 'auto';
-            
-            // Show typing indicator
-            showTyping();
-            
-            // Use conversational AI to process message
-            sendToConversationalAgent(message);
-        }
+            function addMessage(content, sender, data = null) {
+                const messagesContainer = document.getElementById('chatMessages');
 
-        function sendToConversationalAgent(message) {
-            // Send message to intelligent conversational agent
-            fetch('/api/time-agent/chat/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({
-                    message: message,
-                    conversation_id: getConversationId()
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                hideTyping();
-                
-                if (data.success) {
-                    if (data.type === 'time_estimation') {
-                        // Handle time estimation response
-                        handleTimeEstimationResponse(data);
-                    } else if (data.type === 'slot_finding') {
-                        // Handle slot finding response
-                        handleSlotFindingResponse(data);
+                const welcomeMsg = messagesContainer.querySelector('.welcome-message');
+                if (welcomeMsg) {
+                    welcomeMsg.remove();
+                }
+
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('mk-MK', { hour: '2-digit', minute: '2-digit' });
+
+                const avatarInitial = sender === 'user' ? '{{ student.full_name|slice:":1"|upper }}' : '🤖';
+
+                let messageContent = content;
+                if (sender === 'agent' && data) {
+                    if (data.estimated_hours) {
+                        messageContent += generateEstimationResult(data);
+                    } else if (data.suggested_slots) {
+                        messageContent += generateSlotActionsResult(data);
+                    }
+                }
+
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">${avatarInitial}</div>
+                    <div>
+                        <div class="message-content">${messageContent}</div>
+                        <div class="message-time">${timeStr}</div>
+                    </div>
+                `;
+
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                chatMessages.push({ content, sender, timestamp: now, data });
+            }
+
+            function generateEstimationResult(data) {
+                const formattedTime = formatTime(data.estimated_hours);
+                const estimationSource = getEstimationSource(data);
+
+                return `
+                    <div class="estimation-result">
+                        <h4>⏱️ Временска Проценка</h4>
+                        <div class="estimation-details">
+                            <div class="estimation-item">
+                                <strong>Време:</strong> ${formattedTime}
+                            </div>
+                            <div class="estimation-item">
+                                <strong>Сигурност:</strong> ${Math.round(data.confidence_level * 100)}%
+                            </div>
+                            <div class="estimation-item">
+                                <strong>Тежина:</strong> ${translateDifficulty(data.difficulty_assessment)}
+                            </div>
+                            <div class="estimation-item">
+                                <strong>Извор:</strong> ${estimationSource}
+                            </div>
+                        </div>
+                        <div style="margin: 12px 0; padding: 8px; background: #f8f9fa; border-radius: 6px; font-size: 13px;">
+                            <strong>💡 Препорака:</strong> ${translateRecommendation(data.recommended_approach)}
+                        </div>
+                        ${data.time_breakdown ? `
+                            <div style="margin-top: 12px; font-size: 13px;">
+                                <strong>Распределба на време:</strong><br>
+                                📚 Подготовка: ${formatTime(data.time_breakdown.preparation || 0)} |
+                                ⚡ Работа: ${formatTime(data.time_breakdown.main_work || data.time_breakdown.active_work || 0)} |
+                                📝 Ревизија: ${formatTime(data.time_breakdown.review_consolidation || data.time_breakdown.review || 0)}
+                            </div>
+                        ` : ''}
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" onclick="addToCalendar('${data.task_description || ''}', ${data.estimated_hours})">
+                                📅 Додај во календар
+                            </button>
+                            <button class="quick-action-btn" onclick="findSlotsForEstimate('${data.task_description || ''}', ${data.estimated_hours}, '${data.difficulty_assessment || 'moderate'}')">
+                                🔍 Најди термини
+                            </button>
+                            <button class="quick-action-btn" onclick="askForMoreDetails()">
+                                💡 Повеќе детали
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function translateDifficulty(difficulty) {
+                const translations = {
+                    'easy': 'Лесно',
+                    'moderate': 'Средно',
+                    'challenging': 'Тешко',
+                    'very_challenging': 'Многу тешко'
+                };
+                return translations[difficulty] || 'Средно';
+            }
+
+            function formatTime(hours) {
+                if (hours >= 1) {
+                    const wholeHours = Math.floor(hours);
+                    const remainingMinutes = Math.round((hours - wholeHours) * 60);
+
+                    if (remainingMinutes === 0) {
+                        return `${wholeHours} ${wholeHours === 1 ? 'час' : 'часови'}`;
+                    } else if (wholeHours === 0) {
+                        return `${remainingMinutes} минути`;
                     } else {
-                        // Handle general conversation response
-                        handleConversationResponse(data);
+                        return `${wholeHours}ч ${remainingMinutes}мин`;
                     }
                 } else {
-                    addMessage('Извинете, се случи грешка при обработка на вашата порака. Обидете се повторно.', 'agent');
-                }
-            })
-            .catch(error => {
-                hideTyping();
-                console.error('Error:', error);
-                addMessage('Се случи грешка при комуникацијата со серверот. Обидете се повторно.', 'agent');
-            });
-        }
-        
-        function getConversationId() {
-            // Get or create conversation ID for session continuity
-            if (!window.conversationId) {
-                window.conversationId = 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            }
-            return window.conversationId;
-        }
-        
-        function handleTimeEstimationResponse(data) {
-            // Show conversational response first
-            if (data.conversation_response) {
-                addMessage(data.conversation_response, 'agent');
-            }
-            
-            // Then show estimation data in the existing format
-            const estimationData = data.estimation_data;
-            const responseMessage = generateTimeEstimationResponse(estimationData);
-            addMessage(responseMessage, 'agent', estimationData);
-            
-            if (data.follow_up_questions && data.follow_up_questions.length > 0) {
-                setTimeout(() => {
-                    addMessage("💡 Дополнителни прашања:\n" + data.follow_up_questions.map(q => "• " + q).join("\n"), 'agent');
-                }, 1000);
-            }
-        }
-        
-        function handleSlotFindingResponse(data) {
-            if (data.conversation_response) {
-                addMessage(data.conversation_response, 'agent');
-            }
-            
-            const slotsData = data.slots_data;
-            const compatibleData = {
-                suggested_slots: slotsData.slots || [],
-                request_duration: slotsData.request_duration || 2.0
-            };
-            const responseMessage = generateSlotSuggestionResponse(compatibleData);
-            addMessage(responseMessage, 'agent', compatibleData);
-            
-            if (data.follow_up_questions && data.follow_up_questions.length > 0) {
-                setTimeout(() => {
-                    addMessage("💡 " + data.follow_up_questions.join(" "), 'agent');
-                }, 1000);
-            }
-        }
-        
-        function handleConversationResponse(data) {
-            addMessage(data.response, 'agent');
-            
-            if (data.suggestions && data.suggestions.length > 0) {
-                setTimeout(() => {
-                    const suggestionsText = "💡 Совети:\n" + data.suggestions.map(s => "• " + s).join("\n");
-                    addMessage(suggestionsText, 'agent');
-                }, 500);
-            }
-            
-            if (data.follow_up_questions && data.follow_up_questions.length > 0) {
-                setTimeout(() => {
-                    const buttonsHtml = data.follow_up_questions.map(q => 
-                        `<button class="quick-action-btn" onclick="sendQuickMessage('${q}')">${q}</button>`
-                    ).join(' ');
-                    
-                    addMessage(`🤔 Можете да прашате:\n<div class="quick-actions">${buttonsHtml}</div>`, 'agent');
-                }, 1000);
-            }
-        }
-        
-        function generateTimeEstimationResponse(estimationData) {
-            const timeText = estimationData.time_text;
-            const confidence = estimationData.confidence;
-            const difficulty = estimationData.difficulty;
-            
-            let response = `За вашата задача проценувам дека ќе ви требаат околу **${timeText}**.\\n\\n`;
-            response += `Проценката е направена врз основа на сложеноста на задачата и вашите претходни перформанси.`;
-            
-            return response;
-        }
-        
-        function isSlotFindingRequest(message) {
-            // This is now just a fallback - the AI will handle intent detection
-            return false;
-        }
-
-        function sendQuickMessage(message) {
-            document.getElementById('chatInput').value = message;
-            sendMessage();
-        }
-
-        function addMessage(content, sender, data = null) {
-            const messagesContainer = document.getElementById('chatMessages');
-            
-            const welcomeMsg = messagesContainer.querySelector('.welcome-message');
-            if (welcomeMsg) {
-                welcomeMsg.remove();
-            }
-            
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
-            
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('mk-MK', { hour: '2-digit', minute: '2-digit' });
-            
-            const avatarInitial = sender === 'user' ? '{{ student.full_name|slice:":1"|upper }}' : '🤖';
-            
-            let messageContent = content;
-            if (sender === 'agent' && data) {
-                if (data.estimated_hours) {
-                    messageContent += generateEstimationResult(data);
-                } else if (data.suggested_slots) {
-                    messageContent += generateSlotActionsResult(data);
+                    const minutes = Math.round(hours * 60);
+                    return `${minutes} минути`;
                 }
             }
-            
-            messageDiv.innerHTML = `
-                <div class="message-avatar">${avatarInitial}</div>
-                <div>
-                    <div class="message-content">${messageContent}</div>
-                    <div class="message-time">${timeStr}</div>
-                </div>
-            `;
-            
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            chatMessages.push({ content, sender, timestamp: now, data });
-        }
 
-        function generateEstimationResult(data) {
-            const formattedTime = formatTime(data.estimated_hours);
-            const estimationSource = getEstimationSource(data);
-            
-            return `
-                <div class="estimation-result">
-                    <h4>⏱️ Временска Проценка</h4>
-                    <div class="estimation-details">
-                        <div class="estimation-item">
-                            <strong>Време:</strong> ${formattedTime}
-                        </div>
-                        <div class="estimation-item">
-                            <strong>Сигурност:</strong> ${Math.round(data.confidence_level * 100)}%
-                        </div>
-                        <div class="estimation-item">
-                            <strong>Тежина:</strong> ${translateDifficulty(data.difficulty_assessment)}
-                        </div>
-                        <div class="estimation-item">
-                            <strong>Извор:</strong> ${estimationSource}
-                        </div>
-                    </div>
-                    <div style="margin: 12px 0; padding: 8px; background: #f8f9fa; border-radius: 6px; font-size: 13px;">
-                        <strong>💡 Препорака:</strong> ${translateRecommendation(data.recommended_approach)}
-                    </div>
-                    ${data.time_breakdown ? `
-                        <div style="margin-top: 12px; font-size: 13px;">
-                            <strong>Распределба на време:</strong><br>
-                            📚 Подготовка: ${formatTime(data.time_breakdown.preparation || 0)} | 
-                            ⚡ Работа: ${formatTime(data.time_breakdown.main_work || data.time_breakdown.active_work || 0)} | 
-                            📝 Ревизија: ${formatTime(data.time_breakdown.review_consolidation || data.time_breakdown.review || 0)}
-                        </div>
-                    ` : ''}
-                    <div class="quick-actions">
-                        <button class="quick-action-btn" onclick="addToCalendar('${data.task_description || ''}', ${data.estimated_hours})">
-                            📅 Додај во календар
-                        </button>
-                        <button class="quick-action-btn" onclick="findSlotsForEstimate('${data.task_description || ''}', ${data.estimated_hours}, '${data.difficulty_assessment || 'moderate'}')">
-                            🔍 Најди термини
-                        </button>
-                        <button class="quick-action-btn" onclick="askForMoreDetails()">
-                            💡 Повеќе детали
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
+            function translateRecommendation(recommendation) {
+                if (!recommendation) return 'Користете структуриран пристап со редовни паузи';
 
-        function translateDifficulty(difficulty) {
-            const translations = {
-                'easy': 'Лесно',
-                'moderate': 'Средно',
-                'challenging': 'Тешко',
-                'very_challenging': 'Многу тешко'
-            };
-            return translations[difficulty] || 'Средно';
-        }
+                // Common English phrases to Macedonian
+                const translations = {
+                    'Use structured study plan with regular breaks': 'Користете структуриран план за учење со редовни паузи',
+                    'Use a structured approach with regular breaks': 'Користете структуриран пристап со редовни паузи',
+                    'Break the task into smaller chunks': 'Поделете ја задачата на помали делови',
+                    'Focus on understanding concepts': 'Фокусирајте се на разбирање на концептите',
+                    'Use active recall and practice problems': 'Користете активно присетување и вежби',
+                    'Create mind maps and visual summaries': 'Создадете ментални мапи и визуелни резимеа',
+                    'Use discussion-based learning': 'Користете учење базирано на дискусии',
+                    'Follow structured study plan': 'Следете структуриран план за учење'
+                };
 
-        function formatTime(hours) {
-            if (hours >= 1) {
-                const wholeHours = Math.floor(hours);
-                const remainingMinutes = Math.round((hours - wholeHours) * 60);
-                
-                if (remainingMinutes === 0) {
-                    return `${wholeHours} ${wholeHours === 1 ? 'час' : 'часови'}`;
-                } else if (wholeHours === 0) {
-                    return `${remainingMinutes} минути`;
+                // Check for exact matches first
+                if (translations[recommendation]) {
+                    return translations[recommendation];
+                }
+
+                // If it's already in Macedonian or unknown, return as is
+                if (recommendation.includes('Користете') || recommendation.includes('користете')) {
+                    return recommendation;
+                }
+
+                // Default fallback
+                return 'Користете структуриран пристап со редовни паузи';
+            }
+
+            function getEstimationSource(data) {
+                // Determine the source of estimation based on confidence and factors
+                const confidence = data.confidence_level || 0;
+                const factors = data.factors_considered || [];
+
+                // Check if it mentions historical data
+                const hasHistory = factors.some(factor =>
+                    factor.includes('similar past tasks') ||
+                    factor.includes('Historical') ||
+                    factor.includes('Based on') ||
+                    factor.includes('past tasks') ||
+                    factor.includes('Лична историја')
+                );
+
+                if (hasHistory && confidence > 0.7) {
+                    return '📊 Лична историја + AI анализа';
+                } else if (hasHistory) {
+                    return '📊 Лична историја';
+                } else if (confidence > 0.6) {
+                    return '🤖 AI проценка + општи правила';
+                } else if (data.estimation_method === 'hybrid_ai') {
+                    return '⚡ Прв пат - AI проценка';
                 } else {
-                    return `${wholeHours}ч ${remainingMinutes}мин`;
+                    return '📚 Прв пат - општи правила';
                 }
-            } else {
-                const minutes = Math.round(hours * 60);
-                return `${minutes} минути`;
             }
-        }
 
-        function translateRecommendation(recommendation) {
-            if (!recommendation) return 'Користете структуриран пристап со редовни паузи';
-            
-            // Common English phrases to Macedonian
-            const translations = {
-                'Use structured study plan with regular breaks': 'Користете структуриран план за учење со редовни паузи',
-                'Use a structured approach with regular breaks': 'Користете структуриран пристап со редовни паузи',
-                'Break the task into smaller chunks': 'Поделете ја задачата на помали делови',
-                'Focus on understanding concepts': 'Фокусирајте се на разбирање на концептите',
-                'Use active recall and practice problems': 'Користете активно присетување и вежби',
-                'Create mind maps and visual summaries': 'Создадете ментални мапи и визуелни резимеа',
-                'Use discussion-based learning': 'Користете учење базирано на дискусии',
-                'Follow structured study plan': 'Следете структуриран план за учење'
-            };
-            
-            // Check for exact matches first
-            if (translations[recommendation]) {
-                return translations[recommendation];
+            function cleanReasoningText(reasoning) {
+                if (!reasoning) return 'Проценката е базирана на типот на задача и општи правила за учење.';
+
+                // Remove mixed language artifacts
+                let cleaned = reasoning
+                    .replace(/For this study in\s*,?\s*/gi, '')
+                    .replace(/I estimate \d+\.?\d* hours based on:\s*/gi, 'Проценката е базирана на: ')
+                    .replace(/\d+\.\s*/g, '• ')
+                    .replace(/Task type:\s*/gi, '• Тип на задача: ')
+                    .replace(/Study pace preference:\s*/gi, '• Темпо на учење: ')
+                    .replace(/Subject:\s*/gi, '• Предмет: ')
+                    .replace(/Difficulty adjustment:\s*/gi, '• Прилагодување за тежина: ')
+                    .replace(/moderate/gi, 'средно')
+                    .replace(/easy/gi, 'лесно')
+                    .replace(/hard/gi, 'тешко')
+                    .replace(/study/gi, 'учење')
+                    .trim();
+
+                // If still contains English artifacts, provide clean Macedonian response
+                if (cleaned.match(/[a-zA-Z]{4,}/)) {
+                    return 'Проценката е базирана на типот на задача, вашите преференци за учење и општи правила за временско планирање.';
+                }
+
+                return cleaned || 'Проценката е базирана на типот на задача и општи правила за учење.';
             }
-            
-            // If it's already in Macedonian or unknown, return as is
-            if (recommendation.includes('Користете') || recommendation.includes('користете')) {
-                return recommendation;
+
+            function showTyping() {
+                isTyping = true;
+                document.getElementById('typingIndicator').style.display = 'block';
+                document.getElementById('chatSendBtn').disabled = true;
             }
-            
-            // Default fallback
-            return 'Користете структуриран пристап со редовни паузи';
-        }
 
-        function getEstimationSource(data) {
-            // Determine the source of estimation based on confidence and factors
-            const confidence = data.confidence_level || 0;
-            const factors = data.factors_considered || [];
-            
-            // Check if it mentions historical data
-            const hasHistory = factors.some(factor => 
-                factor.includes('similar past tasks') || 
-                factor.includes('Historical') ||
-                factor.includes('Based on') ||
-                factor.includes('past tasks') ||
-                factor.includes('Лична историја')
-            );
-            
-            if (hasHistory && confidence > 0.7) {
-                return '📊 Лична историја + AI анализа';
-            } else if (hasHistory) {
-                return '📊 Лична историја';
-            } else if (confidence > 0.6) {
-                return '🤖 AI проценка + општи правила';
-            } else if (data.estimation_method === 'hybrid_ai') {
-                return '⚡ Прв пат - AI проценка';
-            } else {
-                return '📚 Прв пат - општи правила';
+            function hideTyping() {
+                isTyping = false;
+                document.getElementById('typingIndicator').style.display = 'none';
+                document.getElementById('chatSendBtn').disabled = false;
             }
-        }
 
-        function cleanReasoningText(reasoning) {
-            if (!reasoning) return 'Проценката е базирана на типот на задача и општи правила за учење.';
-            
-            // Remove mixed language artifacts
-            let cleaned = reasoning
-                .replace(/For this study in\s*,?\s*/gi, '')
-                .replace(/I estimate \d+\.?\d* hours based on:\s*/gi, 'Проценката е базирана на: ')
-                .replace(/\d+\.\s*/g, '• ')
-                .replace(/Task type:\s*/gi, '• Тип на задача: ')
-                .replace(/Study pace preference:\s*/gi, '• Темпо на учење: ')
-                .replace(/Subject:\s*/gi, '• Предмет: ')
-                .replace(/Difficulty adjustment:\s*/gi, '• Прилагодување за тежина: ')
-                .replace(/moderate/gi, 'средно')
-                .replace(/easy/gi, 'лесно')
-                .replace(/hard/gi, 'тешко')
-                .replace(/study/gi, 'учење')
-                .trim();
-            
-            // If still contains English artifacts, provide clean Macedonian response
-            if (cleaned.match(/[a-zA-Z]{4,}/)) {
-                return 'Проценката е базирана на типот на задача, вашите преференци за учење и општи правила за временско планирање.';
-            }
-            
-            return cleaned || 'Проценката е базирана на типот на задача и општи правила за учење.';
-        }
-
-        function showTyping() {
-            isTyping = true;
-            document.getElementById('typingIndicator').style.display = 'block';
-            document.getElementById('chatSendBtn').disabled = true;
-        }
-
-        function hideTyping() {
-            isTyping = false;
-            document.getElementById('typingIndicator').style.display = 'none';
-            document.getElementById('chatSendBtn').disabled = false;
-        }
-
-        function requestTimeEstimation(taskDescription) {
-            fetch('/api/time-agent/estimate/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({
-                    task_description: taskDescription,
-                    difficulty: 'moderate'
+            function requestTimeEstimation(taskDescription) {
+                fetch('/api/time-agent/estimate/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        task_description: taskDescription,
+                        difficulty: 'moderate'
+                    })
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                hideTyping();
-                
-                if (data.success) {
-                    const formattedTime = formatTime(data.estimated_hours);
-                    const cleanReasoning = cleanReasoningText(data.reasoning);
-                    const responseMessage = `За задачата "${taskDescription}" проценувам дека ќе ви требаат околу **${formattedTime}**.\\n\\n${cleanReasoning}`;
-                    addMessage(responseMessage, 'agent', data);
-                } else {
-                    addMessage('Извинете, се случи грешка при проценката. Обидете се повторно.', 'agent');
-                }
-            })
-            .catch(error => {
-                hideTyping();
-                console.error('Error:', error);
-                
-                // Fallback response with basic estimation
-                const fallbackEstimate = generateFallbackEstimate(taskDescription);
-                addMessage(fallbackEstimate.message, 'agent', fallbackEstimate.data);
-            });
-        }
+                .then(response => response.json())
+                .then(data => {
+                    hideTyping();
 
-        function generateFallbackEstimate(taskDescription) {
-            let estimatedHours = 2.0; // Default
-            let difficulty = 'moderate';
-            
-            const task = taskDescription.toLowerCase();
-            
-            // Simple keyword-based estimation
-            if (task.includes('испит') || task.includes('exam')) {
-                estimatedHours = 3.0;
-                difficulty = 'challenging';
-            } else if (task.includes('читање') || task.includes('read')) {
-                estimatedHours = 1.5;
-                difficulty = 'easy';
-            } else if (task.includes('проект') || task.includes('project')) {
-                estimatedHours = 5.0;
-                difficulty = 'very_challenging';
-            } else if (task.includes('домашна') || task.includes('homework')) {
-                estimatedHours = 2.5;
-                difficulty = 'moderate';
-            }
-            
-            const formattedTime = formatTime(estimatedHours);
-            
-            return {
-                message: `За задачата "${taskDescription}" проценувам дека ќе ви требаат околу **${formattedTime}**.\\n\\nОва е базична проценка врз основа на типот на задача. За попрецизни проценки, системот ќе учи од вашите претходни активности.`,
-                data: {
-                    task_description: taskDescription,
-                    estimated_hours: estimatedHours,
-                    confidence_level: 0.6,
-                    difficulty_assessment: difficulty,
-                    reasoning: 'Базична проценка врз основа на тип на задача и општи правила за учење',
-                    recommended_approach: 'Користете структуриран пристап со редовни паузи',
-                    factors_considered: ['Прв пат - општи правила', 'Тип на задача', 'Стандардни временски рамки'],
-                    time_breakdown: {
-                        preparation: Math.round((0.2 * estimatedHours) * 100) / 100,
-                        main_work: Math.round((0.7 * estimatedHours) * 100) / 100,
-                        review: Math.round((0.1 * estimatedHours) * 100) / 100
+                    if (data.success) {
+                        const formattedTime = formatTime(data.estimated_hours);
+                        const cleanReasoning = cleanReasoningText(data.reasoning);
+                        const responseMessage = `За задачата "${taskDescription}" проценувам дека ќе ви требаат околу **${formattedTime}**.\\n\\n${cleanReasoning}`;
+                        addMessage(responseMessage, 'agent', data);
+                    } else {
+                        addMessage('Извинете, се случи грешка при проценката. Обидете се повторно.', 'agent');
                     }
-                }
-            };
-        }
+                })
+                .catch(error => {
+                    hideTyping();
+                    console.error('Error:', error);
 
-        function requestSlotSuggestions(message) {
-            // Parse the message to extract task details
-            const taskDetails = parseSlotRequest(message);
-            
-            fetch('/api/time-agent/suggest-slots/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify(taskDetails)
-            })
-            .then(response => response.json())
-            .then(data => {
-                hideTyping();
-                
-                if (data.success) {
-                    const responseMessage = generateSlotSuggestionResponse(data);
-                    addMessage(responseMessage, 'agent', data);
-                } else {
-                    addMessage('Извинете, не можев да најдам достапни термини. Обидете се со помал временски период или проверете го календарот.', 'agent');
-                }
-            })
-            .catch(error => {
-                hideTyping();
-                console.error('Error:', error);
-                addMessage('Се случи грешка при барањето термини. Обидете се повторно.', 'agent');
-            });
-        }
-
-        function parseSlotRequest(message) {
-            const messageLC = message.toLowerCase();
-            
-            // Extract duration (default 2 hours)
-            let duration = 2.0;
-            const durationMatch = messageLC.match(/(\d+(?:\.\d+)?)\s*(?:час|hour|h)/);
-            if (durationMatch) {
-                duration = parseFloat(durationMatch[1]);
-            }
-            
-            // Extract subject
-            let subject = null;
-            const subjects = [
-                'математика', 'математике', 'math', 'mathematics',
-                'физика', 'physics', 'биологија', 'biology',
-                'хемија', 'chemistry', 'програмирање', 'programming',
-                'историја', 'history', 'македонски', 'macedonian',
-                'англиски', 'english'
-            ];
-            
-            for (const sub of subjects) {
-                if (messageLC.includes(sub)) {
-                    subject = sub;
-                    break;
-                }
-            }
-            
-            // Extract difficulty
-            let difficulty = 'moderate';
-            if (messageLC.includes('тешк') || messageLC.includes('сложен') || messageLC.includes('hard')) {
-                difficulty = 'hard';
-            } else if (messageLC.includes('лесн') || messageLC.includes('easy')) {
-                difficulty = 'easy';
-            }
-            
-            // Extract task type
-            let taskType = 'study';
-            if (messageLC.includes('испит') || messageLC.includes('exam')) {
-                taskType = 'exam';
-                difficulty = 'hard'; // Exams are typically harder
-            } else if (messageLC.includes('домашна') || messageLC.includes('homework')) {
-                taskType = 'homework';
-            } else if (messageLC.includes('читање') || messageLC.includes('read')) {
-                taskType = 'reading';
-            } else if (messageLC.includes('проект') || messageLC.includes('project')) {
-                taskType = 'project';
-            }
-            
-            // Extract preferred times
-            let preferredTimes = [];
-            if (messageLC.includes('утро') || messageLC.includes('morning')) {
-                preferredTimes.push('morning');
-            }
-            if (messageLC.includes('попладне') || messageLC.includes('afternoon')) {
-                preferredTimes.push('afternoon');
-            }
-            if (messageLC.includes('вечер') || messageLC.includes('evening')) {
-                preferredTimes.push('evening');
-            }
-            
-            return {
-                duration_hours: duration,
-                subject: subject,
-                difficulty: difficulty,
-                task_type: taskType,
-                preferred_times: preferredTimes.length > 0 ? preferredTimes : null,
-                allow_splitting: duration > 4.0 // Allow splitting for long sessions
-            };
-        }
-
-        function generateSlotSuggestionResponse(data) {
-            if (!data.suggested_slots || data.suggested_slots.length === 0) {
-                return 'Не пронајдов достапни термини за бараното време. Обидете се со пократко период или променете ги преференците.';
-            }
-            
-            let response = `🗓️ **Пронајдов ${data.suggested_slots.length} одлични термини за вашата задача:**\\n\\n`;
-            
-            data.suggested_slots.forEach((slot, index) => {
-                const quality = slot.quality_score >= 0.8 ? '🌟' : slot.quality_score >= 0.6 ? '⭐' : '✨';
-                const splitInfo = slot.is_split_session ? ' (сесија во серија)' : '';
-                
-                response += `${quality} **Термин ${index + 1}${splitInfo}:**\\n`;
-                response += `📅 ${slot.start_time_formatted}\\n`;
-                response += `⏱️ Времетраење: ${slot.duration_formatted}\\n`;
-                response += `💯 Квалитет: ${Math.round(slot.quality_score * 100)}%\\n`;
-                
-                if (slot.reasons && slot.reasons.length > 0) {
-                    response += `💡 ${slot.reasons[0]}\\n`;
-                }
-                response += '\\n';
-            });
-            
-            response += data.summary_message + '\\n\\n';
-            
-            if (data.tips && data.tips.length > 0) {
-                response += '**💡 Савети:**\\n';
-                data.tips.slice(0, 2).forEach(tip => {
-                    response += `• ${tip}\\n`;
+                    // Fallback response with basic estimation
+                    const fallbackEstimate = generateFallbackEstimate(taskDescription);
+                    addMessage(fallbackEstimate.message, 'agent', fallbackEstimate.data);
                 });
             }
-            
-            return response;
-        }
 
-        function addSlotToCalendar(slotData) {
-            const startTime = new Date(slotData.start_time);
-            const endTime = new Date(slotData.end_time);
-            
-            // Open event modal with pre-filled data
-            openEventModal('create', {
-                start: startTime,
-                end: endTime
-            });
-            
-            // Pre-fill the title
-            setTimeout(() => {
-                const title = slotData.task_description || 'Студиска сесија';
-                document.getElementById('eventTitle').value = title;
-                document.getElementById('eventDescription').value = `Time Agent препорака\\nКвалитет: ${Math.round(slotData.quality_score * 100)}%\\nВреметраење: ${slotData.duration_formatted}`;
-                
-                // Set appropriate event type based on task
-                const taskType = slotData.task_type || 'study';
-                const eventTypeMapping = {
-                    'exam': 'study_session',
-                    'homework': 'homework_deadline', 
-                    'project': 'study_session',
-                    'reading': 'study_session',
-                    'study': 'study_session'
+            function generateFallbackEstimate(taskDescription) {
+                let estimatedHours = 2.0; // Default
+                let difficulty = 'moderate';
+
+                const task = taskDescription.toLowerCase();
+
+                // Simple keyword-based estimation
+                if (task.includes('испит') || task.includes('exam')) {
+                    estimatedHours = 3.0;
+                    difficulty = 'challenging';
+                } else if (task.includes('читање') || task.includes('read')) {
+                    estimatedHours = 1.5;
+                    difficulty = 'easy';
+                } else if (task.includes('проект') || task.includes('project')) {
+                    estimatedHours = 5.0;
+                    difficulty = 'very_challenging';
+                } else if (task.includes('домашна') || task.includes('homework')) {
+                    estimatedHours = 2.5;
+                    difficulty = 'moderate';
+                }
+
+                const formattedTime = formatTime(estimatedHours);
+
+                return {
+                    message: `За задачата "${taskDescription}" проценувам дека ќе ви требаат околу **${formattedTime}**.\\n\\nОва е базична проценка врз основа на типот на задача. За попрецизни проценки, системот ќе учи од вашите претходни активности.`,
+                    data: {
+                        task_description: taskDescription,
+                        estimated_hours: estimatedHours,
+                        confidence_level: 0.6,
+                        difficulty_assessment: difficulty,
+                        reasoning: 'Базична проценка врз основа на тип на задача и општи правила за учење',
+                        recommended_approach: 'Користете структуриран пристап со редовни паузи',
+                        factors_considered: ['Прв пат - општи правила', 'Тип на задача', 'Стандардни временски рамки'],
+                        time_breakdown: {
+                            preparation: Math.round((0.2 * estimatedHours) * 100) / 100,
+                            main_work: Math.round((0.7 * estimatedHours) * 100) / 100,
+                            review: Math.round((0.1 * estimatedHours) * 100) / 100
+                        }
+                    }
                 };
-                document.getElementById('eventType').value = eventTypeMapping[taskType] || 'study_session';
-            }, 100);
-        }
-
-        function addToCalendar(taskDescription, estimatedHours) {
-            // Calculate suggested end time (estimated hours from now)
-            const now = new Date();
-            const startTime = new Date(now.getTime() + (60 * 60 * 1000)); // 1 hour from now
-            const endTime = new Date(startTime.getTime() + (estimatedHours * 60 * 60 * 1000));
-            
-            // Open event modal with pre-filled data
-            openEventModal('create', {
-                start: startTime,
-                end: endTime
-            });
-            
-            // Pre-fill the title
-            setTimeout(() => {
-                document.getElementById('eventTitle').value = taskDescription || 'Студиска сесија';
-                document.getElementById('eventDescription').value = `Проценето време: ${estimatedHours} часови\\nКреирано од Time Agent`;
-            }, 100);
-        }
-
-        function generateSlotActionsResult(data) {
-            if (!data.suggested_slots || data.suggested_slots.length === 0) {
-                return `
-                    <div class="estimation-result" style="border-color: #f59e0b; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
-                        <h4>⚠️ Нема достапни термини</h4>
-                        <p style="margin: 8px 0; font-size: 13px;">${data.summary_message || 'Нема слободни термини за бараното време.'}</p>
-                        <div class="quick-actions">
-                            <button class="quick-action-btn" onclick="sendQuickMessage('Најди термини за помал период')">
-                                🔍 Побарај пократко
-                            </button>
-                            <button class="quick-action-btn" onclick="sendQuickMessage('Кога имам најмногу слободно време?')">
-                                📊 Слободно време
-                            </button>
-                        </div>
-                    </div>
-                `;
             }
 
-            let result = `
-                <div class="estimation-result" style="border-color: #10b981; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
-                    <h4>🗓️ Достапни Термини</h4>
-                    <div style="margin: 12px 0; font-size: 13px;">
-                        <strong>Најдени ${data.suggested_slots.length} термини за ${data.requested_duration_formatted || data.requested_duration + 'ч'}</strong>
-                    </div>
-            `;
+            function requestSlotSuggestions(message) {
+                // Parse the message to extract task details
+                const taskDetails = parseSlotRequest(message);
 
-            data.suggested_slots.forEach((slot, index) => {
-                const quality = slot.quality_score >= 0.8 ? '🌟' : slot.quality_score >= 0.6 ? '⭐' : '✨';
-                const splitInfo = slot.is_split_session ? ' (сесија во серија)' : '';
-                
+                fetch('/api/time-agent/suggest-slots/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify(taskDetails)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    hideTyping();
+
+                    if (data.success) {
+                        const responseMessage = generateSlotSuggestionResponse(data);
+                        addMessage(responseMessage, 'agent', data);
+                    } else {
+                        addMessage('Извинете, не можев да најдам достапни термини. Обидете се со помал временски период или проверете го календарот.', 'agent');
+                    }
+                })
+                .catch(error => {
+                    hideTyping();
+                    console.error('Error:', error);
+                    addMessage('Се случи грешка при барањето термини. Обидете се повторно.', 'agent');
+                });
+            }
+
+            function parseSlotRequest(message) {
+                const messageLC = message.toLowerCase();
+
+                // Extract duration (default 2 hours)
+                let duration = 2.0;
+                const durationMatch = messageLC.match(/(\d+(?:\.\d+)?)\s*(?:час|hour|h)/);
+                if (durationMatch) {
+                    duration = parseFloat(durationMatch[1]);
+                }
+
+                // Extract subject
+                let subject = null;
+                const subjects = [
+                    'математика', 'математике', 'math', 'mathematics',
+                    'физика', 'physics', 'биологија', 'biology',
+                    'хемија', 'chemistry', 'програмирање', 'programming',
+                    'историја', 'history', 'македонски', 'macedonian',
+                    'англиски', 'english'
+                ];
+
+                for (const sub of subjects) {
+                    if (messageLC.includes(sub)) {
+                        subject = sub;
+                        break;
+                    }
+                }
+
+                // Extract difficulty
+                let difficulty = 'moderate';
+                if (messageLC.includes('тешк') || messageLC.includes('сложен') || messageLC.includes('hard')) {
+                    difficulty = 'hard';
+                } else if (messageLC.includes('лесн') || messageLC.includes('easy')) {
+                    difficulty = 'easy';
+                }
+
+                // Extract task type
+                let taskType = 'study';
+                if (messageLC.includes('испит') || messageLC.includes('exam')) {
+                    taskType = 'exam';
+                    difficulty = 'hard'; // Exams are typically harder
+                } else if (messageLC.includes('домашна') || messageLC.includes('homework')) {
+                    taskType = 'homework';
+                } else if (messageLC.includes('читање') || messageLC.includes('read')) {
+                    taskType = 'reading';
+                } else if (messageLC.includes('проект') || messageLC.includes('project')) {
+                    taskType = 'project';
+                }
+
+                // Extract preferred times
+                let preferredTimes = [];
+                if (messageLC.includes('утро') || messageLC.includes('morning')) {
+                    preferredTimes.push('morning');
+                }
+                if (messageLC.includes('попладне') || messageLC.includes('afternoon')) {
+                    preferredTimes.push('afternoon');
+                }
+                if (messageLC.includes('вечер') || messageLC.includes('evening')) {
+                    preferredTimes.push('evening');
+                }
+
+                return {
+                    duration_hours: duration,
+                    subject: subject,
+                    difficulty: difficulty,
+                    task_type: taskType,
+                    preferred_times: preferredTimes.length > 0 ? preferredTimes : null,
+                    allow_splitting: duration > 4.0 // Allow splitting for long sessions
+                };
+            }
+
+            function generateSlotSuggestionResponse(data) {
+                if (!data.suggested_slots || data.suggested_slots.length === 0) {
+                    return 'Не пронајдов достапни термини за бараното време. Обидете се со пократко период или променете ги преференците.';
+                }
+
+                let response = `🗓️ **Пронајдов ${data.suggested_slots.length} одлични термини за вашата задача:**\\n\\n`;
+
+                data.suggested_slots.forEach((slot, index) => {
+                    const quality = slot.quality_score >= 0.8 ? '🌟' : slot.quality_score >= 0.6 ? '⭐' : '✨';
+                    const splitInfo = slot.is_split_session ? ' (сесија во серија)' : '';
+
+                    response += `${quality} **Термин ${index + 1}${splitInfo}:**\\n`;
+                    response += `📅 ${slot.start_time_formatted}\\n`;
+                    response += `⏱️ Времетраење: ${slot.duration_formatted}\\n`;
+                    response += `💯 Квалитет: ${Math.round(slot.quality_score * 100)}%\\n`;
+
+                    if (slot.reasons && slot.reasons.length > 0) {
+                        response += `💡 ${slot.reasons[0]}\\n`;
+                    }
+                    response += '\\n';
+                });
+
+                response += data.summary_message + '\\n\\n';
+
+                if (data.tips && data.tips.length > 0) {
+                    response += '**💡 Савети:**\\n';
+                    data.tips.slice(0, 2).forEach(tip => {
+                        response += `• ${tip}\\n`;
+                    });
+                }
+
+                return response;
+            }
+
+            function addSlotToCalendar(slotData) {
+                const startTime = new Date(slotData.start_time);
+                const endTime = new Date(slotData.end_time);
+
+                // Open event modal with pre-filled data
+                openEventModal('create', {
+                    start: startTime,
+                    end: endTime
+                });
+
+                // Pre-fill the title
+                setTimeout(() => {
+                    const title = slotData.task_description || 'Студиска сесија';
+                    document.getElementById('eventTitle').value = title;
+                    document.getElementById('eventDescription').value = `Time Agent препорака\\nКвалитет: ${Math.round(slotData.quality_score * 100)}%\\nВреметраење: ${slotData.duration_formatted}`;
+
+                    // Set appropriate event type based on task
+                    const taskType = slotData.task_type || 'study';
+                    const eventTypeMapping = {
+                        'exam': 'study_session',
+                        'homework': 'homework_deadline',
+                        'project': 'study_session',
+                        'reading': 'study_session',
+                        'study': 'study_session'
+                    };
+                    document.getElementById('eventType').value = eventTypeMapping[taskType] || 'study_session';
+                }, 100);
+            }
+
+            function addToCalendar(taskDescription, estimatedHours) {
+                // Calculate suggested end time (estimated hours from now)
+                const now = new Date();
+                const startTime = new Date(now.getTime() + (60 * 60 * 1000)); // 1 hour from now
+                const endTime = new Date(startTime.getTime() + (estimatedHours * 60 * 60 * 1000));
+
+                // Open event modal with pre-filled data
+                openEventModal('create', {
+                    start: startTime,
+                    end: endTime
+                });
+
+                // Pre-fill the title
+                setTimeout(() => {
+                    document.getElementById('eventTitle').value = taskDescription || 'Студиска сесија';
+                    document.getElementById('eventDescription').value = `Проценето време: ${estimatedHours} часови\\nКреирано од Time Agent`;
+                }, 100);
+            }
+
+            function generateSlotActionsResult(data) {
+                if (!data.suggested_slots || data.suggested_slots.length === 0) {
+                    return `
+                        <div class="estimation-result" style="border-color: #f59e0b; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                            <h4>⚠️ Нема достапни термини</h4>
+                            <p style="margin: 8px 0; font-size: 13px;">${data.summary_message || 'Нема слободни термини за бараното време.'}</p>
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" onclick="sendQuickMessage('Најди термини за помал период')">
+                                    🔍 Побарај пократко
+                                </button>
+                                <button class="quick-action-btn" onclick="sendQuickMessage('Кога имам најмногу слободно време?')">
+                                    📊 Слободно време
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                let result = `
+                    <div class="estimation-result" style="border-color: #10b981; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+                        <h4>🗓️ Достапни Термини</h4>
+                        <div style="margin: 12px 0; font-size: 13px;">
+                            <strong>Најдени ${data.suggested_slots.length} термини за ${data.requested_duration_formatted || data.requested_duration + 'ч'}</strong>
+                        </div>
+                `;
+
+                data.suggested_slots.forEach((slot, index) => {
+                    const quality = slot.quality_score >= 0.8 ? '🌟' : slot.quality_score >= 0.6 ? '⭐' : '✨';
+                    const splitInfo = slot.is_split_session ? ' (сесија во серија)' : '';
+
+                    result += `
+                        <div style="background: white; border-radius: 8px; padding: 12px; margin: 8px 0; border-left: 4px solid #10b981;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <strong style="color: #065f46;">${quality} Термин ${index + 1}${splitInfo}</strong>
+                                <span style="font-size: 12px; color: #6b7280;">Квалитет: ${Math.round(slot.quality_score * 100)}%</span>
+                            </div>
+                            <div style="font-size: 13px; color: #374151; margin-bottom: 8px;">
+                                📅 ${slot.start_time_formatted}<br>
+                                ⏱️ ${slot.duration_formatted}
+                            </div>
+                            ${slot.reasons && slot.reasons.length > 0 ? `<div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">💡 ${slot.reasons[0]}</div>` : ''}
+                            <button class="quick-action-btn" onclick='addSlotToCalendar(${JSON.stringify(slot).replace(/'/g, "\\'")})' style="font-size: 11px; padding: 4px 8px;">
+                                📅 Додај во календар
+                            </button>
+                        </div>
+                    `;
+                });
+
                 result += `
-                    <div style="background: white; border-radius: 8px; padding: 12px; margin: 8px 0; border-left: 4px solid #10b981;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <strong style="color: #065f46;">${quality} Термин ${index + 1}${splitInfo}</strong>
-                            <span style="font-size: 12px; color: #6b7280;">Квалитет: ${Math.round(slot.quality_score * 100)}%</span>
+                        <div class="quick-actions" style="margin-top: 12px;">
+                            <button class="quick-action-btn" onclick="sendQuickMessage('Најди други термини за истата задача')">
+                                🔄 Други термини
+                            </button>
+                            <button class="quick-action-btn" onclick="sendQuickMessage('Кои се најдобрите времиња за учење?')">
+                                💡 Совети
+                            </button>
                         </div>
-                        <div style="font-size: 13px; color: #374151; margin-bottom: 8px;">
-                            📅 ${slot.start_time_formatted}<br>
-                            ⏱️ ${slot.duration_formatted}
-                        </div>
-                        ${slot.reasons && slot.reasons.length > 0 ? `<div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">💡 ${slot.reasons[0]}</div>` : ''}
-                        <button class="quick-action-btn" onclick='addSlotToCalendar(${JSON.stringify(slot).replace(/'/g, "\\'")})' style="font-size: 11px; padding: 4px 8px;">
-                            📅 Додај во календар
-                        </button>
                     </div>
                 `;
-            });
 
-            result += `
-                    <div class="quick-actions" style="margin-top: 12px;">
-                        <button class="quick-action-btn" onclick="sendQuickMessage('Најди други термини за истата задача')">
-                            🔄 Други термини
-                        </button>
-                        <button class="quick-action-btn" onclick="sendQuickMessage('Кои се најдобрите времиња за учење?')">
-                            💡 Совети
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            return result;
-        }
-
-        function findSlotsForEstimate(taskDescription, estimatedHours, difficulty) {
-            const message = `Најди термини за ${taskDescription} ${estimatedHours} часа тежина ${difficulty}`;
-            sendQuickMessage(message);
-        }
-
-        function askForMoreDetails() {
-            const suggestions = [
-                'Кои фактори влијаат на проценката?',
-                'Како да подобрам ја мојата ефикасност?',
-                'Кога е најдобро време за учење?',
-                'Како да планирам подолги проекти?'
-            ];
-            
-            const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
-            document.getElementById('chatInput').value = randomSuggestion;
-        }
-
-        // Initialize chat with welcome message after a short delay
-        setTimeout(() => {
-            if (chatMessages.length === 0) {
-                addMessage('Здраво! Јас сум Time Agent, вашиот асистент за планирање на времето. 🤖\\n\\n**Што можам да направам:**\\n• 📊 Проценка на време за задачи\\n• 🗓️ Наоѓање слободни термини\\n• ⏰ Препораки за оптимално планирање\\n\\nПрашајте ме нешто како "Колку време треба за математика?" или "Најди ми термин за учење 2 часа"! 😊', 'agent');
+                return result;
             }
-        }, 1000);
-    </script>
+
+            function findSlotsForEstimate(taskDescription, estimatedHours, difficulty) {
+                const message = `Најди термини за ${taskDescription} ${estimatedHours} часа тежина ${difficulty}`;
+                sendQuickMessage(message);
+            }
+
+            function askForMoreDetails() {
+                const suggestions = [
+                    'Кои фактори влијаат на проценката?',
+                    'Како да подобрам ја мојата ефикасност?',
+                    'Кога е најдобро време за учење?',
+                    'Како да планирам подолги проекти?'
+                ];
+
+                const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+                document.getElementById('chatInput').value = randomSuggestion;
+            }
+
+            // Initialize chat with welcome message after a short delay
+            setTimeout(() => {
+                if (chatMessages.length === 0) {
+                    addMessage('Здраво! Јас сум Time Agent, вашиот асистент за планирање на времето. 🤖\\n\\n**Што можам да направам:**\\n• 📊 Проценка на време за задачи\\n• 🗓️ Наоѓање слободни термини\\n• ⏰ Препораки за оптимално планирање\\n\\nПрашајте ме нешто како "Колку време треба за математика?" или "Најди ми термин за учење 2 часа"! 😊', 'agent');
+                }
+            }, 1000);
+        </script>
+    </div>
 </body>
 </html>
-

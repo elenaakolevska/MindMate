@@ -6,114 +6,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{% csrf_token %}">
     <title>Study Agent - MindMate</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f8fafc;
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fb;
             min-height: 100vh;
         }
-
-        .container {
-            display: flex;
-            height: 100vh;
+        .main-content-area {
+            transition: all 0.3s ease;
+            width: calc(100% - 250px);
         }
-
-        .sidebar {
-            width: 280px;
-            background: white;
-            border-right: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
+        .sidebar.collapsed + .main-content-area {
+            width: calc(100% - 80px);
         }
-
-        .sidebar-header {
-            padding: 24px 20px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: bold;
-        }
-
-        .sidebar-menu {
-            flex: 1;
-            padding: 20px 0;
-        }
-
-        .menu-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
-        }
-
-        .menu-item:hover {
-            background: #f8fafc;
-            border-left-color: #667eea;
-        }
-
-        .menu-item.active {
-            background: #f0f4ff;
-            border-left-color: #667eea;
-            color: #667eea;
-        }
-
-        .menu-item i {
-            margin-right: 12px;
-            width: 20px;
-        }
-
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
         .header {
             background: white;
             border-bottom: 1px solid #e5e7eb;
-            padding: 20px 24px;
+            padding: 16px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
         }
-
-        .header-title h1 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #1f2937;
-        }
-
-        .header-title p {
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .menu-toggle {
+            background: #f3f4f6;
+            border: none;
+            font-size: 20px;
             color: #6b7280;
-            font-size: 14px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-
-        .content-area {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
+        .menu-toggle:hover { background: #e5e7eb; color: #374151; }
+        @media (min-width: 769px) { .menu-toggle { display: flex; } }
+        @media (max-width: 768px) {
+            .menu-toggle { display: flex; }
+            .header { padding: 12px 20px; }
+            .main-content-area { width: 100%; }
         }
-
+        .header-title { display: flex; flex-direction: column; }
+        .header-title h1 { font-size: 20px; font-weight: 600; color: #1f2937; margin: 0; }
+        .header-title p { font-size: 14px; color: #6b7280; margin: 2px 0 0 0; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .user-profile {
+            display: flex; align-items: center; gap: 12px; cursor: pointer;
+            padding: 8px 12px; border-radius: 12px; transition: all 0.2s ease;
+            text-decoration: none; color: inherit;
+        }
+        .user-profile:hover { background: #f3f4f6; }
+        .user-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 600; font-size: 16px;
+        }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-weight: 600; color: #1f2937; font-size: 14px; }
+        .user-role { font-size: 12px; color: #6b7280; }
+        @media (max-width: 480px) { .user-info { display: none; } }
+        .content-area { flex: 1; padding: 24px; overflow-y: auto; }
         .tab-content {
             display: none;
         }
@@ -449,194 +412,183 @@
 </head>
 <body>
     {% include 'sidebar_base.html' %}
-    <div class="container main-content-area">
-        <!-- Main Content -->
-        <div class="main-content" style="margin-left: 0;">
-            <!-- Header -->
-            <div class="header">
-                <div class="header-left">
-                    <button class="menu-toggle" onclick="window.sidebarFunctions?.toggleMobileSidebar()">
-                        <i class="fas fa-bars"></i>
-                    </button>
+    <div class="main-content-area">
+        <div class="header">
+            <div class="header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-title">
+                    <h1>Study Agent</h1>
                 </div>
-                <div class="header-right">
-                    <a href="{% url 'mindmate:profile' %}" class="user-profile" style="text-decoration: none; color: inherit;">
-                        <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
-                        <div class="user-info">
-                            <div class="user-name">{{ student.full_name }}</div>
-                            <div class="user-role">{{ student.get_study_level_display }}</div>
-                        </div>
-                    </a>
+            </div>
+            <div class="header-right">
+                <a href="{% url 'mindmate:profile' %}" class="user-profile" style="text-decoration: none; color: inherit;">
+                    <div class="user-avatar">{{ student.full_name|slice:":1"|upper }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ student.full_name }}</div>
+                        <div class="user-role">{{ student.get_study_level_display }}</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="content-area">
+            <!-- Documents Tab -->
+            <div id="documents-tab" class="tab-content active">
+                <div class="documents-section">
+                    <div class="documents-header">
+                        <div class="documents-title">Your Study Materials</div>
+                        <button class="btn btn-primary" onclick="switchTab('upload')">
+                            <i class="fas fa-plus"></i>
+                            Upload New
+                        </button>
+                    </div>
+                    <div id="documents-list" class="documents-list">
+                        <!-- Documents will be loaded here -->
+                    </div>
                 </div>
             </div>
 
-            <div class="content-area">
-                <!-- Documents Tab -->
-                <div id="documents-tab" class="tab-content active">
-                    <div class="documents-section">
-                        <div class="documents-header">
-                            <div class="documents-title">Your Study Materials</div>
-                            <button class="btn btn-primary" onclick="switchTab('upload')">
+            <!-- Upload Tab -->
+            <div id="upload-tab" class="tab-content">
+                <div class="upload-section">
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">
+                            <h3>Upload Study Material</h3>
+                            <p>Drag and drop your files here, or click to browse</p>
+                            <p style="font-size: 12px; color: #9ca3af; margin-top: 8px;">
+                                Supports PDF, DOC, DOCX, TXT (max 50MB)
+                            </p>
+                        </div>
+                        <input type="file" id="file-input" class="file-input" accept=".pdf,.doc,.docx,.txt" multiple aria-label="Upload study material">
+                    </div>
+                </div>
+
+                <div class="documents-section">
+                    <div class="documents-title">Recent Uploads</div>
+                    <div id="recent-uploads" class="documents-list">
+                        <!-- Recent uploads will be shown here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Quizzes Tab -->
+            <div id="my-quizzes-tab" class="tab-content">
+                <div class="quiz-section">
+                    <div class="documents-title" style="margin-bottom: 20px;">My Quizzes</div>
+                    <!-- Quiz Stats -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                        <div style="background: white; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                            <div style="font-size: 24px; font-weight: 600; color: #667eea; margin-bottom: 8px;" id="total-quizzes">0</div>
+                            <div style="color: #6b7280;">Total Quizzes</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                            <div style="font-size: 24px; font-weight: 600; color: #10b981; margin-bottom: 8px;" id="passed-quizzes">0</div>
+                            <div style="color: #6b7280;">Passed</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                            <div style="font-size: 24px; font-weight: 600; color: #f59e0b; margin-bottom: 8px;" id="avg-score">0%</div>
+                            <div style="color: #6b7280;">Average Score</div>
+                        </div>
+                    </div>
+                    <!-- Recent Quiz Results -->
+                    <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <div style="font-size: 18px; font-weight: 600; color: #1f2937;">Recent Results</div>
+                            <button class="btn btn-primary" onclick="switchTab('quiz')" style="font-size: 14px; padding: 8px 16px;">
                                 <i class="fas fa-plus"></i>
-                                Upload New
+                                Generate New Quiz
                             </button>
                         </div>
-                        <div id="documents-list" class="documents-list">
-                            <!-- Documents will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Upload Tab -->
-                <div id="upload-tab" class="tab-content">
-                    <div class="upload-section">
-                        <div class="upload-area" id="upload-area">
-                            <div class="upload-icon">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                            </div>
-                            <div class="upload-text">
-                                <h3>Upload Study Material</h3>
-                                <p>Drag and drop your files here, or click to browse</p>
-                                <p style="font-size: 12px; color: #9ca3af; margin-top: 8px;">
-                                    Supports PDF, DOC, DOCX, TXT (max 50MB)
-                                </p>
-                            </div>
-                            <input type="file" id="file-input" class="file-input" accept=".pdf,.doc,.docx,.txt" multiple>
-                        </div>
-                    </div>
-
-                    <div class="documents-section">
-                        <div class="documents-title">Recent Uploads</div>
-                        <div id="recent-uploads" class="documents-list">
-                            <!-- Recent uploads will be shown here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- My Quizzes Tab -->
-                <div id="my-quizzes-tab" class="tab-content">
-                    <div class="quiz-section">
-                        <div class="documents-title" style="margin-bottom: 20px;">My Quizzes</div>
-                        
-                        <!-- Quiz Stats -->
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px;">
-                            <div style="background: white; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                                <div style="font-size: 24px; font-weight: 600; color: #667eea; margin-bottom: 8px;" id="total-quizzes">0</div>
-                                <div style="color: #6b7280;">Total Quizzes</div>
-                            </div>
-                            <div style="background: white; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                                <div style="font-size: 24px; font-weight: 600; color: #10b981; margin-bottom: 8px;" id="passed-quizzes">0</div>
-                                <div style="color: #6b7280;">Passed</div>
-                            </div>
-                            <div style="background: white; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                                <div style="font-size: 24px; font-weight: 600; color: #f59e0b; margin-bottom: 8px;" id="avg-score">0%</div>
-                                <div style="color: #6b7280;">Average Score</div>
-                            </div>
-                        </div>
-
-                        <!-- Recent Quiz Results -->
-                        <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <div style="font-size: 18px; font-weight: 600; color: #1f2937;">Recent Results</div>
-                                <button class="btn btn-primary" onclick="switchTab('quiz')" style="font-size: 14px; padding: 8px 16px;">
-                                    <i class="fas fa-plus"></i>
-                                    Generate New Quiz
-                                </button>
-                            </div>
-                            <div id="recent-quiz-results">
-                                <div style="text-align: center; padding: 40px; color: #6b7280;">
-                                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 16px;"></i>
-                                    <p>Loading quiz results...</p>
-                                </div>
+                        <div id="recent-quiz-results">
+                            <div style="text-align: center; padding: 40px; color: #6b7280;">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 16px;"></i>
+                                <p>Loading quiz results...</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                    <div class="quiz-section">
-                        <div class="documents-title" style="margin-bottom: 20px;">Generate Quiz</div>
-                        <form id="quiz-form" class="quiz-form">
-                            <div class="form-group">
-                                <label class="form-label">Select Documents</label>
-                                <select id="quiz-documents" name="documents" class="form-select" multiple required>
-                                    <option value="">Loading documents...</option>
-                                </select>
-                                <small style="color: #6b7280; margin-top: 4px;">Hold Ctrl/Cmd to select multiple documents</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Number of Questions</label>
-                                <select id="quiz-questions" name="questions_count" class="form-select" required>
-                                    <option value="5">5 Questions</option>
-                                    <option value="10" selected>10 Questions</option>
-                                    <option value="15">15 Questions</option>
-                                    <option value="20">20 Questions</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Difficulty Level</label>
-                                <select id="quiz-difficulty" name="difficulty" class="form-select" required>
-                                    <option value="easy">Easy</option>
-                                    <option value="medium" selected>Medium</option>
-                                    <option value="hard">Hard</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Quiz Type</label>
-                                <select id="quiz-type" name="quiz_type" class="form-select" required>
-                                    <option value="mixed" selected>Mixed (Multiple Choice & True/False)</option>
-                                    <option value="multiple_choice">Multiple Choice Only</option>
-                                    <option value="true_false">True/False Only</option>
-                                </select>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary" style="align-self: flex-start;">
-                                <i class="fas fa-magic"></i>
-                                Generate Quiz
-                            </button>
-                        </form>
+            </div>
+            <div class="quiz-section">
+                <div class="documents-title" style="margin-bottom: 20px;">Generate Quiz</div>
+                <form id="quiz-form" class="quiz-form">
+                    <div class="form-group">
+                        <label class="form-label" for="quiz-documents">Select Documents</label>
+                        <select id="quiz-documents" name="documents" class="form-select" multiple required aria-label="Select documents">
+                            <option value="">Loading documents...</option>
+                        </select>
+                        <small style="color: #6b7280; margin-top: 4px;">Hold Ctrl/Cmd to select multiple documents</small>
                     </div>
-                </div>
-
-                <!-- Chat Tab -->
-                <div id="chat-tab" class="tab-content">
-                    <div class="chat-section">
-                        <div class="chat-header">
-                            <i class="fas fa-robot"></i>
-                            <div class="chat-title">Study Agent Assistant</div>
-                        </div>
-
-                        <div id="chat-messages" class="chat-messages">
-                            <div class="message assistant">
-                                <div class="message-avatar">
-                                    <i class="fas fa-robot"></i>
-                                </div>
-                                <div class="message-content">
-                                    <p>Hello! I'm your Study Agent. I can help you with:</p>
-                                    <ul style="margin-top: 8px; padding-left: 20px;">
-                                        <li>📚 Answering questions about your documents</li>
-                                        <li>🧠 Generating quizzes from your materials</li>
-                                        <li>📝 Creating summaries</li>
-                                        <li>⏰ Time estimation for study sessions</li>
-                                        <li>📅 Study schedule suggestions</li>
-                                    </ul>
-                                    <p style="margin-top: 8px;">How can I assist you today?</p>
-                                </div>
+                    <div class="form-group">
+                        <label class="form-label" for="quiz-questions">Number of Questions</label>
+                        <select id="quiz-questions" name="questions_count" class="form-select" required aria-label="Number of questions">
+                            <option value="5">5 Questions</option>
+                            <option value="10" selected>10 Questions</option>
+                            <option value="15">15 Questions</option>
+                            <option value="20">20 Questions</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="quiz-difficulty">Difficulty Level</label>
+                        <select id="quiz-difficulty" name="difficulty" class="form-select" required aria-label="Difficulty level">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="quiz-type">Quiz Type</label>
+                        <select id="quiz-type" name="quiz_type" class="form-select" required aria-label="Quiz type">
+                            <option value="mixed" selected>Mixed (Multiple Choice & True/False)</option>
+                            <option value="multiple_choice">Multiple Choice Only</option>
+                            <option value="true_false">True/False Only</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="align-self: flex-start;">
+                        <i class="fas fa-magic"></i>
+                        Generate Quiz
+                    </button>
+                </form>
+            </div>
+            <!-- Chat Tab -->
+            <div id="chat-tab" class="tab-content">
+                <div class="chat-section">
+                    <div class="chat-header">
+                        <i class="fas fa-robot"></i>
+                        <div class="chat-title">Study Agent Assistant</div>
+                    </div>
+                    <div id="chat-messages" class="chat-messages">
+                        <div class="message assistant">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <p>Hello! I'm your Study Agent. I can help you with:</p>
+                                <ul style="margin-top: 8px; padding-left: 20px;">
+                                    <li>📚 Answering questions about your documents</li>
+                                    <li>🧠 Generating quizzes from your materials</li>
+                                    <li>📝 Creating summaries</li>
+                                    <li>⏰ Time estimation for study sessions</li>
+                                    <li>📅 Study schedule suggestions</li>
+                                </ul>
+                                <p style="margin-top: 8px;">How can I assist you today?</p>
                             </div>
                         </div>
-
-                        <div class="chat-input-area">
-                            <textarea
-                                id="chat-input"
-                                class="chat-input"
-                                placeholder="Ask me anything about your study materials..."
-                                rows="1"
-                            ></textarea>
-                            <button id="send-button" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <textarea
+                            id="chat-input"
+                            class="chat-input"
+                            placeholder="Ask me anything about your study materials..."
+                            rows="1"
+                            aria-label="Chat input"
+                        ></textarea>
+                        <button id="send-button" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -948,7 +900,7 @@
                 body: JSON.stringify(quizData)
             })
             .then(response => response.json())
-            .then(data => {
+            .then data => {
                 if (data.quiz) {
                     showNotification('✅ Quiz generated successfully!', 'success');
                     // Redirect to quiz taking interface

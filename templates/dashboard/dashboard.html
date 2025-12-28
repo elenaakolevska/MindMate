@@ -22,14 +22,11 @@
 
         /* Main Content */
         .main-content {
-            margin-left: 250px;
-            min-height: 100vh;
             transition: all 0.3s ease;
             width: calc(100% - 250px);
         }
 
         .sidebar.collapsed + .main-content {
-            margin-left: 80px;
             width: calc(100% - 80px);
         }
 
@@ -53,20 +50,64 @@
         }
 
         .menu-toggle {
-            background: none;
+            background: #f3f4f6;
             border: none;
-            font-size: 24px;
+            font-size: 20px;
             color: #6b7280;
             cursor: pointer;
-            padding: 8px;
+            padding: 8px 12px;
             border-radius: 8px;
             transition: all 0.2s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .menu-toggle:hover {
-            background: #f3f4f6;
+            background: #e5e7eb;
+            color: #374151;
         }
 
+        /* Desktop: Show toggle for collapsing */
+        @media (min-width: 769px) {
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+        /* Mobile: Show toggle for opening sidebar */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .header {
+                padding: 12px 20px;
+            }
+        }
+
+        /* Page title styles */
+        .header-title {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .header-title p {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 2px 0 0 0;
+        }
+
+        /* User profile in header */
         .header-right {
             display: flex;
             align-items: center;
@@ -81,6 +122,8 @@
             padding: 8px 12px;
             border-radius: 12px;
             transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
         }
 
         .user-profile:hover {
@@ -97,6 +140,7 @@
             justify-content: center;
             color: white;
             font-weight: 600;
+            font-size: 16px;
         }
 
         .user-info {
@@ -113,6 +157,13 @@
         .user-role {
             font-size: 12px;
             color: #6b7280;
+        }
+
+        /* Hide user info on small screens */
+        @media (max-width: 480px) {
+            .user-info {
+                display: none;
+            }
         }
 
         /* Dashboard Content */
@@ -760,17 +811,76 @@
                 padding: 12px 8px;
             }
         }
+
+        .upcoming-events-ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
+        .upcoming-event-item {
+            margin-bottom: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #ececec;
+            display: flex;
+            align-items: flex-start;
+        }
+        .event-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            width: 100%;
+        }
+        .event-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+        .event-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .event-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #222;
+        }
+        .event-meta {
+            font-size: 0.95em;
+            color: #888;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .event-type {
+            font-weight: 500;
+        }
+        .event-desc {
+            font-size: 0.93em;
+            color: #666;
+            margin-top: 2px;
+        }
+        .calendar-card-tab.active {
+            background: #4285f4;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
     {% include 'sidebar_base.html' %}
-    <div class="main-content">
-        <!-- Header -->
+    <div class="main-content-area">
         <div class="header">
             <div class="header-left">
                 <button class="menu-toggle" onclick="toggleSidebar()">
                     <i class="fas fa-bars"></i>
                 </button>
+                <div class="header-title">
+                    <h1>Dashboard</h1>
+                </div>
             </div>
             <div class="header-right">
                 <a href="{% url 'mindmate:profile' %}" class="user-profile" style="text-decoration: none; color: inherit;">
@@ -787,21 +897,50 @@
         <div class="dashboard-wrapper">
             <div class="dashboard-grid">
                 <div class="left-column">
-                    <div class="card calendar-card" onclick="window.location.href='{% url 'mindmate:calendar' %}'" style="cursor:pointer;">
+                    <div class="card calendar-card">
                         <div class="calendar-card-header">
                             <span class="calendar-card-title">Upcoming Schedule</span>
                             <span class="calendar-card-tabs">
-                                <button class="calendar-card-tab">Day</button>
-                                <button class="calendar-card-tab">Week</button>
-                                <button class="calendar-card-tab active">Month</button>
+                                <button class="calendar-card-tab" id="tab-day" onclick="showEvents('day')">Day</button>
+                                <button class="calendar-card-tab" id="tab-week" onclick="showEvents('week')">Week</button>
+                                <button class="calendar-card-tab active" id="tab-month" onclick="showEvents('month')">Month</button>
                             </span>
                         </div>
                         <div class="calendar-card-body">
                             <span class="calendar-card-icon"><i class="fas fa-calendar-alt"></i></span>
                             <span class="calendar-card-center-text">
                                 <i class="fas fa-clock"></i>
-                                Interactive Calendar View (Click to navigate to Calendar)
+                                <a href="{% url 'mindmate:calendar' %}" style="color:inherit;text-decoration:underline;">Interactive Calendar View (Click to navigate to Calendar)</a>
                             </span>
+                            <div class="upcoming-events-list" style="margin-top: 16px; width: 100%;">
+                                {% if upcoming_events %}
+                                    <ul class="upcoming-events-ul">
+                                        {% for event in upcoming_events %}
+                                            <li class="upcoming-event-item"
+                                                data-date="{{ event.date_time|date:'Y-m-d' }}"
+                                                data-datetime="{{ event.date_time|date:'c' }}">
+                                                <div class="event-row">
+                                                    <div class="event-dot" style="background: {{ event.color }};"></div>
+                                                    <div class="event-info" style="text-align: left;">
+                                                        <div class="event-title" style="text-align: left;">{{ event.title }}</div>
+                                                        <div class="event-meta">
+                                                            <span class="event-date">{{ event.date_time|date:'M d, Y H:i' }}</span>
+                                                            <span class="event-type" style="color: {{ event.color }};">{{ event.get_event_type_display }}</span>
+                                                        </div>
+                                                        {% if event.description %}
+                                                        <div class="event-desc">{{ event.description|truncatewords:12 }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <div class="no-upcoming-events" style="color: #888; font-size: 0.95em; margin-top: 8px;">
+                                        No upcoming events scheduled.
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
 
@@ -912,7 +1051,7 @@
                             <div class="profile-avatar">{{ student.full_name|slice:":1"|upper }}</div>
                             <div class="profile-name">{{ student.full_name }}</div>
                             <div class="profile-role">{{ student.study_direction }}</div>
-                            
+
                             <!-- {% if interests %}
                             <div class="profile-section">
                                 <div class="profile-section-title">Interests:</div>
@@ -923,7 +1062,7 @@
                                 </div>
                             </div>
                             {% endif %} -->
-                            
+
                             {% if preferences.learning_goals %}
                             <div class="profile-section">
                                 <div class="profile-section-title">Goal: <span>{{ preferences.learning_goals|truncatewords:15 }}</span></div>
@@ -1111,6 +1250,49 @@
         }
 
         document.addEventListener('DOMContentLoaded', applyProgressBarWidths);
+
+        function showEvents(range) {
+            // Tab UI
+            document.getElementById('tab-day').classList.remove('active');
+            document.getElementById('tab-week').classList.remove('active');
+            document.getElementById('tab-month').classList.remove('active');
+            document.getElementById('tab-' + range).classList.add('active');
+
+            // Date logic
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay()); // Sunday
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 7);
+            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+
+            document.querySelectorAll('.upcoming-event-item').forEach(function(item) {
+                const eventDate = new Date(item.getAttribute('data-datetime'));
+                let show = false;
+                if (range === 'day') {
+                    show = eventDate.getFullYear() === today.getFullYear() &&
+                           eventDate.getMonth() === today.getMonth() &&
+                           eventDate.getDate() === today.getDate();
+                } else if (range === 'week') {
+                    show = eventDate >= weekStart && eventDate < weekEnd;
+                } else if (range === 'month') {
+                    show = eventDate >= monthStart && eventDate <= monthEnd;
+                }
+                item.style.display = show ? '' : 'none';
+            });
+
+            // If no events are visible, show the 'no-upcoming-events' message
+            const anyVisible = Array.from(document.querySelectorAll('.upcoming-event-item')).some(item => item.style.display !== 'none');
+            const noEventsMsg = document.querySelector('.no-upcoming-events');
+            if (noEventsMsg) {
+                noEventsMsg.style.display = anyVisible ? 'none' : '';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            showEvents('month'); // Default
+        });
     </script>
 </body>
 </html>
