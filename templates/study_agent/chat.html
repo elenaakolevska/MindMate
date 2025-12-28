@@ -520,7 +520,6 @@
 </head>
 <body data-student-id="{{ student.id }}"> 
     {% include 'sidebar_base.html' %}
-    
     <div class="main-content-area">
         <div class="main-content">
             <!-- Header -->
@@ -823,7 +822,7 @@
                 headers: { 'X-CSRFToken': chatState.csrfToken }
             })
             .then(response => response.json())
-            .then(data => {
+            .then data => {
                 if (data.success) {
                     showNotification('✅ Document deleted successfully!', 'success');
                     loadRecentDocuments(); // Reload from server to ensure sync
