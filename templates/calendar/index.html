@@ -837,11 +837,12 @@
     <div class="main-content-area">
         <div class="header">
             <div class="header-left">
-                <button class="menu-toggle" onclick="toggleSidebar()">
+                <button class="menu-toggle">
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="header-title">
                     <h1>Календар</h1>
+                    <p>Погледнете ги вашите настани и распоред за учење</p>
                 </div>
             </div>
             <div class="header-right">
@@ -860,7 +861,7 @@
             <!-- Calendar Section -->
             <div class="calendar-section">
                 <div class="calendar-header">
-                    <h1 class="calendar-title">Студиски Календар</h1>
+                    <h1 class="calendar-title">Календар на учење</h1>
                     <p class="calendar-subtitle">Управувајте го вашиот распред на учење и следете ги важните настани</p>
                 </div>
 
@@ -1331,11 +1332,6 @@
                 }
             }
 
-            // Sidebar toggle function
-            function toggleSidebar() {
-                const sidebar = document.getElementById('sidebar');
-                sidebar.classList.toggle('collapsed');
-            }
 
             // Mobile sidebar toggle
             window.addEventListener('resize', () => {

@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="mk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindMate Dashboard</title>
+    <title>MindMate Табла</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -30,70 +30,6 @@
             width: calc(100% - 80px);
         }
 
-        /* Header */
-        .header {
-            background: white;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 16px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .menu-toggle {
-            background: #f3f4f6;
-            border: none;
-            font-size: 20px;
-            color: #6b7280;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .menu-toggle:hover {
-            background: #e5e7eb;
-            color: #374151;
-        }
-
-        /* Desktop: Show toggle for collapsing */
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: flex;
-            }
-        }
-
-        /* Mobile: Show toggle for opening sidebar */
-        @media (max-width: 768px) {
-            .menu-toggle {
-                display: flex;
-            }
-
-            .header {
-                padding: 12px 20px;
-            }
-        }
-
-        /* Page title styles */
-        .header-title {
-            display: flex;
-            flex-direction: column;
-        }
-
         .header-title h1 {
             font-size: 20px;
             font-weight: 600;
@@ -114,21 +50,6 @@
             gap: 16px;
         }
 
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .user-profile:hover {
-            background: #f3f4f6;
-        }
 
         .user-avatar {
             width: 40px;
@@ -875,11 +796,12 @@
     <div class="main-content-area">
         <div class="header">
             <div class="header-left">
-                <button class="menu-toggle" onclick="toggleSidebar()">
+                <button class="menu-toggle">
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="header-title">
-                    <h1>Dashboard</h1>
+                    <h1>Табла</h1>
+                    <p>Добредојдовте на вашата почетна страница!</p>
                 </div>
             </div>
             <div class="header-right">
@@ -899,18 +821,18 @@
                 <div class="left-column">
                     <div class="card calendar-card">
                         <div class="calendar-card-header">
-                            <span class="calendar-card-title">Upcoming Schedule</span>
+                            <span class="calendar-card-title">Претстоен распоред</span>
                             <span class="calendar-card-tabs">
-                                <button class="calendar-card-tab" id="tab-day" onclick="showEvents('day')">Day</button>
-                                <button class="calendar-card-tab" id="tab-week" onclick="showEvents('week')">Week</button>
-                                <button class="calendar-card-tab active" id="tab-month" onclick="showEvents('month')">Month</button>
+                                <button class="calendar-card-tab" id="tab-day" onclick="showEvents('day')">Ден</button>
+                                <button class="calendar-card-tab" id="tab-week" onclick="showEvents('week')">Недела</button>
+                                <button class="calendar-card-tab active" id="tab-month" onclick="showEvents('month')">Месец</button>
                             </span>
                         </div>
                         <div class="calendar-card-body">
                             <span class="calendar-card-icon"><i class="fas fa-calendar-alt"></i></span>
                             <span class="calendar-card-center-text">
                                 <i class="fas fa-clock"></i>
-                                <a href="{% url 'mindmate:calendar' %}" style="color:inherit;text-decoration:underline;">Interactive Calendar View (Click to navigate to Calendar)</a>
+                                <a href="{% url 'mindmate:calendar' %}" style="color:inherit;text-decoration:underline;">Интерактивен календар (кликнете за да одите на календарот)</a>
                             </span>
                             <div class="upcoming-events-list" style="margin-top: 16px; width: 100%;">
                                 {% if upcoming_events %}
@@ -937,7 +859,7 @@
                                     </ul>
                                 {% else %}
                                     <div class="no-upcoming-events" style="color: #888; font-size: 0.95em; margin-top: 8px;">
-                                        No upcoming events scheduled.
+                                        Нема претстојни настани за овој период.
                                     </div>
                                 {% endif %}
                             </div>
@@ -947,28 +869,28 @@
                     <!-- Two Column Row -->
                     <div class="two-column-row">
                         <div class="card">
-                            <div class="card-title">Study Agent Quick Access</div>
-                            <div class="card-subtitle">Interact with your AI study assistant.</div>
+                            <div class="card-title">Брз пристап до Агент за учење</div>
+                            <div class="card-subtitle">Интеракција со вашиот AI студиски асистент.</div>
                             <div class="action-buttons" style="margin-top: 16px;">
                                 <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary">
                                     <i class="fas fa-robot"></i>
-                                    Open Study Agent
+                                    Отвори Агент за учење
                                 </a>
                                 <button class="btn btn-secondary" onclick="openUploadModal()">
                                     <i class="fas fa-upload"></i>
-                                    Upload Document
+                                    Прикачи документ
                                 </button>
                                 <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-secondary">
                                     <i class="fas fa-clipboard-list"></i>
-                                    Generate Quiz
+                                    Генерирај квиз
                                 </a>
                             </div>
                         </div>
 
                         <!-- Recent Activity -->
                         <div class="card">
-                            <div class="card-title">Recent Activity</div>
-                            <div class="card-subtitle">Your latest study engagements.</div>
+                            <div class="card-title">Нова активност</div>
+                            <div class="card-subtitle">Вашите најнови ангажмани за учење.</div>
                             <div class="activity-list" style="margin-top: 16px;">
                                 {% if recent_activities %}
                                     {% for activity in recent_activities|slice:":4" %}
@@ -984,7 +906,7 @@
                                         <div class="activity-icon">
                                             <i class="fas fa-info-circle"></i>
                                         </div>
-                                        <div class="activity-text">No recent activity yet</div>
+                                        <div class="activity-text">Нема нова активност сè уште</div>
                                     </div>
                                 {% endif %}
                             </div>
@@ -997,37 +919,37 @@
                     <!-- Quiz Progress -->
                     <div class="card">
                         <div class="card-header">
-                            <div class="card-title">Quiz Progress</div>
+                            <div class="card-title">Напредок на квизот</div>
                             <i class="fas fa-chart-bar" style="color: #9ca3af;"></i>
                         </div>
                         <div class="progress-info">
-                            <span class="progress-label">Accuracy</span>
+                            <span class="progress-label">Точност</span>
                             <span class="progress-value">{{ accuracy_percentage }}%</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill" data-width="{{ accuracy_percentage|default:0 }}"></div>
                         </div>
                         <div class="quiz-count">
-                            Completed Quizzes: <strong>{{ completed_quizzes }}</strong>
+                            Завршени квизови: <strong>{{ completed_quizzes }}</strong>
                         </div>
                     </div>
 
                     <!-- Current Streak -->
                     <div class="card">
                         <div class="card-header">
-                            <div class="card-title">Current Streak</div>
+                            <div class="card-title">Тековна серија</div>
                             <i class="fas fa-trophy streak-icon"></i>
                         </div>
                         <div class="streak-display">
                             <div class="streak-number">{{ streak_days }}</div>
-                            <div class="streak-text">Days</div>
-                            <div class="streak-subtext">Keep up the great work!</div>
+                            <div class="streak-text">Дена</div>
+                            <div class="streak-subtext">Продолжи со одлична работа!</div>
                         </div>
                     </div>
 
                     <!-- Badges Earned -->
                     <div class="card">
-                        <div class="card-title">Badges Earned</div>
+                        <div class="card-title">Заслужени значки</div>
                         <div class="badges-grid" style="margin-top: 16px;">
                             {% if badges %}
                                 {% for badge in badges %}
@@ -1039,7 +961,7 @@
                             {% else %}
                                 <div class="badge-item">
                                     <i class="fas fa-star"></i>
-                                    No badges yet - keep studying!
+                                    Сè уште нема значки - продолжи да учиш!
                                 </div>
                             {% endif %}
                         </div>
@@ -1065,7 +987,7 @@
 
                             {% if preferences.learning_goals %}
                             <div class="profile-section">
-                                <div class="profile-section-title">Goal: <span>{{ preferences.learning_goals|truncatewords:15 }}</span></div>
+                                <div class="profile-section-title">Цел: <span>{{ preferences.learning_goals|truncatewords:15 }}</span></div>
                                 <!-- <div class="profile-recommendation">{{ preferences.learning_goals|truncatewords:15 }}</div> -->
                             </div>
                             {% endif %}
@@ -1077,8 +999,8 @@
                     <div class="card" style="cursor:pointer;">
                         <div class="chatbot-content">
                             <i class="fas fa-comments chatbot-icon"></i>
-                            <div class="card-title">Time Agent Chatbot</div>
-                            <span class="chatbot-link">Click to Chat</span>
+                            <div class="card-title">Чатбот за time agent</div>
+                            <span class="chatbot-link">Кликни за да разговараш</span>
                         </div>
                     </div>
                     </a>
@@ -1091,7 +1013,7 @@
     <div class="upload-modal" id="uploadModal">
         <div class="upload-modal-content">
             <div class="card-header">
-                <div class="card-title">Upload Documents</div>
+                <div class="card-title">Прикачи документи</div>
                 <button onclick="closeUploadModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #9ca3af;">×</button>
             </div>
             
@@ -1099,8 +1021,8 @@
                 <div class="upload-icon">
                     <i class="fas fa-cloud-upload-alt"></i>
                 </div>
-                <p><strong>Click to upload</strong> or drag and drop</p>
-                <p style="font-size: 13px; color: #9ca3af; margin-top: 8px;">PDF, DOCX, TXT, or Images (Max 10MB)</p>
+                <p><strong>Кликнете за да прикачите</strong> или повлечете и испуштете</p>
+                <p style="font-size: 13px; color: #9ca3af; margin-top: 8px;">PDF, DOCX, TXT, или слики (Макс 10MB)</p>
                 <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png" style="display: none;">
             </div>
 
@@ -1109,12 +1031,6 @@
     </div>
 
     <script>
-        // Sidebar Toggle
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-        }
-
         // Upload Modal
         function openUploadModal() {
             document.getElementById('uploadModal').classList.add('active');
@@ -1154,7 +1070,7 @@
         function handleFiles(newFiles) {
             Array.from(newFiles).forEach(file => {
                 if (file.size > 10 * 1024 * 1024) {
-                    alert(`${file.name} is too large. Maximum size is 10MB.`);
+                    alert(`${file.name} е премногу голем. Максималната големина е 10MB.`);
                     return;
                 }
                 
@@ -1222,14 +1138,14 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    console.log('File uploaded successfully:', data);
+                    console.log('Фајлот е успешно прикачен:', data);
                 } else {
-                    alert('Upload failed: ' + data.message);
+                    alert('Неуспешно прикачување: ' + data.message);
                 }
             })
             .catch(error => {
-                console.error('Upload error:', error);
-                alert('Upload failed. Please try again.');
+                console.error('Грешка при прикачување:', error);
+                alert('Неуспешно прикачување. Ве молиме обидете се повторно.');
             });
         }
 
