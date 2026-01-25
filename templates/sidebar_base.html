@@ -17,7 +17,7 @@
         position: fixed;
         left: 0;
         top: 0;
-        width: 280px;
+        width: 250px;
         height: 100vh;
         background: white;
         border-right: 1px solid #e5e7eb;
@@ -259,15 +259,15 @@
         padding: 8px;
         border-top: 1px solid #e5e7eb;
         flex-shrink: 0;
+        margin-top: auto;
     }
 
-    /* Main Content Area */
     .main-content,
     .main-content-area {
-        margin-left: 280px;
+        margin-left: 250px;
         transition: margin-left 0.3s ease;
         min-height: 100vh;
-        width: calc(100% - 280px);
+        width: calc(100% - 250px);
     }
 
     .sidebar.collapsed ~ .main-content,
@@ -275,6 +275,157 @@
         margin-left: 80px;
         width: calc(100% - 80px);
     }
+
+    .header {
+        background: white;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 16px 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 999;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .menu-toggle {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .menu-toggle:hover {
+        background: #f3f4f6;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .header-right .user-profile,
+    .user-profile {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        text-decoration: none !important;
+        color: inherit !important;
+        padding: 6px 8px !important;
+        border-radius: 10px !important;
+        transition: background 0.15s ease !important;
+    }
+
+    .user-profile:hover {
+        background: #f3f4f6 !important;
+    }
+
+    .user-profile .user-avatar,
+    .header-right .user-avatar {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 50% !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .user-profile .user-info,
+    .header-right .user-info {
+        display: flex !important;
+        flex-direction: column !important;
+        line-height: 1 !important;
+    }
+
+    .user-profile .user-name,
+    .header-right .user-name {
+        font-weight: 600 !important;
+        color: #1f2937 !important;
+        font-size: 14px !important;
+        margin: 0 !important;
+    }
+
+    .user-profile .user-role,
+    .header-right .user-role {
+        font-size: 12px !important;
+        color: #6b7280 !important;
+        margin: 0 !important;
+    }
+
+    .section-card, .card, .panel-section, .documents-section, .upload-section, .calendar-section, .chat-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        margin-bottom: 20px;
+    }
+
+    .section-header, .card-header, .panel-title, .documents-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .section-title, .card-title, .panel-title, .documents-title, .header-title h1 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .section-subtitle, .card-subtitle, .panel-subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin-top: 6px;
+    }
+
+    /* Strong overrides to ensure all pages match the calendar header look */
+    .header .header-title h1, .header-title h1, .header-title > h1 {
+        font-size: 28px !important;
+        font-weight: 700 !important;
+        line-height: 1.05 !important;
+        color: #1f2937 !important;
+        margin: 0 !important;
+    }
+
+    .header .header-title p, .header-title p, .header-title > p {
+        font-size: 16px !important;
+        color: #6b7280 !important;
+        margin: 4px 0 0 0 !important;
+    }
+
+    .main-content-area .section-card, .main-content-area .card, .main-content-area .panel-section, .main-content-area .documents-section {
+        padding: 24px !important;
+        border-radius: 12px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+        margin-bottom: 24px !important;
+    }
+
+    .main-content-area .section-title, .main-content-area .card-title, .main-content-area .panel-title, .main-content-area .documents-title {
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        color: #1f2937 !important;
+        margin: 0 !important;
+    }
+
+    .header-left .header-title { display:flex; flex-direction:column; }
 
     /* Mobile Styles */
     @media (max-width: 768px) {
@@ -358,11 +509,11 @@
     <nav class="sidebar-nav">
         <a href="{% url 'mindmate:dashboard' %}" class="sidebar-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
             <i class="fas fa-th-large"></i>
-            <span>Dashboard</span>
+            <span>Панел</span>
         </a>
         <a href="{% url 'mindmate:study_agent_chat' %}" class="sidebar-link{% if request.resolver_match.url_name == 'study_agent_chat' %} active{% endif %}">
             <i class="fas fa-robot"></i>
-            <span>Study Agent</span>
+            <span>Агент за учење</span>
         </a>
         <a href="{% url 'mindmate:calendar' %}" class="sidebar-link{% if request.resolver_match.url_name == 'calendar' %} active{% endif %}">
             <i class="fas fa-calendar-alt"></i>
@@ -373,7 +524,7 @@
             <span>Мои Квизови</span>
         </a>
     </nav>
-    <div class="sidebar-logout">
+    <div class="sidebar-logout" style="margin-top: auto;">
         <a href="{% url 'mindmate:logout' %}" class="sidebar-link" style="color: #ef4444;">
             <i class="fas fa-sign-out-alt"></i>
             <span>Одјави се</span>
@@ -430,53 +581,40 @@
             // Mobile: remove collapsed class
             sidebar?.classList.remove('collapsed');
         }
+        updateMainContentLayout();
     }
 
     // Sidebar toggle functionality
     function toggleSidebar() {
-        if (window.innerWidth <= 768) {
-            // Mobile: toggle sidebar visibility
-            toggleMobileSidebar();
-        } else {
-            // Desktop: toggle collapsed state
-            const sidebar = document.getElementById('sidebar');
-            sidebarState.collapsed = !sidebarState.collapsed;
-
-            if (sidebarState.collapsed) {
-                sidebar?.classList.add('collapsed');
-            } else {
-                sidebar?.classList.remove('collapsed');
-            }
-
-            localStorage.setItem('sidebarCollapsed', sidebarState.collapsed);
-        }
-    }
-
-    function toggleMobileSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
+        if (!sidebar) return;
 
-        sidebarState.mobileOpen = !sidebarState.mobileOpen;
-
-        if (sidebarState.mobileOpen) {
-            sidebar?.classList.add('active');
-            overlay?.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        } else {
-            sidebar?.classList.remove('active');
-            overlay?.classList.remove('active');
-            document.body.style.overflow = '';
+        if (window.innerWidth <= 768) {
+            const isActive = sidebar.classList.toggle('active');
+            if (overlay) overlay.classList.toggle('active', isActive);
+            document.body.style.overflow = isActive ? 'hidden' : '';
+            sidebarState.mobileOpen = isActive;
+            return;
         }
+
+        const collapsed = sidebar.classList.toggle('collapsed');
+        sidebarState.collapsed = collapsed;
+        localStorage.setItem('sidebarCollapsed', collapsed);
+        updateMainContentLayout();
     }
+
+    window.toggleSidebar = toggleSidebar;
 
     function closeMobileSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
-
-        sidebarState.mobileOpen = false;
-        sidebar?.classList.remove('active');
-        overlay?.classList.remove('active');
+        if (!sidebar) return;
+        sidebar.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
         document.body.style.overflow = '';
+        sidebarState.mobileOpen = false;
+        updateMainContentLayout();
     }
 
     // Get CSRF token
@@ -608,7 +746,80 @@
         switchToSession,
         deleteSession,
         toggleSidebar,
-        toggleMobileSidebar,
         closeMobileSidebar
     };
+
+    document.addEventListener('click', function(e){
+      var btn = e.target.closest && e.target.closest('.menu-toggle');
+      if(!btn) return;
+      if (btn.hasAttribute && btn.hasAttribute('onclick')) return;
+      if(window.sidebarFunctions && typeof window.sidebarFunctions.toggleSidebar === 'function'){
+         window.sidebarFunctions.toggleSidebar();
+       } else if (typeof toggleSidebar === 'function'){
+         toggleSidebar();
+       }
+     });
+
+    (function normalizeTitles(){
+    function apply() {
+        const hdrH1 = document.querySelector('.header .header-left .header-title h1') || document.querySelector('.header h1');
+        if (hdrH1 && !hdrH1.classList.contains('header-page-title')) hdrH1.classList.add('header-page-title');
+
+        const selectors = ['.card-header h3', '.card-header h2', '.card-title', '.panel-title', '.documents-title', '.section-title', '.header .header-title h1'];
+        selectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+                if (!el.classList.contains('section-title')) el.classList.add('section-title');
+            });
+        });
+    }
+    document.addEventListener('DOMContentLoaded', apply);
+    setTimeout(apply, 300);
+})();
+
+    function updateMainContentLayout() {
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('.main-content, .main-content-area').forEach(function(el){
+                el.style.marginLeft = '';
+                el.style.width = '';
+            });
+            return;
+        }
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) return;
+        const collapsed = sidebar.classList.contains('collapsed');
+        const marginLeft = collapsed ? '80px' : '250px';
+        const widthCalc = 'calc(100% - ' + marginLeft + ')';
+        document.querySelectorAll('.main-content, .main-content-area').forEach(function(el){
+            el.style.marginLeft = marginLeft;
+            el.style.width = widthCalc;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        updateMainContentLayout();
+    });
+    document.addEventListener('DOMContentLoaded', function(){
+    const headerLeft = document.querySelector('.header .header-left');
+    if (!headerLeft) return;
+    if (!headerLeft.querySelector('.menu-toggle')) {
+        const btn = document.createElement('button');
+        btn.className = 'menu-toggle';
+        btn.setAttribute('aria-label', 'Toggle sidebar');
+        btn.innerHTML = '<i class="fas fa-bars"></i>';
+        btn.style.display = 'flex';
+        btn.style.position = 'relative';
+        btn.style.zIndex = '1200';
+        headerLeft.insertBefore(btn, headerLeft.firstChild);
+        btn.addEventListener('click', function(e){
+            e.stopPropagation();
+            toggleSidebar();
+        });
+    } else {
+        const existing = headerLeft.querySelector('.menu-toggle');
+        existing.style.display = 'flex';
+        existing.style.position = 'relative';
+        existing.style.zIndex = '1200';
+        existing.addEventListener('click', function(e){ e.stopPropagation(); toggleSidebar(); });
+    }
+});
 </script>
