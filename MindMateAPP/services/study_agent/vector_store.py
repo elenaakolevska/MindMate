@@ -64,6 +64,17 @@ class VectorStoreService:
         # Save the combined content to the StudyMaterial model
         combined_content = " ".join(chunks)
         doc.content = combined_content
+        
+        # Classify document subject using LLM
+        try:
+            from ..llm_service import classify_document_subject
+            subject = classify_document_subject(combined_content)
+            doc.subject = subject
+            logger.info(f"Document {document_id} classified as: {subject}")
+        except Exception as e:
+            logger.error(f"Failed to classify document subject: {e}")
+            doc.subject = "Општо"
+        
         doc.processing_status = 'completed'
         doc.processing_date = datetime.utcnow()
         doc.save()
@@ -125,8 +136,15 @@ class VectorStoreService:
         return collection.get(where={"document_id": document_id})
 
 
-    def delete_document_chunks(self, document_id):
-        student_id = StudyMaterial.objects.get(id=document_id).student.id
+    def delete_document_chunks(self, document_id, student_id=None):
+        # If student_id not provided, try to get it from the document (may fail if document deleted)
+        if student_id is None:
+            try:
+                student_id = StudyMaterial.objects.get(id=document_id).student.id
+            except StudyMaterial.DoesNotExist:
+                logger.warning(f"Cannot delete chunks for document {document_id}: document not found")
+                return False
+        
         collection_name = f"student_{student_id}_materials"
         try:
             collection = self.client.get_collection(name=collection_name)
@@ -135,9 +153,11 @@ class VectorStoreService:
             return False  
         try:
             collection.delete(where={"document_id": str(document_id)})
+            logger.info(f"Deleted chunks for document {document_id} from collection {collection_name}")
             return True
         except Exception as e:
             logger.error(f"Error deleting chunks for document ID {document_id}: {e}")
+            return False
             return False
 
 

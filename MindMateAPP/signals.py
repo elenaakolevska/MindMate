@@ -34,11 +34,13 @@ def process_study_materials(sender, instance, created, **kwargs):
 def cleanup_study_material_vector_store(sender, instance, **kwargs):
     try:
         document_id = instance.id
-        if document_id is None:
+        student_id = instance.student.id if instance.student else None
+        
+        if document_id is None or student_id is None:
             return
         
         vector_store = VectorStoreService()
-        vector_store.delete_document_chunks(document_id=document_id)
+        vector_store.delete_document_chunks(document_id=document_id, student_id=student_id)
             
     except Exception as e:
         logger.error(f"Vector store cleanup error for document {getattr(instance, 'id', 'unknown')}: {e}")

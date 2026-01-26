@@ -853,7 +853,7 @@
                     </div>
                     <div class="file-info">
                         <div class="file-name">${file.name}</div>
-                        <div class="file-size">${formatFileSize(file.size)}</div>
+                        <div class="file-size">${file.subject || 'Општо'} • ${formatFileSize(file.size)}</div>
                     </div>
                     <button class="delete-file-btn" title="Избриши" onclick="deleteDocument(${file.materialId}, ${index})"
                             style="background:none;border:none;color:#ef4444;font-size:16px;cursor:pointer;margin-left:8px;">
@@ -876,6 +876,7 @@
                         size: doc.file_size || 0,
                         type: doc.type,
                         materialId: doc.id,
+                        subject: doc.subject || 'Општо',
                         processingStatus: doc.processing_status || 'pending'
                     }));
                     updateUploadedFilesDisplay();

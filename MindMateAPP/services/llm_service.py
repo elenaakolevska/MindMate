@@ -376,3 +376,70 @@ def quick_generate(prompt: str, system_prompt: str = None) -> str:
     response = service.generate(prompt, system_prompt)
     return response.content
 
+
+def classify_document_subject(content: str, max_length: int = 2000) -> str:
+    """
+    Classify the subject/topic of a document based on its content.
+    Returns the identified subject in Macedonian.
+    """
+    import requests
+    import re
+    
+    if not content or not content.strip():
+        return "Општо"
+    
+    # Truncate content if too long
+    content_sample = content[:max_length] if len(content) > max_length else content
+    
+    try:
+        ollama_url = "http://host.docker.internal:11434"
+        
+        prompt = f"""Анализирај го следниов текст и идентификувај ја главната тема/предмет.
+
+Текст:
+{content_sample}
+
+Одговори САМО со името на предметот/темата на македонски јазик (на пример: Математика, Биологија, Историја, Физика, Програмирање, Хемија, Литература, Географија, итн.)
+Ако не може да се идентификува специфична тема, одговори со "Општо".
+
+Одговор (само име на предмет):"""  
+        
+        response = requests.post(
+            f"{ollama_url}/api/generate",
+            json={
+                "model": "qwen2.5:7b",
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "temperature": 0.3,
+                    "top_p": 0.8,
+                    "max_tokens": 50
+                }
+            },
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            subject = result.get('response', '').strip()
+            
+            # Clean up the response - remove quotes, extra punctuation
+            subject = re.sub(r'["\'\\.\n\r]', '', subject)
+            subject = subject.strip()
+            
+            # If response is empty or too long (likely not a subject), return General
+            if not subject or len(subject) > 50:
+                return "Општо"
+            
+            # Capitalize first letter
+            subject = subject[0].upper() + subject[1:] if len(subject) > 1 else subject.upper()
+            
+            logger.info(f"Classified document subject as: {subject}")
+            return subject
+        else:
+            logger.error(f"Failed to classify document: HTTP {response.status_code}")
+            return "Општо"
+            
+    except Exception as e:
+        logger.error(f"Error classifying document subject: {e}")
+        return "Општо"
