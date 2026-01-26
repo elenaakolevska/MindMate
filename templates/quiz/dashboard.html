@@ -334,11 +334,12 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number">{{ stats.total }}</div>
-                    <div class="stat-label">Вкупно Квизови</div>
+                    <div class="stat-label">Завршени Квизови</div>
                 </div>
 
                 <div class="stat-card">
-                    <div class="stat-number">{{ stats.total }}</div> <div class="stat-label">Завршени</div>
+                    <div class="stat-number">{{ stats.uncompleted }}</div>
+                    <div class="stat-label">Незавршени</div>
                 </div>
 
                 <div class="stat-card">
@@ -352,76 +353,97 @@
                 </div>
             </div>
 
-            <!-- Available Quizzes -->
-            {% if generation_status.can_generate_quiz %}
+            <!-- Uncompleted Quizzes (Available to Take) -->
+            {% if uncompleted_quizzes %}
             <div class="quizzes-section">
                 <div class="section-header">
                     <div class="section-title">Достапни Квизови</div>
-                    <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i>
-                        Генерирај Нов Квиз
-                    </a>
                 </div>
 
                 <div class="quiz-grid">
-                    <!-- This would be populated with available quizzes to take -->
+                    {% for quiz_data in uncompleted_quizzes %}
                     <div class="quiz-card">
                         <div class="quiz-header">
                             <div>
-                                <div class="quiz-title">Квиз од ваши материјали</div>
-                                <div class="quiz-meta">Генерирано од ваши документи</div>
+                                <div class="quiz-title">{{ quiz_data.quiz.subject|default:"Општ Квиз" }}</div>
+                                <div class="quiz-meta">
+                                    Генерирано на {{ quiz_data.quiz.created_at|date:"d.m.Y H:i" }}
+                                    {% if quiz_data.quiz.generated_from_material %}
+                                    • {{ quiz_data.quiz.generated_from_material.title }}
+                                    {% endif %}
+                                </div>
                             </div>
-                            <span class="difficulty-badge difficulty-medium">Средно</span>
+                            <span class="difficulty-badge difficulty-{{ quiz_data.quiz.difficulty }}">{{ quiz_data.quiz.get_difficulty_display }}</span>
                         </div>
                         <div class="quiz-stats">
                             <div class="quiz-stat">
                                 <i class="fas fa-question"></i>
-                                10 прашања
+                                {{ quiz_data.quiz.questions_count }} прашања
+                            </div>
+                            <div class="quiz-stat">
+                                <i class="fas fa-list"></i>
+                                {{ quiz_data.quiz.get_quiz_type_display }}
                             </div>
                             <div class="quiz-stat">
                                 <i class="fas fa-clock"></i>
-                                ~15 мин
+                                ~{{ quiz_data.quiz.questions_count|add:"5" }} мин
                             </div>
                         </div>
                         <div class="quiz-actions">
-                            <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary">
+                            <a href="{% url 'mindmate:quiz_take' quiz_data.quiz.id %}" class="btn btn-primary">
                                 <i class="fas fa-play"></i>
-                                Започни
+                                Започни Квиз
                             </a>
                         </div>
                     </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Generate New Quiz Section -->
+            {% if generation_status.can_generate_quiz %}
+            <div class="quizzes-section">
+                <div class="section-header">
+                    <div class="section-title">Генерирај Нов Квиз</div>
+                    <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Генерирај Квиз
+                    </a>
+                </div>
+                <div class="quiz-meta" style="color: #6b7280;">
+                    Имате {{ generation_status.material_count }} материјал(и) достапни за генерирање квизови
                 </div>
             </div>
             {% endif %}
 
             <!-- Recent Results -->
-            {% if quiz_history %}
+            {% if completed_quizzes %}
             <div class="quizzes-section recent-results">
-                <div class="section-title">Недавни Резултати</div>
+                <div class="section-title">Завршени Квизови</div>
                 <div class="results-list">
-                    {% for quiz_data in quiz_history %}
+                    {% for quiz_data in completed_quizzes %}
                     <div class="result-item">
                         <div class="result-info">
                             <h4>{{ quiz_data.quiz.subject|default:"Општ Квиз" }}</h4>
                             <div class="result-meta">
                                 {{ quiz_data.quiz.questions_count }} прашања •
-                                {{ quiz_data.quiz.difficulty|title }} •
-                                {{ quiz_data.result.taken_at|date:"d.m.Y H:i" }}
+                                {{ quiz_data.quiz.get_difficulty_display }} •
+                                {{ quiz_data.quiz.get_quiz_type_display }} •
+                                {{ quiz_data.taken_at|date:"d.m.Y H:i" }}
                             </div>
                         </div>
                         <div class="result-score">
-                            <div class="score-percentage">{{ quiz_data.result.accuracy_percentage|floatformat:1 }}%</div>
+                            <div class="score-percentage">{{ quiz_data.percentage|floatformat:1 }}%</div>
                             <div class="score-details">
-                                {{ quiz_data.result.score }}/{{ quiz_data.result.max_score }}
+                                {{ quiz_data.score }}/{{ quiz_data.max_score }}
                             </div>
                         </div>
                         <div class="quiz-actions">
-                            {% if quiz_data.result.id %}
                             <a href="{% url 'mindmate:quiz_results_view' quiz_data.result.id %}" class="btn btn-secondary">
                                 <i class="fas fa-eye"></i>
                                 Детали
                             </a>
-                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}
@@ -430,13 +452,13 @@
             {% endif %}
 
             <!-- Empty State -->
-            {% if not quiz_history and not generation_status.can_generate_quiz %}
+            {% if not completed_quizzes and not uncompleted_quizzes and not generation_status.can_generate_quiz %}
             <div class="quizzes-section">
                 <div class="empty-state">
                     <i class="fas fa-question-circle"></i>
                     <h3>Немате достапни квизови</h3>
                     <p>Прво треба да додадете студиски материјали за да генерирате квизови.</p>
-                    <a href="{% url 'mindmate:upload_document' %}" class="btn btn-primary" style="margin-top: 16px;">
+                    <a href="{% url 'mindmate:study_agent_chat' %}" class="btn btn-primary" style="margin-top: 16px;">
                         <i class="fas fa-upload"></i>
                         Додај Материјали
                     </a>

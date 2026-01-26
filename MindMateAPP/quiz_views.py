@@ -503,21 +503,56 @@ def _get_available_subjects_for_student(student_id: int) -> list:
 def quiz_dashboard(request):
     student = get_object_or_404(Student, user=request.user)
     
-    # Get all results for this student
-    quiz_results = QuizResult.objects.filter(student=student).select_related('quiz').order_by('-taken_at')
+    # Get all quizzes generated for materials owned by this student
+    all_quizzes = Quiz.objects.filter(
+        generated_from_material__student=student
+    ).select_related('generated_from_material').order_by('-created_at')
+    
+    # Separate completed and uncompleted quizzes
+    completed_quizzes = []
+    uncompleted_quizzes = []
+    
+    for quiz in all_quizzes:
+        # Check if student has taken this quiz
+        quiz_result = QuizResult.objects.filter(student=student, quiz=quiz).first()
+        
+        if quiz_result:
+            # Quiz is completed
+            completed_quizzes.append({
+                'quiz': quiz,
+                'result': quiz_result,
+                'percentage': quiz_result.accuracy_percentage,
+                'score': quiz_result.score,
+                'max_score': quiz_result.max_score,
+                'taken_at': quiz_result.taken_at
+            })
+        else:
+            # Quiz is uncompleted (available to take)
+            uncompleted_quizzes.append({
+                'quiz': quiz,
+                'result': None
+            })
     
     # Calculate Statistics
+    completed_results = QuizResult.objects.filter(student=student)
     stats = {
-        'total': quiz_results.count(),
-        'avg_score': quiz_results.aggregate(Avg('accuracy_percentage'))['accuracy_percentage__avg'] or 0,
-        'passed': quiz_results.filter(accuracy_percentage__gte=70).count()
+        'total': completed_results.count(),
+        'uncompleted': len(uncompleted_quizzes),
+        'avg_score': completed_results.aggregate(Avg('accuracy_percentage'))['accuracy_percentage__avg'] or 0,
+        'passed': completed_results.filter(accuracy_percentage__gte=70).count()
     }
+
+    # Check if student can generate more quizzes
+    quiz_generator = get_quiz_generator()
+    validation = quiz_generator.validate_quiz_generation_requirements(student.id)
 
     context = {
         'student': student,
-        'quiz_history': quiz_results,
+        'completed_quizzes': completed_quizzes,
+        'uncompleted_quizzes': uncompleted_quizzes,
+        'quiz_history': completed_quizzes,  # For backward compatibility
         'stats': stats,
-        # ... keep your other context items ...
+        'generation_status': validation
     }
     return render(request, 'quiz/dashboard.html', context)
 
@@ -599,7 +634,8 @@ def quiz_results_view(request, quiz_result_id):
             'quiz': quiz,
             'question_results': question_results,
             'grade': _calculate_grade(quiz_result.accuracy_percentage),
-            'passed': quiz_result.accuracy_percentage >= 70
+            'passed': quiz_result.accuracy_percentage >= 70,
+            'incorrect_answers': quiz_result.max_score - quiz_result.score
         }
         
         return render(request, 'quiz/results.html', context)

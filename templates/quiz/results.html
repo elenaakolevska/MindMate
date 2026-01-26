@@ -381,7 +381,7 @@
                 <div class="stat-label">Точни Одговори</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">{{ quiz_result.max_score|sub:quiz_result.score }}</div>
+                <div class="stat-number">{{ incorrect_answers }}</div>
                 <div class="stat-label">Неточни Одговори</div>
             </div>
             <div class="stat-card">
@@ -424,7 +424,7 @@
                         <div class="answer-label">Вашиот Одговор:</div>
                         <div>
                             {% if result.user_answer %}
-                                {{ result.user_answer }}. {{ result.question.options|get_item:result.user_answer }}
+                                {{ result.user_answer }}. {{ result.user_answer_text }}
                             {% else %}
                                 Неодговорено
                             {% endif %}
@@ -433,7 +433,7 @@
 
                     <div class="answer-box correct-answer">
                         <div class="answer-label">Точен Одговор:</div>
-                        <div>{{ result.correct_answer }}. {{ result.question.options|get_item:result.correct_answer }}</div>
+                        <div>{{ result.correct_answer }}. {{ result.correct_answer_text }}</div>
                     </div>
                 </div>
 

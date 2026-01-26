@@ -954,18 +954,13 @@
             .then(response => response.json())
             .then(data => {
                 if (data.quiz) {
-                    // Try to open in new tab
+                    // Show notification with link to quiz dashboard
                     const quizUrl = `/quiz/${data.quiz.id}/take/`;
-                    let popup = window.open(quizUrl, '_blank');
-                    // Show custom notification with fallback link
                     showNotification(
-                        `✅ Квизот е успешно генериран! <br><a href="${quizUrl}" target="_blank" style="color:#2563eb;font-weight:600;">Започнете квизот сега</a>`,
+                        `✅ Квизот е успешно генериран! <br><a href="${quizUrl}" style="color:#2563eb;font-weight:600;text-decoration:underline;">Започнете квизот сега</a> или одете на <a href="/quiz/dashboard/" style="color:#2563eb;font-weight:600;text-decoration:underline;">Мои Квизови</a>`,
                         'success',
                         true
                     );
-                    if (!popup) {
-                        // If popup blocked, user can click the link in the notification
-                    }
                 } else {
                     showNotification(`❌ Генерирањето на квизот не успеа: ${data.error || 'Непозната грешка'}`, 'error');
                 }
