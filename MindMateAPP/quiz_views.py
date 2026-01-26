@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Q
 import json
 import logging
 
@@ -503,10 +503,17 @@ def _get_available_subjects_for_student(student_id: int) -> list:
 def quiz_dashboard(request):
     student = get_object_or_404(Student, user=request.user)
     
-    # Get all quizzes generated for materials owned by this student
+    # Get all quiz results for this student
+    quiz_results = QuizResult.objects.filter(student=student).select_related('quiz')
+    
+    # Get quiz IDs that student has completed
+    completed_quiz_ids = set(quiz_results.values_list('quiz_id', flat=True))
+    
+    # Get all quizzes - either from student's materials OR that student has taken
     all_quizzes = Quiz.objects.filter(
-        generated_from_material__student=student
-    ).select_related('generated_from_material').order_by('-created_at')
+        Q(generated_from_material__student=student) | 
+        Q(id__in=completed_quiz_ids)
+    ).select_related('generated_from_material').order_by('-created_at').distinct()
     
     # Separate completed and uncompleted quizzes
     completed_quizzes = []
@@ -514,7 +521,7 @@ def quiz_dashboard(request):
     
     for quiz in all_quizzes:
         # Check if student has taken this quiz
-        quiz_result = QuizResult.objects.filter(student=student, quiz=quiz).first()
+        quiz_result = quiz_results.filter(quiz=quiz).first()
         
         if quiz_result:
             # Quiz is completed

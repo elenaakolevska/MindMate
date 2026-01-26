@@ -390,8 +390,10 @@
             </div>
             <div class="stat-card">
                 <div class="stat-number">
-                    {% if quiz_result.taken_at %}
-                        {{ quiz_result.taken_at|timesince }}
+                    {% if quiz_result.time_taken %}
+                        {{ quiz_result.time_taken }}
+                    {% elif quiz_result.taken_at %}
+                        {{ quiz_result.taken_at|timesince }} ago
                     {% else %}
                         --
                     {% endif %}
