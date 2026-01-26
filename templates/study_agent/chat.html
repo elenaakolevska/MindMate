@@ -853,7 +853,7 @@
                     </div>
                     <div class="file-info">
                         <div class="file-name">${file.name}</div>
-                        <div class="file-size">${formatFileSize(file.size)}</div>
+                        <div class="file-size">${file.subject || 'Општо'} • ${formatFileSize(file.size)}</div>
                     </div>
                     <button class="delete-file-btn" title="Избриши" onclick="deleteDocument(${file.materialId}, ${index})"
                             style="background:none;border:none;color:#ef4444;font-size:16px;cursor:pointer;margin-left:8px;">
@@ -876,6 +876,7 @@
                         size: doc.file_size || 0,
                         type: doc.type,
                         materialId: doc.id,
+                        subject: doc.subject || 'Општо',
                         processingStatus: doc.processing_status || 'pending'
                     }));
                     updateUploadedFilesDisplay();
@@ -954,18 +955,13 @@
             .then(response => response.json())
             .then(data => {
                 if (data.quiz) {
-                    // Try to open in new tab
+                    // Show notification with link to quiz dashboard
                     const quizUrl = `/quiz/${data.quiz.id}/take/`;
-                    let popup = window.open(quizUrl, '_blank');
-                    // Show custom notification with fallback link
                     showNotification(
-                        `✅ Квизот е успешно генериран! <br><a href="${quizUrl}" target="_blank" style="color:#2563eb;font-weight:600;">Започнете квизот сега</a>`,
+                        `✅ Квизот е успешно генериран! <br><a href="${quizUrl}" style="color:#2563eb;font-weight:600;text-decoration:underline;">Започнете квизот сега</a> или одете на <a href="/quiz/dashboard/" style="color:#2563eb;font-weight:600;text-decoration:underline;">Мои Квизови</a>`,
                         'success',
                         true
                     );
-                    if (!popup) {
-                        // If popup blocked, user can click the link in the notification
-                    }
                 } else {
                     showNotification(`❌ Генерирањето на квизот не успеа: ${data.error || 'Непозната грешка'}`, 'error');
                 }

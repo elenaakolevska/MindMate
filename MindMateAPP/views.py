@@ -335,9 +335,10 @@ def upload_document(request):
                 title=uploaded_file.name.rsplit('.', 1)[0],  # Remove extension from title
                 original_filename=uploaded_file.name,
                 file_path=f'uploads/{student.id}/{uploaded_file.name}',
-                content='',  # TODO: Extract text content using OCR
-                subject='',  # TODO: Classify subject using AI
-                processing_status='pending'
+                content='',  # Will be extracted during processing
+                subject='',  # Will be classified during processing
+                processing_status='pending',
+                file_size=uploaded_file.size  # Save file size in bytes
             )
 
             # TODO: Queue OCR processing task here
@@ -635,11 +636,11 @@ def get_recent_documents(request):
                 'id': doc.id,
                 'name': doc.original_filename or doc.title,
                 'title': doc.title,
-                'subject': doc.subject or 'Uncategorized',
+                'subject': doc.subject or 'Општо',
                 'type': doc.type,
                 'upload_date': doc.upload_date.isoformat(),
                 'processing_status': doc.processing_status,
-                'file_size': getattr(doc, 'file_size', 0)
+                'file_size': doc.file_size
             })
         
         return JsonResponse({
@@ -660,43 +661,7 @@ def get_recent_documents(request):
         }, status=500)
 
 
-@login_required 
-@require_http_methods(["GET"])
-def get_recent_documents(request):
-    """API endpoint to get recent documents for the Study Agent"""
-    try:
-        student = Student.objects.get(user=request.user)
-        
-        documents = StudyMaterial.objects.filter(
-            student=student
-        ).order_by('-upload_date')[:20]
-        
-        document_list = []
-        for doc in documents:
-            # Calculate time ago
-            now = timezone.now()
-            time_diff = now - doc.upload_date
-            
-            if time_diff.days > 0:
-                time_ago = f"{time_diff.days} day{'s' if time_diff.days > 1 else ''} ago"
-            elif time_diff.seconds > 3600:
-                hours = time_diff.seconds // 3600
-                time_ago = f"{hours} hour{'s' if hours > 1 else ''} ago"
-            else:
-                minutes = time_diff.seconds // 60
-                time_ago = f"{minutes} minute{'s' if minutes > 1 else ''} ago"
-            
-            document_list.append({
-                'id': doc.id,
-                'name': doc.original_filename,
-                'title': doc.title or doc.original_filename,
-                'type': doc.type,
-                'subject': doc.subject or 'General',
-                'upload_date': doc.upload_date.isoformat(),
-                'time_ago': time_ago,
-                'processing_status': doc.processing_status,
-                'file_size': None  # We don't store file size currently
-            })
+
         
         return JsonResponse({
             'success': True,

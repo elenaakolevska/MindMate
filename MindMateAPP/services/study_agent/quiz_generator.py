@@ -26,7 +26,7 @@ class QuizGenerator:
         self.ollama_url = ollama_url
         self.rag_retriever = rag_retriever
 
-    def generate_quiz_from_materials(self, question_count, material_ids, student: Student) -> List[QuizQuestion]:
+    def generate_quiz_from_materials(self, question_count, material_ids, student: Student, quiz_type: str = 'multiple_choice') -> List[QuizQuestion]:
         """Generate quiz from specific materials (legacy method)"""
         chunks = StudyMaterial.objects.filter(id__in=material_ids, student=student)
         content_list = [doc.content for doc in chunks if doc.content and doc.content.strip()]
@@ -41,9 +41,53 @@ class QuizGenerator:
         if len(combined_content) > 2000:
             combined_content = combined_content[:2000] + "..."
 
+        # Determine question format based on quiz_type
+        if quiz_type == 'true_false':
+            question_format = """true/false questions. Each question should have:
+- question_text: The statement in Macedonian
+- question_type: "true_false"
+- correct_answer: "TRUE" or "FALSE"
+- options: {{"TRUE": "Точно", "FALSE": "Неточно"}}
+- explanation: Brief explanation in Macedonian"""
+            example_format = '''{
+    "question_text": "Statement in Macedonian?",
+    "question_type": "true_false",
+    "correct_answer": "TRUE",
+    "options": {"TRUE": "Точно", "FALSE": "Неточно"},
+    "explanation": "Explanation in Macedonian"
+}'''
+        elif quiz_type == 'mixed':
+            question_format = """mixed questions (both multiple choice and true/false). For multiple choice:
+- 4 options (A, B, C, D)
+- correct_answer: one of A, B, C, D
+For true/false:
+- correct_answer: "TRUE" or "FALSE"
+- options: {{"TRUE": "Точно", "FALSE": "Неточно"}}"""
+            example_format = '''{
+    "question_text": "Question in Macedonian?",
+    "question_type": "multiple_choice" or "true_false",
+    "correct_answer": "A" or "TRUE",
+    "options": {"A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D"} or {"TRUE": "Точно", "FALSE": "Неточно"},
+    "explanation": "Explanation in Macedonian"
+}'''
+        else:  # multiple_choice
+            question_format = """multiple choice questions. Each question should have:
+- question_text: Question in Macedonian
+- question_type: "multiple_choice"
+- correct_answer: one of A, B, C, D
+- options: {{"A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D"}}
+- explanation: Brief explanation in Macedonian"""
+            example_format = '''{
+    "question_text": "Question in Macedonian?",
+    "question_type": "multiple_choice",
+    "correct_answer": "A",
+    "options": {"A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D"},
+    "explanation": "Explanation in Macedonian"
+}'''
+
         prompt = {
             "model": "qwen2.5:7b",
-            "prompt": f"""Create a quiz with {question_count} multiple choice questions in Macedonian based on this content:
+            "prompt": f"""Create a quiz with {question_count} {question_format} in Macedonian based on this content:
 
 {combined_content}
 
@@ -52,20 +96,12 @@ IMPORTANT: You must respond with VALID JSON only. No other text, no explanations
 Required JSON format:
 {{
     "questions": [
-        {{
-            "question_text": "Question in Macedonian?",
-            "question_type": "multiple_choice",
-            "correct_answer": "A",
-            "options": {{"A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D"}},
-            "explanation": "Explanation in Macedonian"
-        }}
+        {example_format}
     ]
 }}
 
 Rules:
 - Generate exactly {question_count} questions
-- Each question must have 4 options (A, B, C, D)
-- Correct answer must be one of: A, B, C, D
 - All text in Macedonian
 - Return ONLY the JSON object, nothing else
 - Ensure the JSON is properly formatted and complete
@@ -250,7 +286,7 @@ JSON:""",
                     content_chunks.append(material.content)
             combined_content = " ".join(content_chunks)
             # Generate quiz using existing method
-            quiz_questions = self.generate_quiz_from_materials(questions_count, [m.id for m in materials], student)
+            quiz_questions = self.generate_quiz_from_materials(questions_count, [m.id for m in materials], student, quiz_type)
             # Prevent creation of quiz with 0 questions
             if not quiz_questions:
                 logger.error("No questions could be parsed from LLM response.")
