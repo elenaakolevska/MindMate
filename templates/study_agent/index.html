@@ -75,10 +75,10 @@
                             <h3>Додади студиски материјал</h3>
                             <p>Влечете и пуштете ги вашите фајлови тука, или кликнете за пребарување</p>
                             <p style="font-size: 12px; color: #9ca3af; margin-top: 8px;">
-                                Поддржува PDF, DOC, DOCX, TXT (макс 50MB)
+                                Поддржува PDF, DOC, DOCX, TXT, слики (JPG, PNG) (макс 50MB)
                             </p>
                         </div>
-                        <input type="file" id="file-input" class="file-input" accept=".pdf,.doc,.docx,.txt" multiple aria-label="Upload study material">
+                        <input type="file" id="file-input" class="file-input" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,image/jpeg,image/png,image/jpg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" multiple aria-label="Upload study material">
                     </div>
                 </div>
 
@@ -527,7 +527,7 @@
                 body: JSON.stringify(quizData)
             })
             .then(response => response.json())
-            .then data => {
+            .then(data => {
                 if (data.quiz) {
                     showNotification('✅ Квизот е успешно генериран!', 'success');
                     // Redirect to quiz taking interface
