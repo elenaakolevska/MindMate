@@ -25,6 +25,7 @@ urlpatterns = [
     path('study-agent/stream/', study_agent_views.study_agent_stream_api, name='study_agent_stream'),
     path('study-agent/history/', study_agent_views.chat_history_api, name='study_agent_history'),
     path('study-agent/clear/', study_agent_views.clear_chat_history_api, name='study_agent_clear'),
+    path('study-agent/sessions/new/', study_agent_views.create_new_session_api, name='create_new_session'),
     path('study-agent/sessions/<str:session_id>/delete/', study_agent_views.delete_session_api, name='delete_session'),
 
     # Study Agent API URLs

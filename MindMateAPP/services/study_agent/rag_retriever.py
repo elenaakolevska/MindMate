@@ -69,6 +69,9 @@ class RAGRetriever:
             {"created_by": "rag_retriever", "type": "study_session"}
         )
         logger.info(f"Created new session: {session_id}")
+        # Update the current session_id
+        self.session_id = session_id
+        return session_id
 
     #Utilities for Chat and Chat History
     def get_sessions(self):

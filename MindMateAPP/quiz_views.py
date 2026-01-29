@@ -57,6 +57,27 @@ def generate_quiz(request):
         
         material_ids = data.get('material_ids', [])
         
+        # Check if any selected materials are still processing
+        if material_ids:
+            processing_materials = StudyMaterial.objects.filter(
+                id__in=material_ids,
+                student=student
+            ).exclude(processing_status='completed')
+            
+            if processing_materials.exists():
+                processing_titles = list(processing_materials.values_list('title', flat=True))
+                return JsonResponse({
+                    'error': 'Cannot generate quiz',
+                    'details': f'Some documents are still being processed: {", ".join(processing_titles)}. Please wait for processing to complete.',
+                    'processing_materials': [
+                        {
+                            'id': m.id,
+                            'title': m.title,
+                            'status': m.processing_status
+                        } for m in processing_materials
+                    ]
+                }, status=400)
+        
         # Validate generation requirements
         quiz_generator = get_quiz_generator()
         validation = quiz_generator.validate_quiz_generation_requirements(student_id)

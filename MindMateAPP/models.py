@@ -96,6 +96,34 @@ class ChatbotInteraction(models.Model):
     response_content = models.TextField(blank=True)  # Bot's response
     action_time = models.DateTimeField(auto_now_add=True)
 
+class ChatSession(models.Model):
+    """Represents a chat session for a student with a bot"""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='chat_sessions')
+    bot_type = models.CharField(max_length=32, choices=[('study_agent', 'Study Agent'), ('time_agent', 'Time Agent'), ('organization', 'Organization Bot')], default='study_agent')
+    session_id = models.CharField(max_length=255, unique=True, db_index=True)  # Unique session identifier
+    title = models.CharField(max_length=255, blank=True)  # Optional session title
+    description = models.TextField(blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  # Updated whenever a new message is added
+    
+    # Session metadata
+    message_count = models.IntegerField(default=0)
+    metadata = models.JSONField(default=dict, blank=True)  # Store additional metadata as JSON
+    
+    is_archived = models.BooleanField(default=False)  # Soft delete functionality
+    
+    class Meta:
+        ordering = ['-updated_at']
+        indexes = [
+            models.Index(fields=['student', 'bot_type', '-updated_at']),
+            models.Index(fields=['session_id']),
+        ]
+    
+    def __str__(self):
+        return f"{self.student.full_name} - {self.bot_type} ({self.created_at.strftime('%Y-%m-%d %H:%M')})"
+
 class ChatBot(models.Model):
     description = models.TextField(blank=True)
     capabilities = models.TextField(blank=True)
