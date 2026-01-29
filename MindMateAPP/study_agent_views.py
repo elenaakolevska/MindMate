@@ -56,9 +56,14 @@ def study_agent_chat_view(request):
     except Student.DoesNotExist:
         return redirect('mindmate:student_preferences')
 
+    # Get current session ID to load previous messages
+    rag_retriever = get_rag_retriever(student.id)
+    current_session_id = rag_retriever.session_id
+
     return render(request, 'study_agent/chat.html', {
         'user': request.user,
         'student': student,
+        'current_session_id': current_session_id,
         'page_title': 'Study Agent Chat - MindMate'
     })
 

@@ -674,7 +674,7 @@
         let chatState = {
             csrfToken: '',
             uploadedFiles: [],
-            currentSessionId: null
+            currentSessionId: '{{ current_session_id }}'  // Get from Django template
         };
 
         // Initialize on DOM load
@@ -682,6 +682,9 @@
             chatState.csrfToken = getCSRFToken();
             initializeFileUpload();
             loadRecentDocuments();
+            
+            // Load previous messages from current session
+            loadCurrentSessionHistory();
             
             // Ensure quiz document selection is updated on load
             setTimeout(() => {
@@ -692,6 +695,30 @@
             window.clearCurrentChat = clearCurrentChat;
             window.loadSessionMessages = loadSessionMessages;
         });
+
+        // Load chat history for current session
+        function loadCurrentSessionHistory() {
+            if (!chatState.currentSessionId) return;
+            
+            fetch(`/study-agent/history/?session_id=${chatState.currentSessionId}`, {
+                headers: { 'X-CSRFToken': chatState.csrfToken }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.history && data.history.length > 0) {
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.innerHTML = ''; // Clear welcome message
+                    
+                    data.history.forEach(msg => {
+                        addMessage(msg.content, msg.is_user_message ? 'user' : 'agent');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading chat history:', error);
+                // Keep welcome message on error
+            });
+        }
 
         // Integration functions for sidebar
         function clearCurrentChat() {
