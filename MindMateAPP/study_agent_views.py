@@ -302,14 +302,18 @@ def chat_history_api(request):
 
         # Also return available sessions for sidebar
         sessions = rag_retriever.get_sessions()
-        formatted_sessions = [
-            {
+        formatted_sessions = []
+        for session in sessions:
+            # Get last message time from session
+            session_history = rag_retriever.get_session_history(session.get('session_id'), limit=1)
+            last_message_time = session_history[0].get('timestamp') if session_history else session.get('created_at')
+            
+            formatted_sessions.append({
                 'id': session.get('session_id'),
                 'title': session.get('title', 'New Chat'),
-                'updated_at': session.get('updated_at')
-            }
-            for session in sessions
-        ]
+                'created_at': session.get('created_at'),
+                'updated_at': last_message_time
+            })
 
         return JsonResponse({
             'history': formatted_history,
@@ -340,19 +344,55 @@ def clear_chat_history_api(request):
 @require_http_methods(["DELETE"])
 def delete_session_api(request, session_id):
     """
-    Delete a specific chat session
+    Delete a specific chat session and all its messages
     """
     try:
         student = Student.objects.get(user=request.user)
+        rag_retriever = get_rag_retriever(student.id)
         
-        # In a full implementation, this would delete from ChatSession model
-        # For now, just return success
-        logger.info(f"Deleting session {session_id} for student {student.id}")
+        # Delete the session using the chat history manager
+        success = rag_retriever.chat_manager.delete_session(student.id, session_id)
         
-        return JsonResponse({'success': True})
+        if success:
+            logger.info(f"Deleted session {session_id} for student {student.id}")
+            return JsonResponse({'success': True, 'message': 'Session deleted successfully'})
+        else:
+            return JsonResponse({'success': False, 'error': 'Failed to delete session'}, status=400)
 
     except Student.DoesNotExist:
         return JsonResponse({'error': 'Student profile not found'}, status=404)
     except Exception as e:
-        logger.error(f"Error deleting session: {e}")
+        logger.error(f"Error deleting session: {e}", exc_info=True)
         return JsonResponse({'error': str(e)}, status=500)
+
+@require_http_methods(["POST"])
+def create_new_session_api(request):
+    """
+    Create a new chat session for the current user
+    """
+    try:
+        student = Student.objects.get(user=request.user)
+        rag_retriever = get_rag_retriever(student.id)
+        
+        # Create a new session
+        new_session_id = rag_retriever.open_new_session()
+        
+        logger.info(f"Created new session {new_session_id} for student {student.id}")
+        
+        return JsonResponse({
+            'success': True,
+            'session_id': new_session_id,
+            'message': 'New session created successfully'
+        })
+    
+    except Student.DoesNotExist:
+        return JsonResponse({
+            'error': 'Student profile not found. Please complete your student preferences first.',
+            'redirect': '/preferences/'
+        }, status=400)
+    except Exception as e:
+        logger.error(f"Error creating new session: {e}", exc_info=True)
+        return JsonResponse({
+            'error': 'An error occurred while creating a new session',
+            'details': str(e) if request.user.is_staff else None
+        }, status=500)
