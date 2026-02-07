@@ -1014,6 +1014,8 @@
         <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
         <!-- FullCalendar Macedonian Locale -->
         <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/mk.js'></script>
+        <!-- Marked.js for markdown processing -->
+        <script src='https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js'></script>
 
         <script>
             let calendar;
@@ -1378,7 +1380,7 @@
 
             function sendToConversationalAgent(message) {
                 // Send message to intelligent conversational agent
-                fetch('/api/time-agent/chat/', {
+                fetch('/mindmate/api/time-agent/chat/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1487,7 +1489,7 @@
                 const confidence = estimationData.confidence;
                 const difficulty = estimationData.difficulty;
 
-                let response = `За вашата задача проценувам дека ќе ви требаат околу **${timeText}**.\\n\\n`;
+                let response = `За вашата задача проценувам дека ќе ви требаат околу **${timeText}**.\n\n`;
                 response += `Проценката е направена врз основа на сложеноста на задачата и вашите претходни перформанси.`;
 
                 return response;
@@ -1520,6 +1522,22 @@
                 const avatarInitial = sender === 'user' ? '{{ student.full_name|slice:":1"|upper }}' : '🤖';
 
                 let messageContent = content;
+                
+                // Process markdown for agent messages
+                if (sender === 'agent' && typeof marked !== 'undefined') {
+                    // First, convert literal \n to actual line breaks
+                    messageContent = messageContent.replace(/\\n/g, '\n');
+                    
+                    // Fix bullet point formatting - ensure bullets are on new lines
+                    messageContent = messageContent.replace(/•\s*/g, '\n• ');
+                    
+                    // Clean up multiple newlines and trim
+                    messageContent = messageContent.replace(/\n{3,}/g, '\n\n').trim();
+                    
+                    // Then process with marked
+                    messageContent = marked.parse(messageContent);
+                }
+                
                 if (sender === 'agent' && data) {
                     if (data.estimated_hours) {
                         messageContent += generateEstimationResult(data);
@@ -1712,7 +1730,7 @@
             }
 
             function requestTimeEstimation(taskDescription) {
-                fetch('/api/time-agent/estimate/', {
+                fetch('/mindmate/api/time-agent/estimate/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1792,7 +1810,7 @@
                 // Parse the message to extract task details
                 const taskDetails = parseSlotRequest(message);
 
-                fetch('/api/time-agent/suggest-slots/', {
+                fetch('/mindmate/api/time-agent/suggest-slots/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1893,33 +1911,101 @@
                     return 'Не пронајдов достапни термини за бараното време. Обидете се со пократко период или променете ги преференците.';
                 }
 
-                let response = `🗓️ **Пронајдов ${data.suggested_slots.length} одлични термини за вашата задача:**\\n\\n`;
+                let response = `🗓️ **Пронајдов ${data.suggested_slots.length} одлични термини за вашата задача:**\n\n`;
 
                 data.suggested_slots.forEach((slot, index) => {
                     const quality = slot.quality_score >= 0.8 ? '🌟' : slot.quality_score >= 0.6 ? '⭐' : '✨';
                     const splitInfo = slot.is_split_session ? ' (сесија во серија)' : '';
+                    
+                    // Format start time properly
+                    const startTime = formatSlotTime(slot.start_time || slot.start_time_formatted);
+                    const duration = formatSlotDuration(slot.duration_hours || slot.duration, slot.duration_formatted);
 
-                    response += `${quality} **Термин ${index + 1}${splitInfo}:**\\n`;
-                    response += `📅 ${slot.start_time_formatted}\\n`;
-                    response += `⏱️ Времетраење: ${slot.duration_formatted}\\n`;
-                    response += `💯 Квалитет: ${Math.round(slot.quality_score * 100)}%\\n`;
+                    response += `${quality} **Термин ${index + 1}${splitInfo}:**\n`;
+                    response += `📅 ${startTime}\n`;
+                    response += `⏱️ Времетраење: ${duration}\n`;
+                    response += `💯 Квалитет: ${Math.round(slot.quality_score * 100)}%\n`;
 
                     if (slot.reasons && slot.reasons.length > 0) {
-                        response += `💡 ${slot.reasons[0]}\\n`;
+                        response += `💡 ${slot.reasons[0]}\n`;
                     }
-                    response += '\\n';
+                    response += '\n';
                 });
 
-                response += data.summary_message + '\\n\\n';
+                response += data.summary_message + '\n\n';
 
                 if (data.tips && data.tips.length > 0) {
-                    response += '**💡 Савети:**\\n';
+                    response += '**💡 Савети:**\n';
                     data.tips.slice(0, 2).forEach(tip => {
-                        response += `• ${tip}\\n`;
+                        response += `• ${tip}\n`;
                     });
                 }
 
                 return response;
+            }
+            
+            function formatSlotTime(timeData) {
+                if (!timeData) return 'Недефинирано време';
+                
+                // If it's already formatted string, return it
+                if (typeof timeData === 'string' && timeData !== 'undefined') {
+                    // Check if it's an ISO timestamp
+                    if (timeData.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/) || timeData.includes('T')) {
+                        try {
+                            const date = new Date(timeData);
+                            if (!isNaN(date.getTime())) {
+                                const dayNames = ['недела', 'понеделник', 'вторник', 'среда', 'четврток', 'петок', 'сабота'];
+                                const monthNames = ['јануари', 'февруари', 'март', 'април', 'мај', 'јуни', 
+                                                   'јули', 'август', 'септември', 'октомври', 'ноември', 'декември'];
+                                
+                                const dayName = dayNames[date.getDay()];
+                                const day = date.getDate();
+                                const month = monthNames[date.getMonth()];
+                                const hours = date.getHours().toString().padStart(2, '0');
+                                const minutes = date.getMinutes().toString().padStart(2, '0');
+                                
+                                return `${dayName}, ${day} ${month} во ${hours}:${minutes}`;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing ISO timestamp:', e);
+                        }
+                    }
+                    return timeData;
+                }
+                
+                // If it's a date object or timestamp, format it
+                try {
+                    const date = new Date(timeData);
+                    if (!isNaN(date.getTime())) {
+                        const dayNames = ['недела', 'понеделник', 'вторник', 'среда', 'четврток', 'петок', 'сабота'];
+                        const monthNames = ['јануари', 'февруари', 'март', 'април', 'мај', 'јуни', 
+                                           'јули', 'август', 'септември', 'октомври', 'ноември', 'декември'];
+                        
+                        const dayName = dayNames[date.getDay()];
+                        const day = date.getDate();
+                        const month = monthNames[date.getMonth()];
+                        const hours = date.getHours().toString().padStart(2, '0');
+                        const minutes = date.getMinutes().toString().padStart(2, '0');
+                        
+                        return `${dayName}, ${day} ${month} во ${hours}:${minutes}`;
+                    }
+                } catch (e) {
+                    console.error('Error formatting slot time:', e);
+                }
+                
+                return 'Недефинирано време';
+            }
+            
+            function formatSlotDuration(durationHours, durationFormatted) {
+                if (durationFormatted && durationFormatted !== 'undefined') {
+                    return durationFormatted;
+                }
+                
+                if (durationHours && !isNaN(durationHours)) {
+                    return formatTime(durationHours);
+                }
+                
+                return 'Недефинирано времетраење';
             }
 
             function addSlotToCalendar(slotData) {
@@ -1935,8 +2021,11 @@
                 // Pre-fill the title
                 setTimeout(() => {
                     const title = slotData.task_description || 'Студиска сесија';
+                    const duration = formatSlotDuration(slotData.duration_hours || slotData.duration, slotData.duration_formatted);
+                    const description = `Time Agent препорака\nКвалитет: ${Math.round(slotData.quality_score * 100)}%\nВреметраење: ${duration}`;
+                    
                     document.getElementById('eventTitle').value = title;
-                    document.getElementById('eventDescription').value = `Time Agent препорака\\nКвалитет: ${Math.round(slotData.quality_score * 100)}%\\nВреметраење: ${slotData.duration_formatted}`;
+                    document.getElementById('eventDescription').value = description;
 
                     // Set appropriate event type based on task
                     const taskType = slotData.task_type || 'study';
@@ -1966,7 +2055,7 @@
                 // Pre-fill the title
                 setTimeout(() => {
                     document.getElementById('eventTitle').value = taskDescription || 'Студиска сесија';
-                    document.getElementById('eventDescription').value = `Проценето време: ${estimatedHours} часови\\nКреирано од Time Agent`;
+                    document.getElementById('eventDescription').value = `Проценето време: ${estimatedHours} часови\nКреирано од Time Agent`;
                 }, 100);
             }
 

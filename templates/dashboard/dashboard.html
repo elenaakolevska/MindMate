@@ -608,7 +608,7 @@
         }
 
         .calendar-card-center-text {
-            font-size: 18px;
+            font-size: 14px;
             color: #6b7280;
             display: flex;
             align-items: center;
@@ -1206,8 +1206,30 @@
                 noEventsMsg.style.display = anyVisible ? 'none' : '';
             }
         }
+        
+        // Fix event descriptions with undefined values and literal \n characters
+        function fixEventDescriptions() {
+            const eventDescriptions = document.querySelectorAll('.event-desc');
+            eventDescriptions.forEach(desc => {
+                let text = desc.textContent || desc.innerText;
+                
+                // Fix undefined values
+                text = text.replace(/undefined/g, 'Недефинирано');
+                
+                // Convert literal \n to actual line breaks
+                text = text.replace(/\\n/g, '\n');
+                
+                // Convert line breaks to <br> tags for HTML display
+                text = text.replace(/\n/g, '<br>');
+                
+                // Update the content
+                desc.innerHTML = text;
+            });
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             showEvents('month'); // Default
+            fixEventDescriptions(); // Fix descriptions after content loads
         });
     </script>
 </body>
