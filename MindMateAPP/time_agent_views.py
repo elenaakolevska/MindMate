@@ -1240,20 +1240,53 @@ def _execute_slot_finding(student, data):
     # Format slots for response
     formatted_slots = []
     for slot in slots:
+        # Format duration
+        hours = slot.duration_hours
+        if hours >= 1:
+            if hours == 1:
+                duration_text = "1 час"
+            elif hours < 2:
+                duration_text = f"{hours:.1f} часа"
+            elif hours < 5:
+                duration_text = f"{int(hours)} часа"
+            else:
+                duration_text = f"{int(hours)} часови"
+        else:
+            minutes = int(hours * 60)
+            duration_text = f"{minutes} минути"
+        
+        # Format start time in Macedonian
+        day_names = ['недела', 'понеделник', 'вторник', 'среда', 'четврток', 'петок', 'сабота']
+        month_names = ['јануари', 'февруари', 'март', 'април', 'мај', 'јуни', 
+                       'јули', 'август', 'септември', 'октомври', 'ноември', 'декември']
+        
+        day_name = day_names[slot.start_time.weekday()]
+        day = slot.start_time.day
+        month = month_names[slot.start_time.month - 1]
+        hours_24 = slot.start_time.hour
+        minutes = slot.start_time.minute
+        
+        formatted_time = f"{day_name}, {day} {month} во {hours_24:02d}:{minutes:02d}"
+        
         formatted_slots.append({
             'start_time': slot.start_time.isoformat(),
             'end_time': slot.end_time.isoformat(),
+            'start_time_formatted': formatted_time,
             'duration_hours': slot.duration_hours,
+            'duration_formatted': duration_text,
             'quality_score': slot.quality_score,
             'reasons': slot.reasons,
-            'formatted_date': slot.start_time.strftime('%A, %B %d'),
-            'formatted_time': slot.start_time.strftime('%I:%M %p')
+            'is_split_session': slot.is_split if hasattr(slot, 'is_split') else False,
+            'task_description': data.get('task_description', 'Студиска сесија')
         })
     
     return {
-        'slots': formatted_slots,
+        'suggested_slots': formatted_slots,
+        'slots': formatted_slots,  # Compatibility with both naming conventions
         'count': len(formatted_slots),
-        'request_duration': data.get('duration_hours', 2.0)
+        'request_duration': data.get('duration_hours', 2.0),
+        'requested_duration_formatted': f"{data.get('duration_hours', 2.0)} часа" if data.get('duration_hours', 2.0) >= 2 else f"{int(data.get('duration_hours', 2.0) * 60)} минути",
+        'summary_message': f"Пронајдени се {len(formatted_slots)} термини за вашата задача."
     }
 
 
