@@ -21,8 +21,9 @@ class RAGRetriever:
             "Please ensure that Ollama is running locally, or check back in a moment. "
             "In the meantime, you might want to review the relevant sections in your uploaded documents."
         )
-        self.ollama_url = "http://host.docker.internal:11434"  # Docker-compatible URL
-        self.model_name = "qwen2.5:7b"  
+        from django.conf import settings as django_settings
+        self.ollama_url = getattr(django_settings, 'OLLAMA_URL', 'http://host.docker.internal:11434')
+        self.model_name = getattr(django_settings, 'OLLAMA_MODEL', 'qwen2.5:7b')  
         
         # Remove QuizGenerator initialization to prevent circular dependency and memory issues
         # QuizGenerator will be created only when needed in views

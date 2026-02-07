@@ -85,8 +85,9 @@ For true/false:
     "explanation": "Explanation in Macedonian"
 }'''
 
+        from django.conf import settings as django_settings
         prompt = {
-            "model": "qwen2.5:7b",
+            "model": getattr(django_settings, 'OLLAMA_MODEL', 'qwen2.5:7b'),
             "prompt": f"""Create a quiz with {question_count} {question_format} in Macedonian based on this content:
 
 {combined_content}
@@ -331,5 +332,6 @@ JSON:""",
 
 def get_quiz_generator():
     """Get a quiz generator instance"""
-    ollama_url = "http://host.docker.internal:11434"  # Docker-compatible URL
+    from django.conf import settings
+    ollama_url = getattr(settings, 'OLLAMA_URL', 'http://host.docker.internal:11434')
     return QuizGenerator(ollama_url=ollama_url)
