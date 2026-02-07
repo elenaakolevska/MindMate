@@ -33,7 +33,7 @@ class ModelType(Enum):
 class LLMConfig:
     """Configuration for LLM service"""
     provider: ModelProvider = ModelProvider.OLLAMA
-    model_name: str = "llama3"
+    model_name: str = None  # Will default to settings.OLLAMA_MODEL
     temperature: float = 0.7
     max_tokens: int = 2048
     timeout: int = 30
@@ -175,10 +175,11 @@ class LLMService:
         if json_mode:
             full_prompt += "\n\nRespond with valid JSON."
         
-        ollama_url = self.config.base_url or "http://localhost:11434"
+        from django.conf import settings as django_settings
+        ollama_url = self.config.base_url or getattr(django_settings, 'OLLAMA_URL', 'http://localhost:11434')
         
         payload = {
-            "model": self.config.model_name,
+            "model": self.config.model_name or getattr(django_settings, 'OLLAMA_MODEL', 'qwen2.5:7b'),
             "prompt": full_prompt,
             "stream": False,
             "options": {
@@ -340,7 +341,8 @@ class LLMService:
             if self.config.provider == ModelProvider.OLLAMA:
                 # Use HTTP request for Ollama
                 import requests
-                ollama_url = self.config.base_url or "http://localhost:11434"
+                from django.conf import settings as django_settings
+                ollama_url = self.config.base_url or getattr(django_settings, 'OLLAMA_URL', 'http://localhost:11434')
                 response = requests.get(f"{ollama_url}/api/tags", timeout=10)
                 if response.status_code == 200:
                     data = response.json()
@@ -392,7 +394,8 @@ def classify_document_subject(content: str, max_length: int = 2000) -> str:
     content_sample = content[:max_length] if len(content) > max_length else content
     
     try:
-        ollama_url = "http://host.docker.internal:11434"
+        from django.conf import settings as django_settings
+        ollama_url = getattr(django_settings, 'OLLAMA_URL', 'http://host.docker.internal:11434')
         
         prompt = f"""Анализирај го внимателно следниов текст и идентификувај ја главната тема/предмет.
 
@@ -413,7 +416,7 @@ def classify_document_subject(content: str, max_length: int = 2000) -> str:
         response = requests.post(
             f"{ollama_url}/api/generate",
             json={
-                "model": "qwen2.5:7b",
+                "model": getattr(django_settings, 'OLLAMA_MODEL', 'qwen2.5:7b'),
                 "prompt": prompt,
                 "stream": False,
                 "options": {

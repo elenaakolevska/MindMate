@@ -143,6 +143,19 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Memory and Performance Optimizations
+
+# ── Ollama / LLM configuration ─────────────────────────────────
+# These can be overridden via environment variables or .env file.
+# OLLAMA_URL: the base URL where Ollama is running.
+#   - Inside Docker (default): http://host.docker.internal:11434
+#   - Running locally without Docker: http://localhost:11434
+#   - Linux Docker (no host.docker.internal): http://172.17.0.1:11434
+# OLLAMA_MODEL: the model tag to use for all LLM queries.
+#   - Default: qwen2.5:7b  (needs ~8 GB RAM)
+#   - Low-memory alternative: llama3.2:1b or gemma2:2b
+OLLAMA_URL = os.environ.get('OLLAMA_URL', 'http://host.docker.internal:11434')
+OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'qwen2.5:7b')
+
 DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 

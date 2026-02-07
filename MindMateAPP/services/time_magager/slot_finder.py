@@ -195,16 +195,22 @@ class SlotFinder:
                 
                 # If gap is large enough, create slots
                 if gap_duration >= self.MIN_SESSION_DURATION:
-                    # Try to fit the requested duration
                     if gap_duration >= duration:
-                        slot_end = gap_start + timedelta(hours=duration)
-                        slots.append(TimeSlot(
-                            start_time=gap_start,
-                            end_time=slot_end,
-                            duration_hours=duration,
-                            quality_score=0.0,  # Will be calculated later
-                            reasons=[]
-                        ))
+                        # Generate multiple candidate slots at different start times
+                        # within the gap so that different time-of-day preferences
+                        # (morning, afternoon, evening) can be satisfied.
+                        step_hours = max(1.0, duration)  # slide by 1h or duration
+                        current_start = gap_start
+                        while current_start + timedelta(hours=duration) <= gap_end:
+                            slot_end = current_start + timedelta(hours=duration)
+                            slots.append(TimeSlot(
+                                start_time=current_start,
+                                end_time=slot_end,
+                                duration_hours=duration,
+                                quality_score=0.0,  # Will be calculated later
+                                reasons=[]
+                            ))
+                            current_start += timedelta(hours=step_hours)
                     
                     # Also consider partial slots if shorter than requested
                     elif gap_duration >= self.MIN_SESSION_DURATION:

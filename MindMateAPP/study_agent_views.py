@@ -23,8 +23,9 @@ def get_rag_retriever(student_id: int) -> RAGRetriever:
 
 def get_quiz_generator(student_id: int) -> QuizGenerator:
     """Get Quiz Generator instance for student - create new instance each time to prevent memory leaks"""
+    from django.conf import settings
     logger.info(f"Creating Quiz Generator instance for student {student_id}")
-    ollama_url = "http://host.docker.internal:11434"
+    ollama_url = getattr(settings, 'OLLAMA_URL', 'http://host.docker.internal:11434')
     rag_retriever = get_rag_retriever(student_id)
     return QuizGenerator(ollama_url=ollama_url, rag_retriever=rag_retriever)
 

@@ -1208,8 +1208,8 @@ def _execute_time_estimation(student, data):
     return {
         'estimated_hours': hours,
         'time_text': time_text,
-        'confidence': estimate.confidence_score,
-        'difficulty': estimate.difficulty_level,
+        'confidence': estimate.confidence_level,
+        'difficulty': estimate.difficulty_adjustment,
         'reasoning': estimate.reasoning,
         'breakdown': {
             'preparation': estimate.estimated_hours * 0.2,

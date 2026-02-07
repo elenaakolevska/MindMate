@@ -30,9 +30,10 @@ class ConversationalTimeAgent:
     Intelligent conversational agent for time management using Llama3
     """
     
-    def __init__(self, ollama_url: str = "http://host.docker.internal:11434"):
-        self.ollama_url = ollama_url
-        self.model_name = "qwen2.5:7b"  # Better multilingual support and higher token limit
+    def __init__(self, ollama_url: str = None):
+        from django.conf import settings
+        self.ollama_url = ollama_url or getattr(settings, 'OLLAMA_URL', 'http://host.docker.internal:11434')
+        self.model_name = getattr(settings, 'OLLAMA_MODEL', 'qwen2.5:7b')
         
     def process_message(
         self, 
@@ -166,9 +167,9 @@ Your response:"""
                 
         except requests.RequestException as e:
             logger.error(f"Request to Ollama failed: {e}")
-            # Try fallback to smaller model if Qwen2.5 fails
-            if self.model_name == "qwen2.5:7b":
-                logger.info("Trying fallback to llama3.2:3b model")
+            # Try fallback to smaller model if the primary model fails
+            logger.info(f"Trying fallback to llama3.2:3b model (primary was {self.model_name})")
+            if True:
                 try:
                     fallback_response = requests.post(
                         f"{self.ollama_url}/api/generate",
