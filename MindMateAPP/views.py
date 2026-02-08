@@ -769,6 +769,45 @@ def profile_view(request):
     # Get badges
     badges = Badge.objects.filter(student=student).order_by('-received_at')
 
+    STUDY_DIRECTION_LABELS = {
+        'mathematics': 'Математика',
+        'computer_science': 'Компјутерски науки',
+        'engineering': 'Инженерство',
+        'medicine': 'Медицина',
+        'law': 'Право',
+        'economics': 'Економија',
+        'psychology': 'Психологија',
+        'biology': 'Биологија',
+        'chemistry': 'Хемија',
+        'physics': 'Физика',
+        'history': 'Историја',
+        'literature': 'Литература',
+        'philosophy': 'Филозофија',
+        'art': 'Уметност',
+        'music': 'Музика',
+        'other': 'Друго',
+    }
+
+    INTEREST_LABELS = {
+        'productivity': 'Продуктивност',
+        'time_management': 'Управување со време',
+        'mindfulness': 'Свесност',
+        'coding': 'Програмирање',
+        'reading': 'Читање',
+        'writing': 'Пишување',
+        'research': 'Истражување',
+        'project_planning': 'Планирање проекти',
+        'skill_development': 'Развој на вештини',
+        'language_learning': 'Учење јазици',
+        'exam_prep': 'Подготовка за испити',
+        'note_taking': 'Водење белешки',
+    }
+
+    study_direction_mk = STUDY_DIRECTION_LABELS.get(student.study_direction, student.study_direction)
+
+    interests_list = student.interests.split(', ') if student.interests else []
+    interests_mk = [INTEREST_LABELS.get(interest, interest) for interest in interests_list]
+
     context = {
         'student': student,
         'preferences': preferences,
@@ -776,7 +815,8 @@ def profile_view(request):
         'completed_quizzes': completed_quizzes,
         'accuracy_percentage': accuracy_percentage,
         'badges': badges,
-        'interests': student.interests.split(', ') if student.interests else [],
+        'interests': interests_mk,
+        'study_direction_mk': study_direction_mk,
     }
 
     return render(request, 'profile/profile.html', context)
