@@ -560,7 +560,7 @@
         }
 
         // Load sessions only if on study agent page
-        if (window.location.pathname.includes('/study-agent/')) {
+        if (window.location.pathname.includes('/mindmate/study-agent/')) {
             loadChatSessions();
         }
 
@@ -630,9 +630,9 @@
 
     // Session management functions
     function loadChatSessions() {
-        if (!window.location.pathname.includes('/study-agent/')) return;
+        if (!window.location.pathname.includes('/mindmate/study-agent/')) return;
 
-        fetch('/study-agent/history/', {
+        fetch('/mindmate/study-agent/history/', {
             headers: { 'X-CSRFToken': sidebarState.csrfToken }
         })
         .then(response => response.json())
@@ -723,7 +723,7 @@
     function deleteSession(sessionId) {
         if (!confirm('Delete this session?')) return;
 
-        fetch(`/study-agent/sessions/${sessionId}/delete/`, {
+        fetch(`/mindmate/study-agent/sessions/${sessionId}/delete/`, {
             method: 'DELETE',
             headers: { 'X-CSRFToken': sidebarState.csrfToken }
         })

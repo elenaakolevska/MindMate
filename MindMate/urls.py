@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, include
+from django.shortcuts import redirect
 from MindMateAPP import views as app_views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -23,9 +24,14 @@ from django.contrib import admin as default_admin
 from MindMateAPP.admin import custom_admin_site
 
 urlpatterns = [
-    path('', include('MindMateAPP.urls')),  # Include app URLs at root
-    path('admin/', custom_admin_site.urls),
-    path('admin/', include('django.contrib.auth.urls')),  # Add default admin auth URLs
+    path('mindmate/', include('MindMateAPP.urls')),  # Include app URLs under /mindmate/
+    path('mindmate/admin/', custom_admin_site.urls),
+    path('mindmate/admin/', include('django.contrib.auth.urls')),  # Add default admin auth URLs
+    
+    # Add favicon and icon handlers
+    path('favicon.ico', lambda request: redirect('/mindmate/static/img/favicon.ico')),
+    path('apple-touch-icon.png', lambda request: redirect('/mindmate/static/img/apple-touch-icon.png')),
+    path('apple-touch-icon-precomposed.png', lambda request: redirect('/mindmate/static/img/apple-touch-icon-precomposed.png')),
 ]
 
 # Serve static and media files during development
