@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from .models import StudyMaterial, Student
 from .services.study_agent.vector_store import VectorStoreService
+from .utils import award_badge
 
 logger = logging.getLogger(__name__)
 
@@ -58,3 +59,17 @@ def cleanup_student_vector_store(sender, instance, **kwargs):
             
     except Exception as e:
         logger.error(f"Vector store student cleanup error for student {getattr(instance, 'id', 'unknown')}: {e}")
+
+
+@receiver(post_save, sender=Student)
+def welcome_new_student(sender, instance, created, **kwargs):
+    """Award welcome badge to new students"""
+    if created:
+        try:
+            award_badge(
+                instance, 
+                "Welcome to MindMate", 
+                "Congratulations on joining MindMate! Start your learning journey!"
+            )
+        except Exception as e:
+            logger.error(f"Error awarding welcome badge to student {instance.id}: {e}")

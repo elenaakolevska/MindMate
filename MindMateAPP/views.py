@@ -29,6 +29,7 @@ from .models import (
     Accuracy, Badge, Quiz, QuizResult, StudyMaterial, ChatbotInteraction,
     Notification
 )
+from .utils import update_student_activity
 
 
 def register(request):
@@ -189,7 +190,10 @@ def dashboard(request):
         defaults={'days_count': 0, 'last_day': timezone.now().date()}
     )
 
-    # Calculate current streak
+    # Update streak for dashboard visit (counts as daily activity)
+    streak_days = update_student_activity(student, activity_type="general")
+
+    # Calculate current streak (this will be the updated value)
     today = timezone.now().date()
     if streak.last_day < today - timedelta(days=1):
         # Streak broken
@@ -273,7 +277,7 @@ def dashboard(request):
     context = {
         'student': student,
         'preferences': preferences,
-        'streak_days': streak.days_count,
+        'streak_days': streak_days,  # Use the updated streak value
         'accuracy_percentage': round(accuracy_percentage, 1),
         'completed_quizzes': completed_quizzes,
         'badges': badges,
@@ -340,6 +344,9 @@ def upload_document(request):
                 processing_status='pending',
                 file_size=uploaded_file.size  # Save file size in bytes
             )
+
+            # Update student streak and check for badges after document upload
+            streak_days = update_student_activity(student, activity_type="upload")
 
             # TODO: Queue OCR processing task here
             # process_document_async.delay(material.id)

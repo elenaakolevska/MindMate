@@ -13,6 +13,7 @@ from django.contrib.auth.decorators import login_required
 from MindMateAPP.models import Student
 from MindMateAPP.services.study_agent.rag_retriever import RAGRetriever
 from MindMateAPP.services.study_agent.quiz_generator import QuizGenerator
+from MindMateAPP.utils import update_student_activity
 
 logger = logging.getLogger(__name__)
 
@@ -195,6 +196,9 @@ def study_agent_chat_api(request):
 
         # Generate response using RAG
         response_text = rag_retriever.generate_response(message)
+
+        # Update student streak for study activity (chat interactions count as study)
+        streak_days = update_student_activity(student, activity_type="study")
 
         response_data = {
             'response': response_text,

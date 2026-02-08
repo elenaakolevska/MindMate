@@ -16,6 +16,7 @@ import logging
 
 from .models import Quiz, QuizQuestion, QuizResult, StudyMaterial, Student, StudentAnswer
 from .services.study_agent.quiz_generator import get_quiz_generator, QuizGenerationOptions
+from .utils import update_student_activity
 
 logger = logging.getLogger(__name__)
 
@@ -251,6 +252,9 @@ def submit_quiz(request, quiz_id):
             max_score=total_questions,  # Total possible points  
             accuracy_percentage=score_percentage  # Percentage score
         )
+        
+        # Update student streak and check for badges after quiz completion
+        streak_days = update_student_activity(student, activity_type="quiz")
         
         # Save individual answers
         for question in questions:
