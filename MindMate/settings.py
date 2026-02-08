@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'MindMateAPP.middleware.NoCacheMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -68,6 +69,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'MindMateAPP.context_processors.cache_busting',
             ],
         },
     },
@@ -203,6 +205,6 @@ LOGGING = {
 }
 
 # Authentication settings
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = '/mindmate/login/'
+LOGIN_REDIRECT_URL = '/mindmate/dashboard/'
+LOGOUT_REDIRECT_URL = '/mindmate/'

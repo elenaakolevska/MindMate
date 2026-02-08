@@ -402,7 +402,7 @@
         }
 
         function loadQuizDocuments() {
-            fetch('/api/study-agent/recent-documents/', {
+            fetch('/mindmate/api/study-agent/recent-documents/', {
                 headers: {
                     'X-CSRFToken': csrfToken
                 }
@@ -564,7 +564,7 @@
             // Show typing indicator
             const typingIndicator = addMessage('assistant', '<div class="loading"></div> Typing...');
 
-            fetch('/study-agent/chat/', {
+            fetch('/mindmate/study-agent/chat/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -670,7 +670,7 @@
         function deleteDocument(docId, docName) {
             if (!confirm(`Дали сте сигурни дека сакате да го избришете "${docName}"?`)) return;
 
-            fetch(`/api/study-agent/documents/${docId}/delete/`, {
+            fetch(`/mindmate/api/study-agent/documents/${docId}/delete/`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRFToken': csrfToken

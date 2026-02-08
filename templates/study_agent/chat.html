@@ -912,7 +912,7 @@
         function loadCurrentSessionHistory() {
             if (!chatState.currentSessionId) return;
             
-            fetch(`/study-agent/history/?session_id=${chatState.currentSessionId}`, {
+            fetch(`/mindmate/study-agent/history/?session_id=${chatState.currentSessionId}`, {
                 headers: { 'X-CSRFToken': chatState.csrfToken }
             })
             .then(response => response.json())
@@ -955,7 +955,7 @@
             const sessionsList = document.getElementById('sessionsList');
             sessionsList.innerHTML = '<div class="no-sessions"><i class="fas fa-spinner fa-spin"></i><div>Вчитување...</div></div>';
             
-            fetch('/study-agent/history/', {
+            fetch('/mindmate/study-agent/history/', {
                 headers: { 'X-CSRFToken': chatState.csrfToken }
             })
             .then(response => response.json())
@@ -978,7 +978,7 @@
             
             // Fetch first message for each session to show as preview
             sessions.forEach(session => {
-                fetch(`/study-agent/history/?session_id=${session.id}`, {
+                fetch(`/mindmate/study-agent/history/?session_id=${session.id}`, {
                     headers: { 'X-CSRFToken': chatState.csrfToken }
                 })
                 .then(response => response.json())
@@ -1061,7 +1061,7 @@
             const chatMessages = document.getElementById('chatMessages');
             chatMessages.innerHTML = '';
             
-            fetch(`/study-agent/history/?session_id=${sessionId}`, {
+            fetch(`/mindmate/study-agent/history/?session_id=${sessionId}`, {
                 headers: { 'X-CSRFToken': chatState.csrfToken }
             })
             .then(response => response.json())
@@ -1098,7 +1098,7 @@
                 return;
             }
             
-            fetch(`/study-agent/sessions/${sessionId}/delete/`, {
+            fetch(`/mindmate/study-agent/sessions/${sessionId}/delete/`, {
                 method: 'DELETE',
                 headers: { 'X-CSRFToken': chatState.csrfToken }
             })
@@ -1126,7 +1126,7 @@
 
         function startNewSession() {
             // Call backend API to create new session
-            fetch('/study-agent/sessions/new/', {
+            fetch('/mindmate/study-agent/sessions/new/', {
                 method: 'POST',
                 headers: { 'X-CSRFToken': chatState.csrfToken }
             })
@@ -1183,7 +1183,7 @@
         function loadSessionMessages(sessionId) {
             if (!sessionId || sessionId === 'new') return;
             
-            fetch(`/study-agent/history/?session_id=${sessionId}`, {
+            fetch(`/mindmate/study-agent/history/?session_id=${sessionId}`, {
                 headers: { 'X-CSRFToken': chatState.csrfToken }
             })
             .then(response => response.json())
@@ -1288,7 +1288,7 @@
         function deleteDocument(materialId, fileIndex) {
             if (!confirm('Дали сте сигурни дека сакате да го избришете овој документ?')) return;
 
-            fetch(`/api/study-agent/documents/${materialId}/delete/`, {
+            fetch(`/mindmate/api/study-agent/documents/${materialId}/delete/`, {
                 method: 'DELETE',
                 headers: { 'X-CSRFToken': chatState.csrfToken }
             })
@@ -1328,7 +1328,7 @@
         }
 
         function loadRecentDocuments() {
-            fetch('/api/study-agent/recent-documents/', {
+            fetch('/mindmate/api/study-agent/recent-documents/', {
                 headers: { 'X-CSRFToken': chatState.csrfToken }
             })
             .then(response => response.json())
@@ -1460,7 +1460,7 @@
         function sendToStudyAgent(message) {
             addMessage('Мислам...', 'agent', true);
 
-            fetch('/study-agent/chat/', {
+            fetch('/mindmate/study-agent/chat/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',

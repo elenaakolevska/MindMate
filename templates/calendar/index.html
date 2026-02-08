@@ -1389,7 +1389,7 @@
 
             function sendToConversationalAgent(message) {
                 // Send message to intelligent conversational agent
-                fetch('/api/time-agent/chat/', {
+                fetch('/mindmate/api/time-agent/chat/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1739,7 +1739,7 @@
             }
 
             function requestTimeEstimation(taskDescription) {
-                fetch('/api/time-agent/estimate/', {
+                fetch('/mindmate/api/time-agent/estimate/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1819,7 +1819,7 @@
                 // Parse the message to extract task details
                 const taskDetails = parseSlotRequest(message);
 
-                fetch('/api/time-agent/suggest-slots/', {
+                fetch('/mindmate/api/time-agent/suggest-slots/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
