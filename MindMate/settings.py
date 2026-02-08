@@ -203,6 +203,6 @@ LOGGING = {
 }
 
 # Authentication settings
-LOGIN_URL = '/mindmate/login/'
-LOGIN_REDIRECT_URL = '/mindmate/dashboard/'
-LOGOUT_REDIRECT_URL = '/mindmate/'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/'
