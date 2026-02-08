@@ -10,19 +10,163 @@
     <!-- Marked.js for markdown processing -->
     <script src='https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js'></script>
     <style>
-        .study-agent-wrapper { padding: 32px; }
-        .documents-section { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
-        .documents-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .documents-title { font-weight: 700; font-size: 18px; color: #1f2937; }
-        .btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; }
-        .btn-primary { background: #4285f4; color: white; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        .menu-toggle { display: flex !important; width: 36px !important; height: 36px !important; border: none !important; background: #f3f4f6 !important; border-radius: 6px !important; align-items: center !important; justify-content: center !important; color: #6b7280 !important; font-size: 24px !important; padding: 8px !important; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fb;
+            min-height: 100vh;
+        }
+
+
+        /* Main Content */
+        .main-content-area {
+            transition: all 0.3s ease;
+            width: calc(100% - 250px);
+        }
+
+        .sidebar.collapsed + .main-content-area {
+            width: calc(100% - 80px);
+        }
+
+        /* User Profile in Header */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Study Agent Content */
+        .study-agent-wrapper {
+            padding: 32px;
+        }
+
+        .documents-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+        }
+
+        .documents-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .documents-title {
+            font-weight: 700;
+            font-size: 18px;
+            color: #1f2937;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary {
+            background: #4285f4;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3367d6;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .menu-toggle {
+            display: flex;
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 6px;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .menu-toggle:hover {
+            background: #e5e7eb;
+        }
+
+        /* Hide user info on small screens */
+        @media (max-width: 480px) {
+            .user-info {
+                display: none;
+            }
+        }
 
         @media (max-width: 768px) {
-            .container { flex-direction: column; height: auto; }
-            .sidebar { width: 100%; height: auto; }
-            .main-content { height: calc(100vh - 200px); }
+            .study-agent-wrapper {
+                padding: 20px;
+            }
+
+            .main-content-area {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -31,7 +175,7 @@
     <div class="main-content-area">
         <div class="header">
             <div class="header-left">
-                <button class="menu-toggle" aria-label="Toggle sidebar" style="display:flex; position: relative; z-index: 1100;">
+                <button class="menu-toggle" aria-label="Toggle sidebar">
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="header-title">
@@ -242,17 +386,6 @@
             });
             document.getElementById(`${tabName}-tab`).classList.add('active');
 
-            // Update header
-            const titles = {
-                'documents': { title: 'Мои документи', subtitle: 'Управувајте со вашите студиски материјали и генерирајте квизови' },
-                'upload': { title: 'Додај документи', subtitle: 'Додајте нови студиски материјали во вашата колекција' },
-                'my-quizzes': { title: 'Мои квизови', subtitle: 'Прегледајте и полагајте ги вашите генерирани квизови' },
-                'quiz': { title: 'Генерирај квиз', subtitle: 'Создајте квизови од вашите отпремени документи' },
-                'chat': { title: 'Чат асистент', subtitle: 'Добијте помош за вашите студии' }
-            };
-            const titleInfo = titles[tabName];
-            document.getElementById('page-title').textContent = titleInfo.title;
-            document.getElementById('page-subtitle').textContent = titleInfo.subtitle;
 
             // Load tab-specific data
             if (tabName === 'documents') {
@@ -529,7 +662,7 @@
                 body: JSON.stringify(quizData)
             })
             .then(response => response.json())
-            .then(data => {
+            .then data => {
                 if (data.quiz) {
                     showNotification('✅ Квизот е успешно генериран!', 'success');
                     // Redirect to quiz taking interface
@@ -707,9 +840,6 @@
             }
 
             if (localToggle) {
-                localToggle.style.display = 'flex';
-                localToggle.style.position = 'relative';
-                localToggle.style.zIndex = '1100';
                 localToggle.addEventListener('click', (e) => {
                     e.stopPropagation();
                     if (window.sidebarFunctions && typeof window.sidebarFunctions.toggleSidebar === 'function') {

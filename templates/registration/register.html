@@ -187,7 +187,6 @@
         .interest-btn input[type="checkbox"] {
             position: absolute;
             opacity: 0;
-            pointer-events: none;
         }
 
         .interest-btn.checked {
@@ -324,7 +323,7 @@
                         <div class="section-title">Детали за сметката</div>
                         
                         <div class="mb-3">
-                            <label for="{{ form.full_name.id_for_label }}" class="form-label">{{ form.full_name.label }}</label>
+                            {{ form.full_name.label_tag }}
                             <div class="input-group">
                                 <i class="fas fa-user"></i>
                                 {{ form.full_name }}
@@ -335,7 +334,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                            {{ form.email.label_tag }}
                             <div class="input-group">
                                 <i class="fas fa-envelope"></i>
                                 {{ form.email }}
@@ -346,7 +345,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
+                            {{ form.password.label_tag }}
                             <div class="input-group">
                                 <i class="fas fa-lock"></i>
                                 {{ form.password }}
@@ -357,7 +356,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="{{ form.password_confirm.id_for_label }}" class="form-label">{{ form.password_confirm.label }}</label>
+                            {{ form.password_confirm.label_tag }}
                             <div class="input-group">
                                 <i class="fas fa-lock"></i>
                                 {{ form.password_confirm }}
@@ -373,7 +372,7 @@
                         <div class="section-title">Академска позадина</div>
                         
                         <div class="mb-3">
-                            <label for="{{ form.study_level.id_for_label }}" class="form-label">{{ form.study_level.label }}</label>
+                            {{ form.study_level.label_tag }}
                             {{ form.study_level }}
                             {% if form.study_level.errors %}
                                 <div class="text-danger small mt-1">{{ form.study_level.errors.0 }}</div>
@@ -381,7 +380,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="{{ form.study_direction.id_for_label }}" class="form-label">{{ form.study_direction.label }}</label>
+                            {{ form.study_direction.label_tag }}
                             {{ form.study_direction }}
                             {% if form.study_direction.errors %}
                                 <div class="text-danger small mt-1">{{ form.study_direction.errors.0 }}</div>
@@ -411,9 +410,7 @@
                         <!-- Terms and Conditions -->
                         <div class="terms-section">
                             {{ form.terms_agreed }}
-                            <label for="{{ form.terms_agreed.id_for_label }}">
-                                Се согласувам со <a href="#" class="terms-link">условите и правилата</a>.
-                            </label>
+                            {{ form.terms_agreed.label_tag }}
                             {% if form.terms_agreed.errors %}
                                 <div class="text-danger small mt-1">{{ form.terms_agreed.errors.0 }}</div>
                             {% endif %}
@@ -466,11 +463,13 @@
             });
 
             btn.addEventListener('click', function(e) {
-                // Prevent double-firing if clicking the checkbox itself
-                if (e.target === checkbox) {
+                if (e.target.type === 'checkbox') {
                     return;
                 }
-                checkbox.click();
+                e.preventDefault();
+                checkbox.checked = !checkbox.checked;
+                const event = new Event('change', { bubbles: true });
+                checkbox.dispatchEvent(event);
             });
 
             if (checkbox.checked) {

@@ -128,50 +128,6 @@
         .learning-btn input[type="radio"] {
             display: none;
         }
-        .interests-section {
-            margin: 20px 0;
-        }
-        .interests-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .interest-btn {
-            background: #f3f4f6;
-            border: 2px solid var(--border-gray);
-            border-radius: 20px;
-            padding: 8px 18px;
-            font-size: 14px;
-            color: #374151;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
-            display: inline-block;
-            position: relative;
-        }
-        .interest-btn input[type="checkbox"] {
-            display: none;
-        }
-        .interest-btn input[type="checkbox"]:checked + .interest-label {
-            background: var(--primary-purple);
-            color: #fff;
-            border-color: var(--primary-purple);
-        }
-        .interest-label {
-            display: block;
-            background: inherit;
-            border: inherit;
-            border-radius: inherit;
-            padding: inherit;
-            color: inherit;
-            cursor: pointer;
-            margin: 0;
-            transition: all 0.2s ease;
-        }
-        .interest-btn:hover .interest-label {
-            border-color: var(--primary-purple);
-        }
 
         .slider-container {
             margin: 15px 0;
@@ -300,7 +256,7 @@
             <!-- Header -->
             <div class="preferences-header">
                 <h1 class="preferences-title">Персонализирајте го вашето MindMate искуство</h1>
-                <p class="preferences-subtitle">Помогнете ни да го прилагодиме вашето патување на учење со давање на некои детали.</p>
+                <p class="preferences-subtitle">Помогнете ни да го прилагодиме вашето учење со давање на некои детали.</p>
             </div>
 
             <!-- Display Messages -->
@@ -387,40 +343,6 @@
                     {% endif %}
                 </div>
 
-                <!-- Interests (max 5) -->
-                <div class="section-title">Интереси (одберете најмногу 5)</div>
-                <div class="mb-3 interests-section">
-                    <div class="interests-grid">
-                        <div class="interest-btn">
-                            <input type="checkbox" id="interest1" name="interests" value="math">
-                            <label class="interest-label" for="interest1">Математика</label>
-                        </div>
-                        <div class="interest-btn">
-                            <input type="checkbox" id="interest2" name="interests" value="science">
-                            <label class="interest-label" for="interest2">Наука</label>
-                        </div>
-                        <div class="interest-btn">
-                            <input type="checkbox" id="interest3" name="interests" value="history">
-                            <label class="interest-label" for="interest3">Историја</label>
-                        </div>
-                        <div class="interest-btn">
-                            <input type="checkbox" id="interest4" name="interests" value="art">
-                            <label class="interest-label" for="interest4">Уметност</label>
-                        </div>
-                        <div class="interest-btn">
-                            <input type="checkbox" id="interest5" name="interests" value="music">
-                            <label class="interest-label" for="interest5">Музика</label>
-                        </div>
-                        <div class="interest-btn">
-                            <input type="checkbox" id="interest6" name="interests" value="sports">
-                            <label class="interest-label" for="interest6">Спорт</label>
-                        </div>
-                        <div class="interest-btn">
-                            <input type="checkbox" id="interest7" name="interests" value="technology">
-                            <label class="interest-label" for="interest7">Технологија</label>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
@@ -464,41 +386,6 @@
             if (radio.checked) {
                 btn.classList.add('selected');
             }
-        });
-
-        // Interest selection as clickable buttons with purple color and max 5
-        const interestCheckboxes = document.querySelectorAll('.interest-btn input[type="checkbox"]');
-        interestCheckboxes.forEach(function(checkbox) {
-            const btn = checkbox.closest('.interest-btn');
-            const label = btn.querySelector('.interest-label');
-            checkbox.addEventListener('change', function() {
-                const checkedCount = Array.from(interestCheckboxes).filter(cb => cb.checked).length;
-                if (checkedCount > 5) {
-                    checkbox.checked = false;
-                    alert('Не можете да одберете повеќе од 5 интереси');
-                    return;
-                }
-                if (this.checked) {
-                    btn.style.background = '#6c47ff';
-                    btn.style.borderColor = '#6c47ff';
-                    btn.style.color = '#fff';
-                    label.style.background = '#6c47ff';
-                    label.style.color = '#fff';
-                } else {
-                    btn.style.background = '#f3f4f6';
-                    btn.style.borderColor = '#e5e7eb';
-                    btn.style.color = '#374151';
-                    label.style.background = '#f3f4f6';
-                    label.style.color = '#374151';
-                }
-            });
-            // Make the entire button clickable
-            btn.addEventListener('click', function(e) {
-                if (e.target !== checkbox && e.target !== label) {
-                    checkbox.checked = !checkbox.checked;
-                    checkbox.dispatchEvent(new Event('change'));
-                }
-            });
         });
     });
     </script>
