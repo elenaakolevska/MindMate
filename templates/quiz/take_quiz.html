@@ -569,7 +569,7 @@
             formData.append('student_id', {{ student.id }});
             formData.append('answers', JSON.stringify(answersData));
 
-            fetch(`/api/quiz/${quizId}/submit/`, {
+            fetch(`/mindmate/api/quiz/${quizId}/submit/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -583,7 +583,7 @@
             .then(data => {
                 if (data.quiz_result) {
                     // Redirect to results
-                    window.location.href = `/quiz/results/${data.quiz_result.id}/`;
+                    window.location.href = `/mindmate/quiz/results/${data.quiz_result.id}/`;
                 } else {
                     alert('Грешка при поднесување на квизот');
                 }
