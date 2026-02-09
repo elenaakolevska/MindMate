@@ -1249,7 +1249,7 @@
             const originalText = uploadText.textContent;
             uploadText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
 
-            fetch('/upload-document/', {
+            fetch('/mindmate/upload-document/', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': chatState.csrfToken
@@ -1401,7 +1401,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Генерирање...';
             btn.disabled = true;
 
-            fetch('/api/quiz/generate/', {
+            fetch('/mindmate/api/quiz/generate/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1419,9 +1419,9 @@
             .then(data => {
                 if (data.quiz) {
                     // Show notification with link to quiz dashboard
-                    const quizUrl = `/quiz/${data.quiz.id}/take/`;
+                    const quizUrl = `/mindmate/quiz/${data.quiz.id}/take/`;
                     showNotification(
-                        `✅ Квизот е успешно генериран! <br><a href="${quizUrl}" style="color:#2563eb;font-weight:600;text-decoration:underline;">Започнете квизот сега</a> или одете на <a href="/quiz/dashboard/" style="color:#2563eb;font-weight:600;text-decoration:underline;">Мои Квизови</a>`,
+                        `✅ Квизот е успешно генериран! <br><a href="${quizUrl}" style="color:#2563eb;font-weight:600;text-decoration:underline;">Започнете квизот сега</a> или одете на <a href="/mindmate/quiz/dashboard/" style="color:#2563eb;font-weight:600;text-decoration:underline;">Мои Квизови</a>`,
                         'success',
                         true
                     );

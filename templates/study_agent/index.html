@@ -316,7 +316,7 @@
             const originalText = uploadText.textContent;
             uploadText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
 
-            fetch('/upload-document/', {
+            fetch('/mindmate/upload-document/', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrfToken
@@ -344,7 +344,7 @@
 
         // Load documents
         function loadDocuments() {
-            fetch('/api/study-agent/recent-documents/', {
+            fetch('/mindmate/api/study-agent/recent-documents/', {
                 headers: {
                     'X-CSRFToken': csrfToken
                 }
@@ -419,7 +419,7 @@
         }
 
         function loadQuizStats() {
-            fetch('/api/quiz/student/', {
+            fetch('/mindmate/api/quiz/student/', {
                 headers: {
                     'X-CSRFToken': csrfToken
                 }
@@ -520,7 +520,7 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Генерирање...';
             submitBtn.disabled = true;
 
-            fetch('/api/quiz/generate/', {
+            fetch('/mindmate/api/quiz/generate/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -533,7 +533,7 @@
                 if (data.quiz) {
                     showNotification('✅ Квизот е успешно генериран!', 'success');
                     // Redirect to quiz taking interface
-                    window.location.href = `/quiz/${data.quiz.id}/take/`;
+                    window.location.href = `/mindmate/quiz/${data.quiz.id}/take/`;
                 } else {
                     showNotification('❌ Генерирањето на квизот не успеа', 'error');
                 }
